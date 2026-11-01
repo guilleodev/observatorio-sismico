@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.env
+.env.*
+
+# Keep example configuration
+!.env.example
+
+# Angular / Node
+node_modules/
+.angular/
+dist/
+coverage/
+
+# Local data and secrets
+data/raw/
+data/processed/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
