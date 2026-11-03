@@ -20,6 +20,9 @@ data/raw/
 data/processed/
 *.log
 
+# Local Claude Code configuration
+.claude/settings.local.json
+
 # System files
 .DS_Store
 Thumbs.db
