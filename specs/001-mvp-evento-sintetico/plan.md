@@ -2,8 +2,9 @@
 
 **Rama**: `001-mvp-evento-sintetico` (trabajo en `main`) | **Fecha**: 2026-11-03 | **Especificación**: [spec.md](spec.md)
 
-**Entrada**: especificación en `specs/001-mvp-evento-sintetico/spec.md`. Fase 2 de
-`docs/HOJA-DE-RUTA.md`; hitos de commit **F2.1** (infraestructura) y **F2.2** (pipeline, API y mapa).
+**Entrada**: especificación en `specs/001-mvp-evento-sintetico/spec.md`. Fase **F2** de
+`docs/HOJA-DE-RUTA.md` (pasos 2.1 a 2.8). Hitos técnicos: «infraestructura verificada» y «MVP
+completo» (pipeline, API y mapa). Commit previsto: **`[F2]`** al cerrar la fase.
 
 ## Resumen
 
@@ -59,7 +60,7 @@ Netlify en el MVP.
 
 | Principio | Cumplimiento en este plan |
 |---|---|
-| I. Requisitos del profesor | Se respeta `CONTRATO-API.md` (estructura GeoJSON, `null`, ms UTC, CORS, error explícito). **Una excepción temporal**: `metadata.mode = "synthetic"` solo en la API del MVP (el contrato admite únicamente `live` y `replay`, y no se modifica). Aceptada provisionalmente el 2026-11-03, con plan de retirada completado como máximo al cerrar F3.1 (preferiblemente antes de la ingesta real) en [research.md](research.md) R-001 |
+| I. Requisitos del profesor | Se respeta `CONTRATO-API.md` (estructura GeoJSON, `null`, ms UTC, CORS, error explícito). **Una excepción temporal**: `metadata.mode = "synthetic"` solo en la API del MVP (el contrato admite únicamente `live` y `replay`, y no se modifica). Aceptada provisionalmente el 2026-11-03, con plan de retirada completado como máximo al cerrar el paso 3.1 de la hoja de ruta, que precede a la ingesta real (paso 3.2), en [research.md](research.md) R-001 |
 | II. Arquitectura y tecnologías | Cinco servicios Compose; aiokafka, FastAPI, PostgreSQL, Kafka; el mapa consulta la API. Sin Spark/Flink/Kubernetes/ML |
 | III. Datos honestos y aislados | Topic, esquema, prefijo de id, `mode` y etiqueta visual propios; 0 consultas a USGS; nulos como `null` |
 | IV. Idempotencia | Inserción `ON CONFLICT (event_id) DO NOTHING` en una transacción y commit de offset posterior. El versionado por `updated` queda explícitamente para F3 |
@@ -68,7 +69,7 @@ Netlify en el MVP.
 | VII. Simplicidad | Una imagen compartida, un topic, una tabla, un nodo Kafka; sin roles de BD ni ORM |
 | VIII. Aprendizaje | Cada módulo es pequeño; las tareas incluyen la explicación por bloques y una pregunta de defensa |
 
-**Resultado**: sin violaciones. Reevaluación tras el diseño (Fase 1): sin cambios.
+**Resultado**: sin violaciones. Reevaluación tras el diseño («Phase 1» de Spec Kit, no la fase F1 del proyecto): sin cambios.
 
 ## Estructura del proyecto
 
@@ -128,15 +129,20 @@ imagen del consumidor.
 
 Sin violaciones de la constitución que justificar. **Excepción temporal registrada**: `mode = "synthetic"` (R-001), que no
 es una violación porque el contrato no se modifica y la excepción se acota a un único punto del
-código y se retira o aísla por completo como máximo al cerrar F3.1 (preferiblemente antes de la
-ingesta real). Simplificaciones deliberadas del MVP, a revisar en fases posteriores (no son
+código y se retira o aísla por completo como máximo al cerrar el paso 3.1 de la hoja de ruta (antes
+de la ingesta real del paso 3.2). Simplificaciones deliberadas del MVP, a revisar en fases posteriores (no son
 violaciones): creación automática del topic (F3: creación controlada y retención por topic; la
 retención base ya se aplica en el MVP), un solo usuario de base de datos (F3/F6: roles separados), `DO NOTHING` en lugar de
 comparación de `updated` (F3), sin paginación (F5).
 
-## Correspondencia con los commits
+## Correspondencia con los hitos técnicos y el commit
 
-| Commit | Contenido | Hito de verificación |
+Los dos hitos son técnicos, no commits: el commit previsto es **`[F2]`**, al cerrar la fase F2 (un
+commit intermedio solo si más adelante se acuerda). Pasos de la hoja de ruta: «infraestructura
+verificada» ≈ 2.1–2.2 y «MVP completo» ≈ 2.3–2.8 (correspondencia con las tareas en
+`docs/HOJA-DE-RUTA.md`, apartado F2).
+
+| Hito técnico | Contenido | Verificación del hito |
 |---|---|---|
-| **F2.1** | `compose.yaml`, `.env.example`, `sql/`, `backend/Dockerfile` y `requirements`, servicios Kafka y PostgreSQL sanos, esqueleto de los servicios Python con healthchecks | Los cinco servicios `healthy`; tabla creada; restricciones comprobadas con SQL |
-| **F2.2** | Emisión, consumo, API, CORS, cambios del mapa, `verificar-mvp.ps1`, evidencias | Evento en mapa; reenvío ×5 = 1 fila; reinicio conserva el evento; Kafka caído, offset tras guardado, caducidad de 24 h, CORS y tiempos SC-001/SC-002 comprobados y registrados |
+| **Infraestructura verificada** | `compose.yaml`, `.env.example`, `sql/`, `backend/Dockerfile` y `requirements`, servicios Kafka y PostgreSQL sanos, esqueleto de los servicios Python con healthchecks | Los cinco servicios `healthy`; tabla creada; restricciones comprobadas con SQL |
+| **MVP completo** | Emisión, consumo, API, CORS, cambios del mapa, `verificar-mvp.ps1`, evidencias | Evento en mapa; reenvío ×5 = 1 fila; reinicio conserva el evento; Kafka caído, offset tras guardado, caducidad de 24 h, CORS y tiempos SC-001/SC-002 comprobados y registrados |

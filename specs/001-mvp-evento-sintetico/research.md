@@ -21,8 +21,8 @@ versiones se consultaron el 2026-11-03 en PyPI y Docker Hub.
   (una constante `MODO_MVP` en `api/repositorio.py`) y en el generador del evento. Ningún otro
   módulo lo usa; así la retirada es un cambio localizado.
 - **Plan de retirada** (no forma parte del MVP). **Plazo único**: completado como máximo al cerrar
-  F3.1 (criterio obligatorio de cierre en `docs/HOJA-DE-RUTA.md`) y, preferiblemente, como primer
-  paso de F3.1, **antes** de conectar la ingesta real de USGS:
+  el paso 3.1 de `docs/HOJA-DE-RUTA.md` (criterio obligatorio), que es el primer paso de F3 y
+  precede a la ingesta real de USGS (paso 3.2), es decir, **antes** de conectarla:
   1. Eliminar la constante `MODO_MVP`; el modelo de respuesta de la API valida
      `mode ∈ {"live", "replay"}` y una prueba comprueba que `"synthetic"` se rechaza.
   2. `GET /api/eventos` deja de leer del esquema `sintetico` y pasa a leer los datos reales
@@ -150,7 +150,7 @@ versiones se consultaron el 2026-11-03 en PyPI y Docker Hub.
   porque Compose la necesita como healthcheck; `/api/estadisticas` queda para F5.
 - **`last_ingestion`**: significado **provisional** en el MVP = instante del último mensaje
   sintético procesado (`max(ingested_at)` del esquema `sintetico`), `null` si no hay. **No es** una
-  consulta a USGS. Significado **definitivo** (F3.2, contrato del profesor) = instante de la última
+  consulta a USGS. Significado **definitivo** (desde la ingesta real de F3: pasos 3.2 y 3.6, contrato del profesor) = instante de la última
   consulta correcta a USGS, que no se alimenta nunca de datos sintéticos. Se redefine al retirar
   `synthetic` (R-001) y se documenta en `contracts/api-mvp.md` y `spec.md`.
 

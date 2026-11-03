@@ -38,4 +38,4 @@
 - Los umbrales de tiempo de SC-001 y SC-002 son objetivos de trabajo propios, no requisitos del
   profesor; pueden ajustarse tras la primera ejecución real.
 - Valor de `mode` para el dato sintético: aceptado provisionalmente por la persona estudiante el
-  2026-11-03 como excepción temporal del MVP (research R-001), con retirada completada como máximo al cerrar F3.1.
+  2026-11-03 como excepción temporal del MVP (research R-001), con retirada completada como máximo al cerrar el paso 3.1 de la hoja de ruta.

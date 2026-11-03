@@ -75,7 +75,7 @@ de defensa. Las explicaciones se dan en español, de forma clara y progresiva.
 - **Valores de `mode`:** el contrato del profesor solo admite `live` y `replay`; la API definitiva
   MUST NOT exponer ningún otro. El valor `synthetic` es una excepción temporal, limitada al circuito
   aislado del MVP (topic y esquema propios); se retira o aísla por completo como máximo al cerrar
-  F3.1 (preferiblemente antes de la ingesta real), según
+  el paso 3.1 de la hoja de ruta (antes de la ingesta real del paso 3.2), según
   `specs/001-mvp-evento-sintetico/research.md` (R-001).
 - **Kafka:** la clave del mensaje es el id del evento; el mensaje incluye `source`,
   `ingested_at`, `mode` (`live` o `replay`) y el evento original. El productor confirma con Kafka
@@ -93,8 +93,8 @@ de defensa. Las explicaciones se dan en español, de forma clara y progresiva.
   verificación → revisión humana. No se implementa una funcionalidad sin especificación aprobada.
 - **Fases:** F0–F7 según `docs/HOJA-DE-RUTA.md`; el cierre de cada fase exige requisitos
   cubiertos, pruebas ejecutadas, evidencias, código comprendido y revisión de cambios.
-- **Git:** los commits son manuales, en español, agrupados por hitos con identificador
-  (`F0.1`, `F2.1`…). Claude Code MUST NOT crear commits ni hacer push sin autorización expresa, ni
+- **Git:** los commits son manuales, en español, agrupados por fases con identificador
+  (`[F1]`, `[F2]`…; el commit histórico `[F0.1]` no se reescribe). Claude Code MUST NOT crear commits ni hacer push sin autorización expresa, ni
   modificar ramas remotas.
 - **Alcance:** no se modifican archivos ajenos a la tarea sin justificación, y se presenta un plan
   antes de los cambios importantes.

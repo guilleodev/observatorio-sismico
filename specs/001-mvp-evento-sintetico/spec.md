@@ -8,8 +8,8 @@
 
 **Entrada**: «El MVP debe permitir que un evento sísmico sintético recorra el circuito completo
 (productor → Kafka → consumidor → PostgreSQL → FastAPI → Angular/Leaflet), identificado claramente
-como dato sintético y separado de la ingesta real.» Corresponde a la Fase 2 de `docs/HOJA-DE-RUTA.md`
-(hitos F2.1 y F2.2). Requisitos de origen: `ENUNCIADO.md` §2, §9, §11; `CONTRATO-API.md`;
+como dato sintético y separado de la ingesta real.» Corresponde a la fase F2 de `docs/HOJA-DE-RUTA.md`
+(pasos 2.1 a 2.8; commit previsto `[F2]`). Requisitos de origen: `ENUNCIADO.md` §2, §9, §11; `CONTRATO-API.md`;
 `FAQ-ALUMNADO.md` preguntas 6, 7 y 12.
 
 ## Escenarios de usuario y pruebas *(obligatorio)*
@@ -150,8 +150,8 @@ comprobar que los cinco servicios obligatorios llegan al estado «sano»; repeti
   en milisegundos Unix UTC. Por defecto devuelve los eventos de las últimas 24 horas; los filtros
   quedan para la Fase 5. **Significado de `last_ingestion`**: *provisional (solo MVP)* = instante
   del último mensaje sintético procesado, o `null` si no hay ninguno; **no** es una consulta a
-  USGS. *Definitivo (a partir de F3.2, según el contrato)* = instante de la última consulta
-  correcta a USGS; en la API definitiva nunca se calcula con datos sintéticos.
+  USGS. *Definitivo (desde la ingesta real de F3: pasos 3.2 y 3.6, según el contrato)* = instante de la
+  última consulta correcta a USGS; en la API definitiva nunca se calcula con datos sintéticos.
 - **FR-007**: La API MUST responder a las peticiones del navegador desde el origen de desarrollo
   del mapa (`http://localhost:4200`), incluida la comprobación previa (`OPTIONS`) y la cabecera
   `ngrok-skip-browser-warning`, y MUST devolver un error explícito si el almacén falla.
@@ -221,8 +221,8 @@ comprobar que los cinco servicios obligatorios llegan al estado «sano»; repeti
   o `replay`, y no se modifican. El evento sintético no es ninguno de los dos; solo durante el MVP se
   usa el valor transitorio «synthetic», únicamente en el canal y el espacio aislados del MVP. No es
   un valor válido de la API definitiva. La retirada o el aislamiento completo debe estar terminado
-  como máximo al cerrar F3.1 (criterio obligatorio de la hoja de ruta) y, preferiblemente, antes de
-  introducir la ingesta real (aceptado provisionalmente por la persona estudiante el 2026-11-03;
+  como máximo al cerrar el paso 3.1 de la hoja de ruta (criterio obligatorio), que precede a la
+  ingesta real del paso 3.2 (aceptado provisionalmente por la persona estudiante el 2026-11-03;
   plan de retirada en `research.md`, R-001).
 - **Entorno de uso**: se ejecuta en el equipo anfitrión (Windows con Docker Desktop en marcha); el
   mapa se sirve en desarrollo en `http://localhost:4200` y consulta la API local. La publicación

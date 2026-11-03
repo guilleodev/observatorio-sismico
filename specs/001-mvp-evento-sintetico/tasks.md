@@ -11,7 +11,13 @@ primero. Las comprobaciones de integración usan el sistema real en Docker y sig
 quickstart.
 
 **Organización**: por historia de usuario. La Historia 3 (arranque reproducible) aporta la
-infraestructura que necesitan las demás, por lo que su parte principal está en la Fase 2.
+infraestructura que necesitan las demás, por lo que su parte principal está en el Bloque 2.
+
+**Nomenclatura:** los «Bloques» de este documento son agrupaciones técnicas de tareas; **no** son las
+fases F0–F7 de `docs/HOJA-DE-RUTA.md`. Todo este documento pertenece a la fase **F2 (MVP funcional)**;
+sus dos hitos técnicos («infraestructura verificada» y «MVP completo») se corresponden con los pasos
+2.1–2.8 de la hoja de ruta (correspondencia orientativa en su apartado F2). El commit previsto es
+**`[F2]`**, al cerrar la fase; solo se hará uno intermedio si más adelante se acuerda.
 
 ## Formato: `[ID] [P?] [Historia] Descripción`
 
@@ -21,7 +27,8 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ## Reglas transversales (aplican a todas las tareas)
 
-- No hacer commits ni push: los commits **F2.1** y **F2.2** los realiza la persona estudiante.
+- No hacer commits ni push: el commit de cierre **`[F2]`** (y un commit intermedio, solo si se
+  acuerda) lo realiza manualmente la persona estudiante desde VS Code.
 - No marcar una verificación como superada sin ejecutarla; guardar la salida real en
   `docs/evidencias/mvp/`. Los tiempos y recuentos se anotan tal como se observan, aunque no cumplan
   el objetivo.
@@ -30,7 +37,7 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ---
 
-## Fase 1: Preparación (Setup) — hito F2.1
+## Bloque 1: Preparación (Setup) — hito técnico «infraestructura verificada»
 
 **Propósito**: estructura y configuración base.
 
@@ -48,11 +55,11 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ---
 
-## Fase 2: Base bloqueante (Foundational) — hito F2.1 · incluye la parte principal de US3
+## Bloque 2: Base bloqueante (Foundational) — hito técnico «infraestructura verificada» · incluye la parte principal de US3
 
 **Propósito**: infraestructura que DEBE existir antes de cualquier historia.
 
-**⚠️ CRÍTICO**: ninguna historia de usuario puede empezar hasta terminar esta fase.
+**⚠️ CRÍTICO**: ninguna historia de usuario puede empezar hasta terminar este bloque.
 
 - [ ] T006 [US3] Crear `sql/001_esquema_sintetico.sql`: esquema `sintetico`, tabla `evento_actual`,
   restricciones (`PK`, `CHECK` de prefijo, modo y rango de coordenadas) e índice por `event_time`,
@@ -88,13 +95,13 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 - [ ] T017 [US3] Probar reintentos: detener `kafka` y `postgres`, arrancar los servicios Python y
   luego los dos primeros; comprobar que los Python no terminan y se recuperan (escenario US3-2)
 
-**Punto de control F2.1**: infraestructura sana y reproducible. Explicar por bloques
+**Punto de control del hito técnico «infraestructura verificada»**: infraestructura sana y reproducible. Explicar por bloques
 `compose.yaml`, el SQL, los healthchecks y la retención de Kafka; pregunta de defensa.
-**Detenerse: commit F2.1 manual.**
+**Detenerse para la revisión humana del hito** (no hay commit propio: el commit previsto es `[F2]`, salvo que se acuerde uno intermedio).
 
 ---
 
-## Fase 3: Historia 1 — El evento recorre el circuito y aparece en el mapa (P1) 🎯 MVP — hito F2.2
+## Bloque 3: Historia 1 — El evento recorre el circuito y aparece en el mapa (P1) 🎯 MVP — hito técnico «MVP completo»
 
 **Objetivo**: un evento sintético llega desde el productor hasta el mapa.
 
@@ -130,7 +137,7 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 - [ ] T026 [US1] `api/repositorio.py`: consulta de la ventana de 24 h, conversión a GeoJSON y
   `last_ingestion` (significado provisional del MVP: `max(ingested_at)` o `null`); el literal
   `"synthetic"` se define **una sola vez** como constante `MODO_MVP` (R-001) con un comentario
-  `TEMPORAL: retirar o aislar como máximo al cerrar F3.1`
+  `TEMPORAL: retirar o aislar como máximo al cerrar el paso 3.1 de la hoja de ruta`
 - [ ] T027 [US1] `api/main.py`: `GET /api/eventos`, manejo de errores (`503`) y CORS (`GET`,
   `OPTIONS`, cabecera `ngrok-skip-browser-warning`, origen leído de `API_CORS_ORIGINS`)
 - [ ] T028 [US1] `frontend/public/config.json` a `mode: "api"` y `apiUrl: "http://localhost:8000"`
@@ -145,7 +152,7 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ---
 
-## Fase 4: Historia 2 — Aislamiento de los datos sintéticos (P2)
+## Bloque 4: Historia 2 — Aislamiento de los datos sintéticos (P2)
 
 **Objetivo**: demostrar que lo sintético no se mezcla con lo real.
 
@@ -159,7 +166,7 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ---
 
-## Fase 5: Historia 3 — Idempotencia, reinicio, errores y ventana temporal (P3)
+## Bloque 5: Historia 3 — Idempotencia, reinicio, errores y ventana temporal (P3)
 
 **Objetivo**: completar la reproducibilidad y la tolerancia a fallos del MVP.
 
@@ -185,7 +192,7 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 
 ---
 
-## Fase 6: Cierre y pulido — hito F2.2
+## Bloque 6: Cierre y pulido — hito técnico «MVP completo»
 
 - [ ] T043 [P] `scripts/verificar-mvp.ps1`: encadena los pasos del quickstart y guarda la salida
   real en `docs/evidencias/mvp/`
@@ -197,26 +204,26 @@ infraestructura que necesitan las demás, por lo que su parte principal está en
 - [ ] T046 Dejar preparada la retirada de la excepción `synthetic` (R-001): comprobar con una
   búsqueda que `"synthetic"` aparece solo en `MODO_MVP`, en el generador del evento y en las
   pruebas; registrar en `docs/evidencias/mvp/resultados.md` la lista de salida que se aplicará
-  (plazo: como máximo al cerrar F3.1, preferiblemente antes de la ingesta real; plan en
-  `research.md`), sin ejecutarla todavía
+  (plazo: como máximo al cerrar el paso 3.1 de la hoja de ruta, que precede a la ingesta real del
+  paso 3.2; plan en `research.md`), sin ejecutarla todavía
 - [ ] T047 Revisión final: `git status` y diff, comprobación contra la constitución, contraste con
   `ENUNCIADO.md` y `CONTRATO-API.md`; preparar la explicación por bloques y tres preguntas de
   defensa
 
-**Punto de control F2.2**: **detenerse; commit F2.2 manual** y revisión antes de la Fase 3 de la
-hoja de ruta.
+**Punto de control del hito técnico «MVP completo» (cierre de la fase F2)**: **detenerse**; revisión
+humana y commit manual de cierre **`[F2]`**, antes de pasar a F3 (ingesta real y calidad).
 
 ---
 
 ## Dependencias y orden de ejecución
 
-- **Fase 1** → **Fase 2** (bloquea todo) → **Fase 3 (US1)** → **Fase 4 (US2)** y **Fase 5 (US3)**
-  (pueden hacerse en cualquier orden tras US1) → **Fase 6**.
-- Dentro de la Fase 2: T006–T008 antes de T010–T011; T012–T014 dependen de T009; T015 depende de
+- **Bloque 1** → **Bloque 2** (bloquea todo) → **Bloque 3 (US1)** → **Bloque 4 (US2)** y **Bloque 5 (US3)**
+  (pueden hacerse en cualquier orden tras US1) → **Bloque 6**.
+- Dentro del Bloque 2: T006–T008 antes de T010–T011; T012–T014 dependen de T009; T015 depende de
   T012–T014 y T007–T008; T016–T017 al final.
-- Dentro de la Fase 3: T018–T021 antes de T022–T027; T022 antes de T023 y T025; T024 antes de T025;
+- Dentro del Bloque 3: T018–T021 antes de T022–T027; T022 antes de T023 y T025; T024 antes de T025;
   T026 antes de T027; T028–T029 son independientes del backend; T030 tras T022–T027; T031 al final.
-- Fase 5: T038–T041 requieren la Fase 3 completa; T040 usa `--minutos-atras` (T023).
+- Bloque 5: T038–T041 requieren el Bloque 3 completo; T040 usa `--minutos-atras` (T023).
 
 ### Oportunidades de paralelismo
 
@@ -224,10 +231,10 @@ hoja de ruta.
 
 ## Estrategia de implementación
 
-1. Completar Fases 1–2 y cerrar F2.1 (infraestructura verificada).
-2. Completar la Fase 3 (US1) y **validar**: es el MVP funcional.
-3. Añadir US2 y US3, y cerrar con la Fase 6.
-4. No avanzar a la Fase 3 de la hoja de ruta (calidad y persistencia) sin autorización.
+1. Completar los Bloques 1–2 y cerrar el hito técnico «infraestructura verificada».
+2. Completar el Bloque 3 (US1) y **validar**: es el MVP funcional.
+3. Añadir US2 y US3, y cerrar con el Bloque 6 (hito técnico «MVP completo»; commit `[F2]`).
+4. No avanzar a la fase F3 de la hoja de ruta (ingesta real y calidad) sin autorización.
 
 ## Notas
 

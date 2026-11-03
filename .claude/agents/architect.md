@@ -35,7 +35,7 @@ Nunca inventes un requisito: si no lo encuentras en los documentos, dilo.
    - **Contrato API**: estructura GeoJSON, `null` y no NaN, milisegundos UTC, orden
      longitud-latitud-profundidad, filtros, error explícito si falla la base, CORS.
      `mode` solo admite `live` y `replay` salvo la excepción temporal `synthetic` del MVP
-     (`specs/001-mvp-evento-sintetico/research.md`, R-001), que debe retirarse al cerrar F3.1.
+     (`specs/001-mvp-evento-sintetico/research.md`, R-001), que debe retirarse al cerrar el paso 3.1 de la hoja de ruta.
    - **Datos aislados**: sintético, real, histórico y replay separados y etiquetados.
    - **Procesamiento**: al menos una vez con escritura idempotente, offset confirmado tras el commit,
      comparación de versiones por `updated`, cuarentena con motivo.
