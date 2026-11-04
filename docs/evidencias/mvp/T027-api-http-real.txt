@@ -1,0 +1,70 @@
+# API real desde el host (127.0.0.1:8000) — 2026-11-04T18:54:58Z
+
+## GET /api/salud
+HTTP/1.1 200 OK
+date: Wed, 04 Nov 2026 18:54:57 GMT
+server: uvicorn
+content-length: 62
+content-type: application/json
+vary: Origin
+
+{"status":"ok","database":"ok","last_ingestion":1793817675535}
+
+## GET /api/eventos (Origin permitido)
+HTTP/1.1 200 OK
+date: Wed, 04 Nov 2026 18:54:57 GMT
+server: uvicorn
+content-length: 424
+content-type: application/json
+access-control-allow-origin: http://localhost:4200
+vary: Origin
+
+{"type":"FeatureCollection","metadata":{"generated":1793818498319,"last_ingestion":1793817675535,"mode":"synthetic","count":1,"truncated":false},"features":[{"type":"Feature","id":"synthetic-mvp-001","geometry":{"type":"Point","coordinates":[-3.7,40.4,12.0]},"properties":{"mag":3.2,"magType":"ml","place":"SINTÉTICO: ejemplo de prueba","time":1793817074013,"updated":1793817074013,"country_id":null,"country_name":null}}]}
+
+## OPTIONS /api/eventos (preflight con ngrok-skip-browser-warning)
+HTTP/1.1 200 OK
+date: Wed, 04 Nov 2026 18:54:57 GMT
+server: uvicorn
+vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network
+access-control-allow-methods: GET, OPTIONS
+access-control-max-age: 600
+access-control-allow-headers: Accept, Accept-Language, Content-Language, Content-Type, ngrok-skip-browser-warning
+access-control-allow-origin: http://localhost:4200
+content-length: 2
+content-type: text/plain; charset=utf-8
+
+OK
+## GET /api/eventos con Origin NO autorizado (no debe haber access-control-allow-origin)
+HTTP/1.1 200 OK
+
+## Evento de >24 h en la base (no debe salir en la API)
+     event_id      |         event_time         |      antiguedad      
+-------------------+----------------------------+----------------------
+ synthetic-mvp-001 | 2026-11-04 18:31:14.013+00 | 00:23:44.68017
+ synthetic-mvp-002 | 2026-11-03 17:41:15.535+00 | 1 day 01:13:43.15817
+(2 rows)
+
+
+## Base de datos detenida (docker compose stop postgres; sin borrar volúmenes)
+ Container observatorio-postgres-1 Stopped 
+-- GET /api/eventos
+HTTP/1.1 503 Service Unavailable
+{"error":"base_de_datos_no_disponible","detail":"No se pudo consultar la base de datos; no se devuelven eventos."}
+-- GET /api/salud
+HTTP/1.1 503 Service Unavailable
+{"error":"base_de_datos_no_disponible","detail":"No se pudo consultar la base de datos; no se devuelven eventos."}
+-- estado del contenedor api: Up 45 seconds (healthy)
+
+## Base de datos recuperada
+ Container observatorio-postgres-1 Started 
+-- GET /api/salud
+HTTP/1.1 200 OK
+{"status":"ok","database":"ok","last_ingestion":1793817675535}
+-- GET /api/eventos
+HTTP/1.1 200 OK
+{"type":"FeatureCollection","metadata":{"generated":1793818548324,"last_ingestion":1793817675535,"mode":"synthetic","count":1,"truncated":false},"features":[{"type":"Feature","id":"synthetic-mvp-001","geometry":{"type":"Point","coordinates":[-3.7,40.
+api Up About a minute (healthy)
+consumer Up 5 minutes (healthy)
+kafka Up 21 minutes (healthy)
+postgres Up 20 seconds (healthy)
+producer Up 14 minutes (healthy)

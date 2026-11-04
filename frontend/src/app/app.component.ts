@@ -19,6 +19,7 @@ export class AppComponent implements OnDestroy {
   readonly count = signal(0);
   readonly omitted = signal(0);
   readonly countriesStatus = signal('Cargando catálogo');
+  readonly synthetic = signal(false);
   readonly options: L.MapOptions = { center: L.latLng(18, 0), zoom: 2, minZoom: 2, maxZoom: 8, preferCanvas: true, worldCopyJump: false };
   private map?: L.Map;
   private events = L.layerGroup();
@@ -40,7 +41,7 @@ export class AppComponent implements OnDestroy {
     }).addTo(map);
     this.events.addTo(map);
     L.control.layers({ 'OpenStreetMap': base }, { 'Países (Natural Earth)': borders, 'Terremotos': this.events }).addTo(map);
-    map.attributionControl.addAttribution('Fronteras: Natural Earth · Datos reales: USGS');
+    this.setAttribution(false);
     try {
       borders.addData(await this.readJson<FeatureCollection>('datos/paises.geojson'));
       this.countriesStatus.set('Catálogo de países cargado');
@@ -70,6 +71,7 @@ export class AppComponent implements OnDestroy {
       if (this.destroyed) return;
       if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) throw new Error('Se esperaba FeatureCollection');
       // Construir primero la nueva capa: si falla, conservar la anterior.
+      const synthetic = data.metadata?.mode === 'synthetic';
       const next = L.layerGroup(); let omitted = 0; let count = 0;
       for (const feature of data.features) {
         const p = feature.properties;
@@ -80,7 +82,7 @@ export class AppComponent implements OnDestroy {
         const depthOk = typeof depth === 'number' && Number.isFinite(depth);
         const color = !depthOk ? '#64748b' : depth < 70 ? '#e8a317' : depth < 300 ? '#e35b37' : '#7b3fb6';
         const popup = document.createElement('div');
-        popup.textContent = `${p.place ?? 'Sin descripción'}\nMagnitud: ${magnitude ?? 'ND'}\nProfundidad: ${depthOk ? depth + ' km' : 'ND'}\nFecha UTC: ${this.date(p.time)}\nPaís: ${p.country_name ?? 'Sin país asignado'}\nID: ${feature.id ?? 'ND'}`;
+        popup.textContent = `${synthetic ? 'SINTÉTICO · no es un terremoto real\n' : ''}${p.place ?? 'Sin descripción'}\nMagnitud: ${magnitude ?? 'ND'}\nProfundidad: ${depthOk ? depth + ' km' : 'ND'}\nFecha UTC: ${this.date(p.time)}\nPaís: ${p.country_name ?? 'Sin país asignado'}\nID: ${feature.id ?? 'ND'}`;
         L.circleMarker([lat, lon], { radius: magnitude === null ? 4 : Math.max(3, Math.min(18, 3 + (magnitude + 1) * 2)), color, fillColor: color, fillOpacity: .75, weight: 1 }).bindPopup(popup).addTo(next);
         count++;
       }
@@ -88,12 +90,21 @@ export class AppComponent implements OnDestroy {
       this.count.set(count); this.omitted.set(omitted);
       this.lastRead.set(new Date().toISOString());
       this.generated.set(this.date(data.metadata?.generated));
+      this.synthetic.set(synthetic); this.setAttribution(synthetic);
+      if (synthetic) this.mode.set('API · DATOS SINTÉTICOS de prueba (no son terremotos reales)');
       this.status.set(config.mode === 'demo' ? 'Ejemplo estático: no representa actividad real' : 'API accesible · consulta completada');
     } catch {
       if (!this.destroyed) this.status.set('No se pudo actualizar: se conserva la última lectura. Revisa API, túnel y CORS.');
     } finally {
       if (!this.destroyed && config.mode === 'api') this.timer = setTimeout(() => void this.refresh(config), Math.max(30000, Number(config.refreshMs) || 60000));
     }
+  }
+  private attribution = '';
+  private setAttribution(synthetic: boolean): void {
+    const text = `Fronteras: Natural Earth · ${synthetic ? 'Datos sintéticos (MVP), no son datos de USGS' : 'Datos reales: USGS'}`;
+    if (!this.map || text === this.attribution) return;
+    if (this.attribution) this.map.attributionControl.removeAttribution(this.attribution);
+    this.map.attributionControl.addAttribution(this.attribution = text);
   }
   private date(value: unknown): string {
     if (typeof value !== 'number' || !Number.isFinite(value)) return 'ND';

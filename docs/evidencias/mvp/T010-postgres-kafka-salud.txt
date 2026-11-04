@@ -1,0 +1,64 @@
+== docker compose ps
+NAME                      IMAGE                COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+observatorio-kafka-1      apache/kafka:4.3.2   "/__cacert_entrypoin…"   kafka      53 seconds ago   Up 53 seconds (healthy)   9092/tcp
+observatorio-postgres-1   postgres:17.11       "docker-entrypoint.s…"   postgres   53 seconds ago   Up 53 seconds (healthy)   5432/tcp
+== \dn
+        List of schemas
+   Name    |       Owner       
+-----------+-------------------
+ public    | pg_database_owner
+ sintetico | observatorio
+(2 rows)
+
+== \d sintetico.evento_actual
+                       Table "sintetico.evento_actual"
+     Column      |           Type           | Collation | Nullable | Default 
+-----------------+--------------------------+-----------+----------+---------
+ event_id        | text                     |           | not null | 
+ event_time      | timestamp with time zone |           | not null | 
+ updated_at      | timestamp with time zone |           | not null | 
+ mag             | numeric                  |           |          | 
+ mag_type        | text                     |           |          | 
+ depth_km        | numeric                  |           |          | 
+ longitude       | double precision         |           | not null | 
+ latitude        | double precision         |           | not null | 
+ place           | text                     |           |          | 
+ country_id      | text                     |           |          | 
+ country_name    | text                     |           |          | 
+ source          | text                     |           | not null | 
+ mode            | text                     |           | not null | 
+ ingested_at     | timestamp with time zone |           | not null | 
+ kafka_topic     | text                     |           | not null | 
+ kafka_partition | integer                  |           | not null | 
+ kafka_offset    | bigint                   |           | not null | 
+ raw             | jsonb                    |           | not null | 
+ stored_at       | timestamp with time zone |           | not null | now()
+Indexes:
+    "evento_actual_pkey" PRIMARY KEY, btree (event_id)
+    "idx_evento_actual_event_time" btree (event_time)
+Check constraints:
+    "evento_actual_event_id_check" CHECK (event_id ~~ 'synthetic-%'::text)
+    "evento_actual_latitude_check" CHECK (latitude >= '-90'::integer::double precision AND latitude <= 90::double precision)
+    "evento_actual_longitude_check" CHECK (longitude >= '-180'::integer::double precision AND longitude <= 180::double precision)
+    "evento_actual_mode_check" CHECK (mode = 'synthetic'::text)
+
+== rechazo event_id sin prefijo
+ERROR:  new row for relation "evento_actual" violates check constraint "evento_actual_event_id_check"
+DETAIL:  Failing row contains (us-1, 2026-11-04 18:34:57.453972+00, 2026-11-04 18:34:57.453972+00, null, null, null, 0, 0, null, null, null, x, synthetic, 2026-11-04 18:34:57.453972+00, t, 0, 0, {}, 2026-11-04 18:34:57.453972+00).
+== rechazo latitud fuera de rango
+ERROR:  new row for relation "evento_actual" violates check constraint "evento_actual_latitude_check"
+DETAIL:  Failing row contains (synthetic-x, 2026-11-04 18:34:57.77913+00, 2026-11-04 18:34:57.77913+00, null, null, null, 0, 95, null, null, null, x, synthetic, 2026-11-04 18:34:57.77913+00, t, 0, 0, {}, 2026-11-04 18:34:57.77913+00).
+== rechazo mode distinto de synthetic
+ERROR:  new row for relation "evento_actual" violates check constraint "evento_actual_mode_check"
+DETAIL:  Failing row contains (synthetic-x, 2026-11-04 18:34:58.116194+00, 2026-11-04 18:34:58.116194+00, null, null, null, 0, 0, null, null, null, x, live, 2026-11-04 18:34:58.116194+00, t, 0, 0, {}, 2026-11-04 18:34:58.116194+00).
+== filas tras las pruebas
+ count 
+-------
+     0
+(1 row)
+
+  log.retention.bytes=104857600 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.bytes=104857600, DEFAULT_CONFIG:log.retention.bytes=-1}
+  log.retention.hours=24 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=24, DEFAULT_CONFIG:log.retention.hours=168}
+  log.retention.ms=null sensitive=false synonyms={}
+  log.roll.hours=6 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.roll.hours=6, DEFAULT_CONFIG:log.roll.hours=168}
+  log.roll.ms=null sensitive=false synonyms={}

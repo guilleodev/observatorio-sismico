@@ -1,0 +1,27 @@
+2026-11-04T18:34:03.386068397Z 2026-11-04 18:34:03.385 UTC [48] LOG:  database system is ready to accept connections
+2026-11-04T18:34:03.569131288Z 2026-11-04 18:34:03.569 UTC [48] LOG:  received fast shutdown request
+2026-11-04T18:34:03.798197805Z 2026-11-04 18:34:03.798 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T18:55:23.642899503Z 2026-11-04 18:55:23.642 UTC [1] LOG:  received fast shutdown request
+2026-11-04T18:55:27.997026770Z 2026-11-04 18:55:27.996 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:01:31.821419651Z 2026-11-04 19:01:31.821 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:02:39.939720018Z 2026-11-04 19:02:39.939 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:14:39.571480220Z 2026-11-04 19:14:39.571 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:14:42.659392747Z 2026-11-04 19:14:42.659 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:16:22.025558218Z 2026-11-04 19:16:22.025 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:16:22.508325155Z 2026-11-04 19:16:22.508 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:16:32.000272550Z 2026-11-04 19:16:32.000 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:16:35.749948371Z 2026-11-04 19:16:35.749 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:16:53.216244281Z 2026-11-04 19:16:53.216 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:17:06.626538074Z 2026-11-04 19:17:06.626 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:18:18.826022116Z 2026-11-04 19:18:18.825 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:18:49.743494488Z 2026-11-04 19:18:49.743 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:20:52.758332970Z 2026-11-04 19:20:52.758 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:20:55.680155582Z 2026-11-04 19:20:55.680 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:21:47.153730535Z 2026-11-04 19:21:47.153 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:21:47.631332381Z 2026-11-04 19:21:47.631 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:21:58.531889113Z 2026-11-04 19:21:58.531 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:22:02.269905848Z 2026-11-04 19:22:02.269 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:22:19.996755368Z 2026-11-04 19:22:19.996 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:22:33.432858255Z 2026-11-04 19:22:33.432 UTC [1] LOG:  database system is ready to accept connections
+2026-11-04T19:22:44.900151872Z 2026-11-04 19:22:44.899 UTC [1] LOG:  received fast shutdown request
+2026-11-04T19:23:15.573043838Z 2026-11-04 19:23:15.572 UTC [1] LOG:  database system is ready to accept connections

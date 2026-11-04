@@ -1,0 +1,161 @@
+# Verificacion final del MVP - 2026-11-04T19:33:30Z
+
+## 1. Arranque (T016, SC-001). Los datos NO estan vacios y las imagenes estaban en cache
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+[OK] Cinco servicios healthy tiempo hasta healthy: 18,4 s
+python 3.13.18 | aiokafka 0.15.0 | psycopg 3.3.7
+
+## 2. Pruebas automatizadas (T030) en contenedor Python 3.13
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+40 passed, 1 warning in 0.87s
+[OK] pytest sin fallos 
+
+## 3. Emision y recorrido productor -> Kafka -> consumidor -> PostgreSQL -> API (SC-002)
+Antes: HTTP 200; features: 12
+[1/1] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=3
+[OK] Evento nuevo visible en la API desde la emision hasta la API: 0,7 s (el mapa se midio a mano en 2.7)
+
+## 3b. Reenvio idempotente (SC-004): --repeat 5 del mismo evento
+[1/5] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=4
+[2/5] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=5
+[3/5] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=6
+[4/5] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=7
+[5/5] confirmado: id=synthetic-mvp-014 topic=terremotos.sintetico partición=0 offset=8
+[OK] Reenvio x5: 1 fila filas=1
+[OK] Reenvio x5: 1 Feature 
+[OK] Lag del grupo = 0 (offsets confirmados) lag=0
+
+## 4. Caducidad de 24 h (T040, SC-009): synthetic-mvp-002 (emitido con --minutos-atras 1500)
+     event_id      |         event_time         |      antiguedad       
+-------------------+----------------------------+-----------------------
+ synthetic-mvp-001 | 2026-11-04 18:31:14.013+00 | 01:03:00.378666
+ synthetic-mvp-002 | 2026-11-03 17:41:15.535+00 | 1 day 01:52:58.856666
+ synthetic-mvp-003 | 2026-11-04 19:05:10.135+00 | 00:29:04.256666
+ synthetic-mvp-004 | 2026-11-04 19:06:51.064+00 | 00:27:23.327666
+ synthetic-mvp-005 | 2026-11-04 19:06:53.999+00 | 00:27:20.392666
+ synthetic-mvp-006 | 2026-11-04 19:09:01.664+00 | 00:25:12.727666
+ synthetic-mvp-007 | 2026-11-04 19:11:22.954+00 | 00:22:51.437666
+ synthetic-mvp-008 | 2026-11-04 19:12:17.827+00 | 00:21:56.564666
+ synthetic-mvp-009 | 2026-11-04 19:12:20.799+00 | 00:21:53.592666
+ synthetic-mvp-010 | 2026-11-04 19:13:24.568+00 | 00:20:49.823666
+ synthetic-mvp-011 | 2026-11-04 19:19:42.071+00 | 00:14:32.320666
+ synthetic-mvp-012 | 2026-11-04 19:20:16.291+00 | 00:13:58.100666
+ synthetic-mvp-013 | 2026-11-04 19:22:11.31+00  | 00:12:03.081666
+ synthetic-mvp-014 | 2026-11-04 19:24:03.921+00 | 00:10:10.470666
+(14 rows)
+
+[OK] Evento de 25 h guardado 
+[OK] Evento de 25 h NO aparece en la API 
+API: count=13; mode=synthetic; last_ingestion=1793820843921; truncated=False
+
+## 5. CORS (T041)
+[OK] Origen permitido con cabecera 
+[OK] Preflight con ngrok-skip-browser-warning 
+[OK] Origen no autorizado sin cabecera de acceso 
+
+## 6. Retencion de Kafka (SC-010)
+retention.bytes=104857600
+retention.ms=86400000
+segment.ms=21600000
+[OK] Retencion 24 h / 100 MiB / segmento 6 h 
+
+## 7. Aislamiento y exposicion (T032)
+api | puertos: 127.0.0.1:8000->8000/tcp
+consumer | puertos: 
+kafka | puertos: 9092/tcp
+postgres | puertos: 5432/tcp
+producer | puertos: 
+[OK] Solo la API publica puerto en el host 
+[OK] Sin URL ni consulta a USGS en backend/src coincidencias=0
+ table_schema |  table_name   
+--------------+---------------
+ sintetico    | evento_actual
+(1 row)
+
+
+## 7a. Restricciones CHECK de la tabla (T032): inserciones invalidas deben rechazarse y no dejar filas
+[OK] CHECK rechaza: event_id sin prefijo synthetic- 
+[OK] CHECK rechaza: latitud fuera de rango 
+[OK] CHECK rechaza: longitud fuera de rango 
+[OK] CHECK rechaza: mode distinto de synthetic 
+[OK] Las inserciones invalidas no dejaron filas 
+
+## 7b. Prueba negativa (T033): mensaje con mode=live publicado a mano en el topic
+2026-11-04 19:34:21,347 consumer WARNING DESCARTADO offset=9 clave=b'synthetic-mvp-901' motivo=mode no permitido: 'live'
+[OK] Consumidor descarta con motivo (mode live) 
+[OK] No se inserta nada 
+[OK] El id del mensaje rechazado no esta en la tabla 
+[OK] Offset confirmado tras el descarte (lag 0) 
+
+## 8. Reinicio de todos los servicios (T036, SC-005)
+[OK] Tras reiniciar: mismas filas, sin duplicados antes=14 despues=14
+[OK] Evento nuevo sigue en la API 
+
+## 9. PostgreSQL detenido: la API debe dar 503, no una coleccion vacia (T037)
+/api/eventos -> HTTP 503 {"error":"base_de_datos_no_disponible","detail":"No se pudo consultar la base de datos; no se devuelven eventos."}
+[OK] 503 explicito en /api/eventos (sin features) 
+[OK] 503 en /api/salud 
+[OK] API se recupera sola 
+
+## 10. Kafka detenido al emitir (T038)
+Unable connect to "kafka:9092": [Errno -2] Name or service not known
+ERROR: no se pudo publicar en Kafka (KafkaConnectionError: KafkaConnectionError: Unable to bootstrap from [('kafka', 9092, <AddressFamily.AF_UNSPEC: 0>)])
+[OK] Emision falla con error visible y codigo != 0 codigo de salida=1
+[OK] El evento nuevo no llega al almacen 
+[1/1] confirmado: id=synthetic-mvp-015 topic=terremotos.sintetico partición=0 offset=10
+[OK] Tras recuperar Kafka, el evento llega al almacen 
+
+## 11. PostgreSQL detenido al consumir: no se confirma el offset (T039)
+[1/1] confirmado: id=synthetic-mvp-016 topic=terremotos.sintetico partición=0 offset=11
+2026-11-04 19:34:59,482 consumer ERROR Fallo al guardar offset=10 (terminating connection due to administrator command); NO se confirma, reintento en 1 s
+2026-11-04 19:35:02,472 consumer ERROR Fallo al guardar offset=11 (terminating connection due to administrator command); NO se confirma, reintento en 1 s
+[OK] Con la base caida el lag > 0 y el consumidor no confirma lag=1
+[OK] Evento guardado una sola vez al recuperar la base filas=1
+[OK] Lag vuelve a 0 lag=0
+
+## 12. Reintentos (T017): Kafka y PostgreSQL parados, reinicio de los servicios Python
+api running
+consumer running
+producer running
+[OK] producer, consumer y api siguen en ejecucion sin infraestructura 
+[OK] Sin bucles de reinicio automatico (RestartCount=0 en los tres servicios Python) RestartCount=0,0,0
+[OK] Los cinco vuelven a healthy 
+[1/1] confirmado: id=synthetic-mvp-017 topic=terremotos.sintetico partición=0 offset=12
+[OK] Recorrido completo tras recuperacion 
+[OK] Lag 0 al final 
+
+## Estado final
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+     event_id      |   mode    | kafka_offset 
+-------------------+-----------+--------------
+ synthetic-mvp-001 | synthetic |            0
+ synthetic-mvp-002 | synthetic |            6
+ synthetic-mvp-003 | synthetic |            7
+ synthetic-mvp-004 | synthetic |           13
+ synthetic-mvp-005 | synthetic |           14
+ synthetic-mvp-006 | synthetic |           15
+ synthetic-mvp-007 | synthetic |           16
+ synthetic-mvp-008 | synthetic |           23
+ synthetic-mvp-009 | synthetic |           24
+ synthetic-mvp-010 | synthetic |           25
+ synthetic-mvp-011 | synthetic |            0
+ synthetic-mvp-012 | synthetic |            1
+ synthetic-mvp-013 | synthetic |            2
+ synthetic-mvp-014 | synthetic |            3
+ synthetic-mvp-015 | synthetic |           10
+ synthetic-mvp-016 | synthetic |           11
+ synthetic-mvp-017 | synthetic |           12
+(17 rows)
+
+
+RESULTADO: 0 comprobaciones fallidas

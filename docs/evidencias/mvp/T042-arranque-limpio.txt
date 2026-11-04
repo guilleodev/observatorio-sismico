@@ -1,0 +1,105 @@
+# T042 / SC-001 — arranque limpio. 2026-11-04T19:28:00Z. Sin 'down -v'; no se borran volúmenes ni tablas.
+
+## A. Datos que podrían perderse al recrear contenedores (ANTES)
+-- Kafka: offsets finales del topic (último+1) y grupo de consumo
+terremotos.sintetico:0:26
+
+GROUP                TOPIC                PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                          HOST            CLIENT-ID
+consumidor-sintetico terremotos.sintetico 0          26              26              0               aiokafka-0.15.0-863ee7a9-4d72-4a0a-9a8a-50358103a571 /172.20.0.4     aiokafka-0.15.0
+-- Kafka: montajes del contenedor (volúmenes anónimos, no nombrados)
+/etc/kafka/secrets -> bf8d8d1b2367ea6122801c45173f69d149a8a052394f78bef7292683ea6a1b8e
+/mnt/shared/config -> 39ec57045d2e9a36b65b87c5ab16f137c699fc31adb5e564eb14963866939a4e
+/var/lib/kafka/data -> 15f18df9c9c38b77092e9a8df71e7acb599fd8ff75253f559045656f4ed7f956
+
+-- PostgreSQL: filas y volumen nombrado
+10 filas; ids: synthetic-mvp-001,synthetic-mvp-002,synthetic-mvp-003,synthetic-mvp-004,synthetic-mvp-005,synthetic-mvp-006,synthetic-mvp-007,synthetic-mvp-008,synthetic-mvp-009,synthetic-mvp-010
+volúmenes Docker existentes: 15
+observatorio_pgdata
+-- Imágenes
+observatorio-backend:latest 278MB
+python:3.13-slim-trixie 178MB
+postgres:17.11 646MB
+apache/kafka:4.3.2 688MB
+apache/kafka:4.1.1 667MB
+
+## B. docker compose down (SIN -v)
+ Container observatorio-postgres-1 Stopped 
+ Container observatorio-postgres-1 Removing 
+ Container observatorio-postgres-1 Removed 
+ Container observatorio-kafka-1 Stopped 
+ Container observatorio-kafka-1 Removing 
+ Container observatorio-kafka-1 Removed 
+ Network observatorio_observatorio Removing 
+ Network observatorio_observatorio Removed 
+-- tras down: contenedores del proyecto: 0; volumen PostgreSQL:
+observatorio_pgdata
+
+## C. Primera ejecución: imagen propia SIN construir (se elimina observatorio-backend; build --no-cache; imágenes de postgres/kafka/python ya descargadas)
+Untagged: observatorio-backend:latest
+Deleted: sha256:c1275c9de421fc47f5fa327675a17115c75d902910655a287c7831148b6e8bf9
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Container observatorio-kafka-1 Waiting 
+ Container observatorio-producer-1 Waiting 
+ Container observatorio-consumer-1 Waiting 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-api-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+ Container observatorio-consumer-1 Healthy 
+/usr/bin/bash: line 21: bc: command not found
+/usr/bin/bash: line 21: bc: command not found
+/usr/bin/bash: line 21: bc: command not found
+construcción sin caché:  s; arranque hasta los 5 healthy:  s; TOTAL:  s
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+
+(El cálculo de tiempos de la primera pasada falló por falta de 'bc'; se repite la medición.)
+
+## C'. Primera ejecución REPETIDA con medición: down, imagen propia eliminada, build --no-cache + up --wait
+ Network observatorio_observatorio Removed 
+Deleted: sha256:9e139fdef794b59a0d3696192e91474742c4a1c90b7b83e29f22a143c8dde7f9
+construcción sin caché de capas: 7.9 s; arranque hasta los 5 healthy: 13.2 s; TOTAL: 21.1 s  (SC-001 primera ejecución: < 10 min)
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+
+## D. Arranque limpio con imágenes ya construidas: down + up -d --wait
+ Network observatorio_observatorio Removed 
+arranque hasta los 5 healthy: 13.0 s  (SC-001 con imágenes: < 3 min)
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+
+## E. Estado tras down/up (datos conservados, Kafka vacío)
+10 filas conservadas en PostgreSQL
+-- API: count= 9 last_ingestion= 1793820204568 ids= ['synthetic-mvp-010', 'synthetic-mvp-009', 'synthetic-mvp-008', 'synthetic-mvp-007', 'synthetic-mvp-006', 'synthetic-mvp-005', 'synthetic-mvp-004', 'synthetic-mvp-003', 'synthetic-mvp-001']
+-- Topics en Kafka tras recrear el contenedor:
+__consumer_offsets
+terremotos.sintetico
+-- Emitir synthetic-mvp-011 (el topic se vuelve a crear solo)
+[1/1] confirmado: id=synthetic-mvp-011 topic=terremotos.sintetico partición=0 offset=0
+     event_id      | kafka_offset 
+-------------------+--------------
+ synthetic-mvp-010 |           25
+ synthetic-mvp-011 |            0
+(2 rows)
+
+  retention.bytes=104857600 sensitive=false synonyms={STATIC
+  retention.ms=86400000 sensitive=false synonyms={}
+  segment.ms=21600000 sensitive=false synonyms={}
+
+## F. SC-002 medido de emisión a mapa (navegador integrado + ng serve en localhost:4200, refresco de la página cada 60 s)
+Método: JavaScript en la página registra el instante en que el contador «N eventos dibujados» cambia (sondeo cada 250 ms);
+se emite desde la terminal anotando el reloj del mismo equipo (ms Unix).
+- Medición 1: emisión 1793820615782 -> mapa 1793820667183 = 51,4 s (el refresco se produjo tras la emisión; 10 -> 11 eventos)
+- Medición 2 (emitido justo tras un refresco, peor caso): emisión 1793820730795 -> mapa 1793820787186 = 56,4 s (11 -> 12 eventos)
+Ambas < 120 s (objetivo SC-002). El retardo lo domina el periodo de refresco del mapa (config.json: refreshMs = 60000).

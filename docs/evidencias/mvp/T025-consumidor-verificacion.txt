@@ -1,0 +1,41 @@
+# Verificación real del consumidor — 2026-11-04T18:49:59Z
+consumer Up 15 seconds (healthy)
+kafka Up 15 minutes (healthy)
+postgres Up 15 minutes (healthy)
+producer Up 8 minutes (healthy)
+
+## Registro del consumidor
+2026-11-04 18:49:47,780 consumer INFO Consumiendo terremotos.sintetico con el grupo consumidor-sintetico
+2026-11-04 18:49:47,801 consumer INFO GUARDADO id=synthetic-mvp-001 offset=0
+2026-11-04 18:49:47,810 consumer INFO DUPLICADO id=synthetic-mvp-001 offset=1
+2026-11-04 18:49:47,812 consumer INFO DUPLICADO id=synthetic-mvp-001 offset=2
+2026-11-04 18:49:47,814 consumer INFO DUPLICADO id=synthetic-mvp-001 offset=3
+2026-11-04 18:49:47,815 consumer INFO DUPLICADO id=synthetic-mvp-001 offset=4
+2026-11-04 18:49:47,817 consumer INFO DUPLICADO id=synthetic-mvp-001 offset=5
+2026-11-04 18:49:47,819 consumer INFO GUARDADO id=synthetic-mvp-002 offset=6
+
+## Grupo de consumo (offset confirmado vs final)
+
+GROUP                TOPIC                PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                          HOST            CLIENT-ID
+consumidor-sintetico terremotos.sintetico 0          7               7               0               aiokafka-0.15.0-2fe6f44b-deb2-4ab9-8d07-7b7d0865068b /172.20.0.5     aiokafka-0.15.0
+
+## Filas en sintetico.evento_actual
+     event_id      |   mode    |       source        | mag | depth_km | latitude | longitude |         event_time         |         updated_at         |     kafka_topic      | kafka_partition | kafka_offset 
+-------------------+-----------+---------------------+-----+----------+----------+-----------+----------------------------+----------------------------+----------------------+-----------------+--------------
+ synthetic-mvp-001 | synthetic | synthetic-generator | 3.2 |       12 |     40.4 |      -3.7 | 2026-11-04 18:31:14.013+00 | 2026-11-04 18:31:14.013+00 | terremotos.sintetico |               0 |            0
+ synthetic-mvp-002 | synthetic | synthetic-generator | 3.2 |       12 |     40.4 |      -3.7 | 2026-11-03 17:41:15.535+00 | 2026-11-03 17:41:15.535+00 | terremotos.sintetico |               0 |            6
+(2 rows)
+
+ filas | ids 
+-------+-----
+     2 |   2
+(1 row)
+
+
+## Reinicio del consumidor (sin reiniciar offsets)
+ Container observatorio-consumer-1 Started 
+2026-11-04 18:50:15,786 consumer INFO Consumiendo terremotos.sintetico con el grupo consumidor-sintetico
+
+GROUP                TOPIC                PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                          HOST            CLIENT-ID
+consumidor-sintetico terremotos.sintetico 0          7               7               0               aiokafka-0.15.0-9c354514-466c-4a7f-a831-9f779b67e074 /172.20.0.5     aiokafka-0.15.0
+filas tras reinicio: 2

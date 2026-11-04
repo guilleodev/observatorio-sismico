@@ -1,0 +1,56 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+rootdir: /app
+plugins: anyio-4.16.0
+collecting ... collected 40 items
+
+tests/unit/test_api_eventos.py::test_estructura_geojson_y_metadatos PASSED [  2%]
+tests/unit/test_api_eventos.py::test_nulos_se_serializan_como_null PASSED [  5%]
+tests/unit/test_api_eventos.py::test_sin_eventos_devuelve_lista_vacia_y_last_ingestion_null PASSED [  7%]
+tests/unit/test_api_eventos.py::test_base_caida_devuelve_503_no_lista_vacia PASSED [ 10%]
+tests/unit/test_api_eventos.py::test_salud_ok_y_503 PASSED               [ 12%]
+tests/unit/test_api_eventos.py::test_cors_origen_permitido PASSED        [ 15%]
+tests/unit/test_api_eventos.py::test_cors_preflight_con_cabecera_de_ngrok PASSED [ 17%]
+tests/unit/test_api_eventos.py::test_cors_origen_no_autorizado_sin_cabecera PASSED [ 20%]
+tests/unit/test_api_eventos.py::test_ventana_24h_excluye_el_antiguo_e_incluye_el_reciente PASSED [ 22%]
+tests/unit/test_api_eventos.py::test_conexion_fallida_se_traduce_a_base_no_disponible PASSED [ 25%]
+tests/unit/test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [ 27%]
+tests/unit/test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [ 30%]
+tests/unit/test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 32%]
+tests/unit/test_consumidor_flujo.py::test_revision_posterior_no_sobrescribe_en_el_mvp PASSED [ 35%]
+tests/unit/test_consumidor_flujo.py::test_mensaje_invalido_se_descarta_con_commit_sin_guardar PASSED [ 37%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_valido PASSED        [ 40%]
+tests/unit/test_consumidor_mensaje.py::test_nulos_se_conservan_como_none PASSED [ 42%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-mode] PASSED [ 45%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-prefijo] PASSED [ 47%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-rango] PASSED [ 50%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-time] PASSED [ 52%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-event] PASSED [ 55%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[no es json] PASSED [ 57%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[\xff\xfe] PASSED [ 60%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[[1, 2]] PASSED [ 62%]
+tests/unit/test_repositorio_integracion.py::test_inserta_y_conserva_los_campos PASSED [ 65%]
+tests/unit/test_repositorio_integracion.py::test_duplicado_y_revision_no_crean_ni_cambian_filas PASSED [ 67%]
+tests/unit/test_repositorio_integracion.py::test_nulos_se_guardan_como_null PASSED [ 70%]
+tests/unit/test_repositorio_integracion.py::test_fallo_de_postgres_se_propaga PASSED [ 72%]
+tests/unit/test_sintetico.py::test_evento_por_defecto_cumple_el_contrato PASSED [ 75%]
+tests/unit/test_sintetico.py::test_secuencia_cambia_el_id PASSED         [ 77%]
+tests/unit/test_sintetico.py::test_minutos_atras_fija_la_hora_del_evento_en_ms_utc PASSED [ 80%]
+tests/unit/test_sintetico.py::test_es_determinista_con_la_misma_hora_de_referencia PASSED [ 82%]
+tests/unit/test_sintetico.py::test_argumentos_invalidos_se_rechazan[kwargs0] PASSED [ 85%]
+tests/unit/test_sintetico.py::test_argumentos_invalidos_se_rechazan[kwargs1] PASSED [ 87%]
+tests/unit/test_sintetico.py::test_mensaje_y_serializacion PASSED        [ 90%]
+tests/unit/test_sintetico.py::test_reenvio_identico_produce_los_mismos_bytes PASSED [ 92%]
+tests/unit/test_sintetico.py::test_argumentos_del_comando PASSED         [ 95%]
+tests/unit/test_sintetico.py::test_config_kafka_desde_entorno PASSED     [ 97%]
+tests/unit/test_sintetico.py::test_config_kafka_falta_variable PASSED    [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /usr/local/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 40 passed, 1 warning in 0.76s =========================

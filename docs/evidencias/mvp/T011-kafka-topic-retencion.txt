@@ -1,0 +1,51 @@
+# Verificación 2.4 — 2026-11-04T18:44:13Z (solo lectura; comandos ejecutados dentro del contenedor kafka)
+
+## kafka-topics.sh --describe
+Topic: terremotos.sintetico	TopicId: wADOkW-cRSaRNZpB6hVTVg	PartitionCount: 1	ReplicationFactor: 1	Configs: min.insync.replicas=1,retention.bytes=104857600
+	Topic: terremotos.sintetico	Partition: 0	Leader: 1	Replicas: 1	Isr: 1	Elr: 	LastKnownElr: 
+
+## Configuración ESPECÍFICA del topic (solo lo fijado en el topic; vacío = nada propio)
+Dynamic configs for topic terremotos.sintetico are:
+
+## Configuración EFECTIVA del topic (--all; muestra el origen)
+  cleanup.policy=delete sensitive=false synonyms={DEFAULT_CONFIG:log.cleanup.policy=delete}
+  retention.bytes=104857600 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.bytes=104857600, DEFAULT_CONFIG:log.retention.bytes=-1}
+  retention.ms=86400000 sensitive=false synonyms={}
+  segment.bytes=1073741824 sensitive=false synonyms={DEFAULT_CONFIG:log.segment.bytes=1073741824}
+  segment.ms=21600000 sensitive=false synonyms={}
+
+## Configuración del broker (origen STATIC_BROKER_CONFIG = viene de compose.yaml)
+  log.retention.bytes=104857600 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.bytes=104857600, DEFAULT_CONFIG:log.retention.b
+  log.retention.hours=24 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=24, DEFAULT_CONFIG:log.retention.hours=168}
+  log.roll.hours=6 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.roll.hours=6, DEFAULT_CONFIG:log.roll.hours=168}
+
+## Offsets (último offset +1 por partición)
+terremotos.sintetico:0:7
+## Offsets iniciales
+terremotos.sintetico:0:0
+
+## Mensajes leídos con kafka-console-consumer (offset, clave, JSON)
+Offset:0	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674013, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074013, "updated": 1793817074013}}}
+Offset:1	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674824, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074824, "updated": 1793817074824}}}
+Offset:2	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674824, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074824, "updated": 1793817074824}}}
+Offset:3	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674824, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074824, "updated": 1793817074824}}}
+Offset:4	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674824, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074824, "updated": 1793817074824}}}
+Offset:5	synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674824, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074824, "updated": 1793817074824}}}
+Offset:6	synthetic-mvp-002	{"source": "synthetic-generator", "ingested_at": 1793817675535, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-002", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793727675535, "updated": 1793727675535}}}
+
+## SHA-256 del valor (JSON) de cada mensaje
+Offset:0  synthetic-mvp-001  744a3e83ff20b7a4
+Offset:1  synthetic-mvp-001  7d33b32490e35a00
+Offset:2  synthetic-mvp-001  7d33b32490e35a00
+Offset:3  synthetic-mvp-001  7d33b32490e35a00
+Offset:4  synthetic-mvp-001  7d33b32490e35a00
+Offset:5  synthetic-mvp-001  7d33b32490e35a00
+Offset:6  synthetic-mvp-002  6c10a816b93fc8a7
+
+## Lectura de los resultados
+- Topic: 1 partición, factor de replicación 1 (un solo nodo). Creado automáticamente en el primer envío.
+- Retención efectiva: retention.ms=86400000 (24 h, viene de log.retention.hours del broker), retention.bytes=104857600 (100 MiB) y segment.ms=21600000 (6 h, de log.roll.hours). segment.bytes queda en el valor por defecto (1 GiB).
+- Origen: la consulta de configuración dinámica del topic está vacía (no hay overrides fijados por nosotros). kafka-topics --describe muestra retention.bytes entre las Configs del topic; el valor coincide con el del broker.
+- Offsets: 0 a 6 en la partición 0 (siguiente offset = 7; offset inicial = 0, no se ha borrado nada).
+- Offsets 1-5: mismo id, misma clave y valor idéntico (mismo SHA-256): fue un único mensaje reenviado con --repeat 5. El offset 0 es otra emisión (otro ingested_at y otra hora de evento) y el 6 es synthetic-mvp-002.
+- Kafka guarda cada reenvío como un mensaje nuevo (offset nuevo); la deduplicación por event_id corresponde al consumidor/PostgreSQL (paso 2.5), aún no implementado.

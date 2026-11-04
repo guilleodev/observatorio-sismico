@@ -1,0 +1,40 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+rootdir: /app
+plugins: anyio-4.16.0
+collecting ... collected 30 items
+
+tests/unit/test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [  3%]
+tests/unit/test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [  6%]
+tests/unit/test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 10%]
+tests/unit/test_consumidor_flujo.py::test_revision_posterior_no_sobrescribe_en_el_mvp PASSED [ 13%]
+tests/unit/test_consumidor_flujo.py::test_mensaje_invalido_se_descarta_con_commit_sin_guardar PASSED [ 16%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_valido PASSED        [ 20%]
+tests/unit/test_consumidor_mensaje.py::test_nulos_se_conservan_como_none PASSED [ 23%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-mode] PASSED [ 26%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-prefijo] PASSED [ 30%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-rango] PASSED [ 33%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-time] PASSED [ 36%]
+tests/unit/test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-event] PASSED [ 40%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[no es json] PASSED [ 43%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[\xff\xfe] PASSED [ 46%]
+tests/unit/test_consumidor_mensaje.py::test_json_invalido[[1, 2]] PASSED [ 50%]
+tests/unit/test_repositorio_integracion.py::test_inserta_y_conserva_los_campos PASSED [ 53%]
+tests/unit/test_repositorio_integracion.py::test_duplicado_y_revision_no_crean_ni_cambian_filas PASSED [ 56%]
+tests/unit/test_repositorio_integracion.py::test_nulos_se_guardan_como_null PASSED [ 60%]
+tests/unit/test_repositorio_integracion.py::test_fallo_de_postgres_se_propaga PASSED [ 63%]
+tests/unit/test_sintetico.py::test_evento_por_defecto_cumple_el_contrato PASSED [ 66%]
+tests/unit/test_sintetico.py::test_secuencia_cambia_el_id PASSED         [ 70%]
+tests/unit/test_sintetico.py::test_minutos_atras_fija_la_hora_del_evento_en_ms_utc PASSED [ 73%]
+tests/unit/test_sintetico.py::test_es_determinista_con_la_misma_hora_de_referencia PASSED [ 76%]
+tests/unit/test_sintetico.py::test_argumentos_invalidos_se_rechazan[kwargs0] PASSED [ 80%]
+tests/unit/test_sintetico.py::test_argumentos_invalidos_se_rechazan[kwargs1] PASSED [ 83%]
+tests/unit/test_sintetico.py::test_mensaje_y_serializacion PASSED        [ 86%]
+tests/unit/test_sintetico.py::test_reenvio_identico_produce_los_mismos_bytes PASSED [ 90%]
+tests/unit/test_sintetico.py::test_argumentos_del_comando PASSED         [ 93%]
+tests/unit/test_sintetico.py::test_config_kafka_desde_entorno PASSED     [ 96%]
+tests/unit/test_sintetico.py::test_config_kafka_falta_variable PASSED    [100%]
+
+============================== 30 passed in 0.46s ==============================

@@ -1,0 +1,20 @@
+﻿# Verificación 2.7 — Angular + FastAPI (navegador integrado, http://localhost:4200 -> http://127.0.0.1:8000)
+Fecha: 2026-11-04. Compilación: ver T029-angular-build.txt (ng build correcto; el aviso de que 'leaflet' no es ESM es previo).
+
+1. Carga con modo api (config.json: mode=api, apiUrl=http://127.0.0.1:8000)
+   - Modo: "API · DATOS SINTÉTICOS de prueba (no son terremotos reales)" + insignia roja "DATOS SINTÉTICOS".
+   - Estado: "API accesible · consulta completada"; "1 eventos dibujados · 0 omitidos".
+   - Atribución del mapa: "Fronteras: Natural Earth · Datos sintéticos (MVP), no son datos de USGS".
+   - Un marcador naranja (profundidad 12 km) sobre la península ibérica [lon -3.7, lat 40.4]. Solo 1 evento: synthetic-mvp-002 (>24 h) no aparece.
+   - Ficha al pulsar el marcador (texto leído del DOM):
+       SINTÉTICO · no es un terremoto real / SINTÉTICO: ejemplo de prueba / Magnitud: 3.2 / Profundidad: 12 km /
+       Fecha UTC: 2026-11-04T18:31:14.013Z / País: Sin país asignado / ID: synthetic-mvp-001
+   - Captura: T031-mapa-evento-sintetico.jpg
+2. Fallo de la API (docker compose stop postgres -> la API responde 503; sin borrar volúmenes)
+   - Tras el siguiente refresco (60 s): "No se pudo actualizar: se conserva la última lectura. Revisa API, túnel y CORS."
+   - Se conserva el marcador y la hora de la última lectura (19:01:05Z); la insignia sigue visible.
+   - Captura: T031-mapa-error-api-conserva-datos.jpg
+3. Recuperación (docker compose start postgres): en el refresco siguiente vuelve a "API accesible · consulta completada"
+   (última lectura 19:03:08Z) sin recargar la página.
+No verificado en navegador: modo demo (código sin modificar; basta poner mode=demo en config.json) y lista vacía real
+(habría que vaciar la tabla; cubierta por pruebas unitarias de la API).

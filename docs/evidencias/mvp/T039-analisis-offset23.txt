@@ -1,0 +1,26 @@
+# Análisis del 'Fallo al guardar offset=23' (verificación de 2026-11-04)
+
+## Hechos del registro original (T042-prev-consumer-logs.txt y T042-prev-postgres-eventos.txt)
+- Solo hay UNA línea GUARDADO para synthetic-mvp-008 (offset 23): 19:22:18.859, DESPUÉS del fallo de 19:22:17.850. No fue reprocesado: era su primer intento.
+- El mensaje de error («terminating connection due to administrator command») es el de un cierre ordenado de PostgreSQL.
+- PostgreSQL recibió 'fast shutdown request' a las 19:21:47, 19:21:58 (paso 9 del script) y 19:22:19 (paso 11).
+
+## Hipótesis a demostrar: conexión a PostgreSQL obsoleta tras reiniciar la base mientras el consumidor estaba ocioso
+Reproducción: parar y arrancar SOLO postgres con el consumidor sin tráfico; luego emitir un evento nuevo.
+ Container observatorio-postgres-1 Stopped 
+ Container observatorio-postgres-1 Started 
+[1/1] confirmado: id=synthetic-mvp-018 topic=terremotos.sintetico partición=0 offset=13
+-- registro del consumidor desde 2026-11-04T19:36:46 (UTC):
+2026-11-04 19:36:46,549 consumer ERROR Fallo al guardar offset=13 (terminating connection due to administrator command); NO se confirma, reintento en 1 s
+2026-11-04 19:36:47,558 consumer INFO GUARDADO id=synthetic-mvp-018 offset=13
+-- filas de synthetic-mvp-018: 1
+-- lag del grupo:
+GROUP                TOPIC                PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-
+consumidor-sintetico terremotos.sintetico 0          14              14              0               aiokafka-
+
+## Conclusión (demostrada por reproducción)
+Reproducido: tras reiniciar PostgreSQL con el consumidor ocioso, el primer mensaje que llega encuentra la conexión cerrada:
+el consumidor registra «Fallo al guardar … NO se confirma», reabre la conexión y guarda al reintentar 1 s después; el offset
+se confirma solo entonces (lag 0) y hay 1 fila. El offset 23 NO fue reprocesado: era su primer intento. Mi hipótesis previa
+(redelivery tras reiniciar Kafka) era incorrecta. Mejora opcional, no aplicada (fuera del alcance del MVP): detectar la
+conexión cerrada antes de la primera consulta.

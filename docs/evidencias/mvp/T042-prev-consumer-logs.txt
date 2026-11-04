@@ -1,0 +1,188 @@
+2026-11-04T19:21:02.618316376Z 2026-11-04 19:21:02,618 aiokafka.consumer.subscription_state INFO Updating subscribed topics to: frozenset({'terremotos.sintetico'})
+2026-11-04T19:21:02.627337215Z 2026-11-04 19:21:02,627 aiokafka.consumer.group_coordinator INFO Discovered coordinator 1 for group consumidor-sintetico
+2026-11-04T19:21:02.627354626Z 2026-11-04 19:21:02,627 aiokafka.consumer.group_coordinator INFO Revoking previously assigned partitions set() for group consumidor-sintetico
+2026-11-04T19:21:02.627377508Z 2026-11-04 19:21:02,627 aiokafka.consumer.group_coordinator INFO (Re-)joining group consumidor-sintetico
+2026-11-04T19:21:08.185140547Z 2026-11-04 19:21:08,184 aiokafka.consumer.group_coordinator INFO Joined group 'consumidor-sintetico' (generation 6) with member_id aiokafka-0.15.0-369f92d7-6d7a-45ac-aac9-82c696e8c1e2
+2026-11-04T19:21:08.185152408Z 2026-11-04 19:21:08,185 aiokafka.consumer.group_coordinator INFO Elected group leader -- performing partition assignments using roundrobin
+2026-11-04T19:21:08.191167684Z 2026-11-04 19:21:08,190 aiokafka.consumer.group_coordinator INFO Successfully synced group consumidor-sintetico with generation 6
+2026-11-04T19:21:08.191232104Z 2026-11-04 19:21:08,191 aiokafka.consumer.group_coordinator INFO Setting newly assigned partitions {TopicPartition(topic='terremotos.sintetico', partition=0)} for group consumidor-sintetico
+2026-11-04T19:21:08.191782940Z 2026-11-04 19:21:08,191 consumer INFO Consumiendo terremotos.sintetico con el grupo consumidor-sintetico
+2026-11-04T19:21:22.976976601Z 2026-11-04 19:21:22,976 consumer INFO GUARDADO id=synthetic-mvp-007 offset=16
+2026-11-04T19:21:23.723823363Z 2026-11-04 19:21:23,723 consumer INFO DUPLICADO id=synthetic-mvp-007 offset=17
+2026-11-04T19:21:23.727360500Z 2026-11-04 19:21:23,727 consumer INFO DUPLICADO id=synthetic-mvp-007 offset=18
+2026-11-04T19:21:23.729798037Z 2026-11-04 19:21:23,729 consumer INFO DUPLICADO id=synthetic-mvp-007 offset=19
+2026-11-04T19:21:23.731928497Z 2026-11-04 19:21:23,731 consumer INFO DUPLICADO id=synthetic-mvp-007 offset=20
+2026-11-04T19:21:23.735502763Z 2026-11-04 19:21:23,735 consumer INFO DUPLICADO id=synthetic-mvp-007 offset=21
+2026-11-04T19:21:38.574365399Z 2026-11-04 19:21:38,574 consumer WARNING DESCARTADO offset=22 clave=b'synthetic-mvp-901' motivo=mode no permitido: 'live'
+2026-11-04T19:21:47.274563837Z 2026-11-04 19:21:47,274 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: KafkaConnectionError: Connection at kafka:9092 closed
+2026-11-04T19:21:47.275523156Z 2026-11-04 19:21:47,275 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.275568099Z 2026-11-04 19:21:47,275 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:47.376256022Z 2026-11-04 19:21:47,376 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.376268873Z 2026-11-04 19:21:47,376 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:21:47.376893135Z 2026-11-04 19:21:47,376 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.376900795Z 2026-11-04 19:21:47,376 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:47.478116689Z 2026-11-04 19:21:47,477 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.478137011Z 2026-11-04 19:21:47,478 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:21:47.478765471Z 2026-11-04 19:21:47,478 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.478773622Z 2026-11-04 19:21:47,478 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:47.580373035Z 2026-11-04 19:21:47,580 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.580388276Z 2026-11-04 19:21:47,580 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:21:47.581034320Z 2026-11-04 19:21:47,580 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.581040741Z 2026-11-04 19:21:47,580 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:47.682245474Z 2026-11-04 19:21:47,682 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.682263475Z 2026-11-04 19:21:47,682 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:21:47.682855495Z 2026-11-04 19:21:47,682 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.682863775Z 2026-11-04 19:21:47,682 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:47.784015790Z 2026-11-04 19:21:47,783 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.784028901Z 2026-11-04 19:21:47,783 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:21:47.784558218Z 2026-11-04 19:21:47,784 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:21:47.784562258Z 2026-11-04 19:21:47,784 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:21:52.334630631Z 2026-11-04 19:21:52,334 aiokafka.consumer.subscription_state INFO Updating subscribed topics to: frozenset({'terremotos.sintetico'})
+2026-11-04T19:21:52.345754185Z 2026-11-04 19:21:52,345 aiokafka.consumer.group_coordinator INFO Discovered coordinator 1 for group consumidor-sintetico
+2026-11-04T19:21:52.345767526Z 2026-11-04 19:21:52,345 aiokafka.consumer.group_coordinator INFO Revoking previously assigned partitions set() for group consumidor-sintetico
+2026-11-04T19:21:52.345847706Z 2026-11-04 19:21:52,345 aiokafka.consumer.group_coordinator INFO (Re-)joining group consumidor-sintetico
+2026-11-04T19:22:00.627016080Z 2026-11-04 19:22:00,626 aiokafka.consumer.group_coordinator INFO Joined group 'consumidor-sintetico' (generation 7) with member_id aiokafka-0.15.0-6e697b59-9d2a-44eb-9fef-cf53be5b8661
+2026-11-04T19:22:00.627028141Z 2026-11-04 19:22:00,626 aiokafka.consumer.group_coordinator INFO Elected group leader -- performing partition assignments using roundrobin
+2026-11-04T19:22:00.634259624Z 2026-11-04 19:22:00,634 aiokafka.consumer.group_coordinator INFO Successfully synced group consumidor-sintetico with generation 7
+2026-11-04T19:22:00.634280496Z 2026-11-04 19:22:00,634 aiokafka.consumer.group_coordinator INFO Setting newly assigned partitions {TopicPartition(topic='terremotos.sintetico', partition=0)} for group consumidor-sintetico
+2026-11-04T19:22:00.634513796Z 2026-11-04 19:22:00,634 consumer INFO Consumiendo terremotos.sintetico con el grupo consumidor-sintetico
+2026-11-04T19:22:04.159534893Z 2026-11-04 19:22:04,159 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: KafkaConnectionError: Connection at kafka:9092 closed
+2026-11-04T19:22:04.160358845Z 2026-11-04 19:22:04,160 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.160367266Z 2026-11-04 19:22:04,160 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.261592778Z 2026-11-04 19:22:04,261 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.261605689Z 2026-11-04 19:22:04,261 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.262261663Z 2026-11-04 19:22:04,262 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.262270264Z 2026-11-04 19:22:04,262 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.363383368Z 2026-11-04 19:22:04,363 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.363397399Z 2026-11-04 19:22:04,363 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.364033201Z 2026-11-04 19:22:04,363 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.364041262Z 2026-11-04 19:22:04,363 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.465267640Z 2026-11-04 19:22:04,465 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.465276961Z 2026-11-04 19:22:04,465 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.465987804Z 2026-11-04 19:22:04,465 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.465992695Z 2026-11-04 19:22:04,465 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.567407811Z 2026-11-04 19:22:04,567 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.567426262Z 2026-11-04 19:22:04,567 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.568247873Z 2026-11-04 19:22:04,568 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.568256594Z 2026-11-04 19:22:04,568 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.669545332Z 2026-11-04 19:22:04,669 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.669560903Z 2026-11-04 19:22:04,669 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.670178894Z 2026-11-04 19:22:04,670 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.670183724Z 2026-11-04 19:22:04,670 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:04.771552618Z 2026-11-04 19:22:04,771 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.771568390Z 2026-11-04 19:22:04,771 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:04.772223799Z 2026-11-04 19:22:04,772 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:04.772232839Z 2026-11-04 19:22:04,772 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.000503973Z 2026-11-04 19:22:12,000 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.000525105Z 2026-11-04 19:22:12,000 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.001424887Z 2026-11-04 19:22:12,001 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.001437088Z 2026-11-04 19:22:12,001 aiokafka.consumer.group_coordinator ERROR Error sending HeartbeatRequest to node 1 [NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).] -- marking coordinator dead
+2026-11-04T19:22:12.001447669Z 2026-11-04 19:22:12,001 aiokafka.consumer.group_coordinator WARNING Marking the coordinator dead (node 1)for group consumidor-sintetico.
+2026-11-04T19:22:12.001594900Z 2026-11-04 19:22:12,001 aiokafka.consumer.group_coordinator ERROR Heartbeat send request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).. Will retry.
+2026-11-04T19:22:12.002678377Z 2026-11-04 19:22:12,002 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.002686058Z 2026-11-04 19:22:12,002 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.003409825Z 2026-11-04 19:22:12,003 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.003415476Z 2026-11-04 19:22:12,003 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.004041226Z 2026-11-04 19:22:12,003 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.004051306Z 2026-11-04 19:22:12,003 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.103335328Z 2026-11-04 19:22:12,103 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.103350050Z 2026-11-04 19:22:12,103 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.104237663Z 2026-11-04 19:22:12,104 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.104800778Z 2026-11-04 19:22:12,104 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.104997971Z 2026-11-04 19:22:12,104 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.105002751Z 2026-11-04 19:22:12,104 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.105769423Z 2026-11-04 19:22:12,105 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.105773963Z 2026-11-04 19:22:12,105 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.205229777Z 2026-11-04 19:22:12,205 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.205247519Z 2026-11-04 19:22:12,205 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.205986705Z 2026-11-04 19:22:12,205 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.205993216Z 2026-11-04 19:22:12,205 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.206676090Z 2026-11-04 19:22:12,206 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.206681351Z 2026-11-04 19:22:12,206 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.207440951Z 2026-11-04 19:22:12,207 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.207448651Z 2026-11-04 19:22:12,207 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.307339596Z 2026-11-04 19:22:12,306 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.307358088Z 2026-11-04 19:22:12,307 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.308836231Z 2026-11-04 19:22:12,308 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.308849242Z 2026-11-04 19:22:12,308 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.310138991Z 2026-11-04 19:22:12,309 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.310455511Z 2026-11-04 19:22:12,310 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.310885826Z 2026-11-04 19:22:12,310 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.310891516Z 2026-11-04 19:22:12,310 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.409487598Z 2026-11-04 19:22:12,409 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.409507060Z 2026-11-04 19:22:12,409 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.410210996Z 2026-11-04 19:22:12,410 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.410216547Z 2026-11-04 19:22:12,410 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.412464386Z 2026-11-04 19:22:12,412 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.412487992Z 2026-11-04 19:22:12,412 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.414309898Z 2026-11-04 19:22:12,413 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.414317829Z 2026-11-04 19:22:12,413 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.511583950Z 2026-11-04 19:22:12,511 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.511875333Z 2026-11-04 19:22:12,511 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.513170216Z 2026-11-04 19:22:12,512 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.513199664Z 2026-11-04 19:22:12,512 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.516075839Z 2026-11-04 19:22:12,515 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.516095690Z 2026-11-04 19:22:12,516 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.517009328Z 2026-11-04 19:22:12,516 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.517018959Z 2026-11-04 19:22:12,516 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.613597155Z 2026-11-04 19:22:12,613 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.613613506Z 2026-11-04 19:22:12,613 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.614479186Z 2026-11-04 19:22:12,614 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.614486146Z 2026-11-04 19:22:12,614 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.618754028Z 2026-11-04 19:22:12,618 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.618768989Z 2026-11-04 19:22:12,618 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.619554732Z 2026-11-04 19:22:12,619 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.619572793Z 2026-11-04 19:22:12,619 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.715178036Z 2026-11-04 19:22:12,714 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.715197317Z 2026-11-04 19:22:12,715 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.716107530Z 2026-11-04 19:22:12,715 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.716120651Z 2026-11-04 19:22:12,716 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:12.721472648Z 2026-11-04 19:22:12,721 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.721491580Z 2026-11-04 19:22:12,721 aiokafka.consumer.group_coordinator ERROR Group Coordinator Request failed: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:12.722375050Z 2026-11-04 19:22:12,722 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:12.722383191Z 2026-11-04 19:22:12,722 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:13.334976018Z 2026-11-04 19:22:13,334 aiokafka.consumer.group_coordinator INFO Discovered coordinator 1 for group consumidor-sintetico
+2026-11-04T19:22:17.850739516Z 2026-11-04 19:22:17,850 consumer ERROR Fallo al guardar offset=23 (terminating connection due to administrator command); NO se confirma, reintento en 1 s
+2026-11-04T19:22:18.859249800Z 2026-11-04 19:22:18,859 consumer INFO GUARDADO id=synthetic-mvp-008 offset=23
+2026-11-04T19:22:20.818347520Z 2026-11-04 19:22:20,818 consumer ERROR Fallo al guardar offset=24 (terminating connection due to administrator command); NO se confirma, reintento en 1 s
+2026-11-04T19:22:25.771721528Z 2026-11-04 19:22:25,771 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 1 s
+2026-11-04T19:22:30.609957988Z 2026-11-04 19:22:30,609 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 2 s
+2026-11-04T19:22:36.468683336Z 2026-11-04 19:22:36,468 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 4 s
+2026-11-04T19:22:40.477052168Z 2026-11-04 19:22:40,476 consumer INFO GUARDADO id=synthetic-mvp-009 offset=24
+2026-11-04T19:22:45.014531308Z 2026-11-04 19:22:45,014 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: KafkaConnectionError: Connection at kafka:9092 closed
+2026-11-04T19:22:45.015152975Z 2026-11-04 19:22:45,014 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.015163896Z 2026-11-04 19:22:45,015 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:45.116498719Z 2026-11-04 19:22:45,116 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.116719636Z 2026-11-04 19:22:45,116 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:45.117188761Z 2026-11-04 19:22:45,117 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.117196352Z 2026-11-04 19:22:45,117 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:45.218406475Z 2026-11-04 19:22:45,218 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.218423877Z 2026-11-04 19:22:45,218 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:45.218990111Z 2026-11-04 19:22:45,218 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.219006922Z 2026-11-04 19:22:45,218 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:45.320477943Z 2026-11-04 19:22:45,320 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.320496485Z 2026-11-04 19:22:45,320 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:45.321165319Z 2026-11-04 19:22:45,321 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.321172210Z 2026-11-04 19:22:45,321 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:45.422410997Z 2026-11-04 19:22:45,422 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.422427878Z 2026-11-04 19:22:45,422 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:45.423009601Z 2026-11-04 19:22:45,422 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.423014032Z 2026-11-04 19:22:45,422 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:45.524248140Z 2026-11-04 19:22:45,524 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.524261151Z 2026-11-04 19:22:45,524 aiokafka.consumer.fetcher ERROR Failed fetch messages from 1: NodeNotReadyError: Attempt to send a request to node which is not ready (node id 1).
+2026-11-04T19:22:45.524981670Z 2026-11-04 19:22:45,524 aiokafka ERROR Unable connect to node with id 1: [Errno 111] Connect call failed ('172.20.0.2', 9092)
+2026-11-04T19:22:45.524987431Z 2026-11-04 19:22:45,524 aiokafka ERROR Unable to update metadata from [1]
+2026-11-04T19:22:53.901340674Z 2026-11-04 19:22:53,901 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 1 s
+2026-11-04T19:22:58.755885336Z 2026-11-04 19:22:58,755 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 2 s
+2026-11-04T19:23:04.606871740Z 2026-11-04 19:23:04,606 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 4 s
+2026-11-04T19:23:12.445146162Z 2026-11-04 19:23:12,444 consumer WARNING PostgreSQL no disponible (failed to resolve host 'postgres': [Errno -2] Name or service not known); reintento en 8 s
+2026-11-04T19:23:20.459542480Z 2026-11-04 19:23:20,459 aiokafka.consumer.subscription_state INFO Updating subscribed topics to: frozenset({'terremotos.sintetico'})
+2026-11-04T19:23:20.472036337Z 2026-11-04 19:23:20,471 aiokafka.consumer.group_coordinator INFO Discovered coordinator 1 for group consumidor-sintetico
+2026-11-04T19:23:20.472056629Z 2026-11-04 19:23:20,471 aiokafka.consumer.group_coordinator INFO Revoking previously assigned partitions set() for group consumidor-sintetico
+2026-11-04T19:23:20.472093051Z 2026-11-04 19:23:20,471 aiokafka.consumer.group_coordinator INFO (Re-)joining group consumidor-sintetico
+2026-11-04T19:23:28.247576414Z 2026-11-04 19:23:28,247 aiokafka.consumer.group_coordinator INFO Joined group 'consumidor-sintetico' (generation 8) with member_id aiokafka-0.15.0-863ee7a9-4d72-4a0a-9a8a-50358103a571
+2026-11-04T19:23:28.247586115Z 2026-11-04 19:23:28,247 aiokafka.consumer.group_coordinator INFO Elected group leader -- performing partition assignments using roundrobin
+2026-11-04T19:23:28.251446930Z 2026-11-04 19:23:28,251 aiokafka.consumer.group_coordinator INFO Successfully synced group consumidor-sintetico with generation 8
+2026-11-04T19:23:28.251463221Z 2026-11-04 19:23:28,251 aiokafka.consumer.group_coordinator INFO Setting newly assigned partitions {TopicPartition(topic='terremotos.sintetico', partition=0)} for group consumidor-sintetico
+2026-11-04T19:23:28.251671927Z 2026-11-04 19:23:28,251 consumer INFO Consumiendo terremotos.sintetico con el grupo consumidor-sintetico
+2026-11-04T19:23:28.264156813Z 2026-11-04 19:23:28,263 consumer INFO GUARDADO id=synthetic-mvp-010 offset=25

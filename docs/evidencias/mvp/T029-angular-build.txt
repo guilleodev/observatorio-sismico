@@ -1,0 +1,15 @@
+polyfills-5CFQRCPP.js | polyfills     |  34.59 kB |                11.33 kB
+styles-P5ZXZB6C.css   | styles        |  11.22 kB |                 2.37 kB
+
+                      | Initial total | 311.02 kB |                86.23 kB
+
+Application bundle generation complete. [3.699 seconds]
+
+▲ [WARNING] Module 'leaflet' used by 'src/app/app.component.ts' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+Output location: C:\Users\guill\AppData\Local\Temp\claude\66f30843cbf7e201\38faa234-f543-472b-b23c-6603f111ab3b\scratchpad\dist
+

@@ -1,0 +1,32 @@
+== emisión por defecto
+Topic terremotos.sintetico not found in cluster metadata
+[1/1] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=0
+exit=0
+== --repeat 5
+[1/5] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=1
+[2/5] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=2
+[3/5] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=3
+[4/5] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=4
+[5/5] confirmado: id=synthetic-mvp-001 topic=terremotos.sintetico partición=0 offset=5
+exit=0
+== --secuencia 2 --minutos-atras 1500
+[1/1] confirmado: id=synthetic-mvp-002 topic=terremotos.sintetico partición=0 offset=6
+exit=0
+Option --property is deprecated and will be removed in a future version. Use --formatter-property instead.
+The consumer rebalance protocol (KIP-848) is production-ready! Set group.protocol=consumer to try it out. See https://kafka.apache.org/documentation/#consumer_rebalance_protocol
+synthetic-mvp-001	{"source": "synthetic-generator", "ingested_at": 1793817674013, "mode": "synthetic", "event": {"type": "Feature", "id": "synthetic-mvp-001", "geometry": {"type": "Point", "coordinates": [-3.7, 40.4, 12]}, "properties": {"type": "earthquake", "mag": 3.2, "magType": "ml", "place": "SINTÉTICO: ejemplo de prueba", "time": 1793817074013, "updated": 1793817074013}}}
+terremotos.sintetico:0:7
+== Kafka inalcanzable (bootstrap falso)
+Unable connect to "noexiste:9092": [Errno -2] Name or service not known
+ERROR: no se pudo publicar en Kafka (KafkaConnectionError: KafkaConnectionError: Unable to bootstrap from [('noexiste', 9092, <AddressFamily.AF_UNSPEC: 0>)])
+Unclosed AIOKafkaProducer
+producer: <aiokafka.producer.producer.AIOKafkaProducer object at 0x74da57d706e0>
+
+real	0m4.596s
+user	0m0.045s
+sys	0m0.060s
+exit=1
+== (repetido tras corrección) Kafka inalcanzable
+Unable connect to "noexiste:9092": [Errno -2] Name or service not known
+ERROR: no se pudo publicar en Kafka (KafkaConnectionError: KafkaConnectionError: Unable to bootstrap from [('noexiste', 9092, <AddressFamily.AF_UNSPEC: 0>)])
+exit=1

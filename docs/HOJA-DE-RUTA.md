@@ -93,7 +93,7 @@ Pasos originales de la hoja, conservados:
 | 0.5 | Preparar las skills necesarias | ⏸ Las skills propias **no se han creado**; se crearán cuando hagan falta (ver sección 7) |
 | 0.6 | Validar la configuración antes de iniciar el desarrollo | ✅ Revisión final con Architect y QA Engineer |
 
-### F1 — Fuentes y frontend inicial · ✅ pasos completados · ⬜ commit `[F1]` pendiente
+### F1 — Fuentes y frontend inicial · ✅ completada (commit `[F1]` realizado)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -103,31 +103,31 @@ Pasos originales de la hoja, conservados:
 | 1.4 | Analizar campos, coordenadas, valores nulos y calidad | ✅ ídem §5 y §6 |
 | 1.5 | Documentar resultados, verificar requisitos y preparar commit | ✅ ídem; incidencia de formato del frontend resuelta (§9) |
 
-### F2 — MVP funcional · ⬜ pendiente
+### F2 — MVP funcional · ✅ pasos completados · ⬜ commit `[F2]` pendiente
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 2.1 | Revisar SDD y preparar estructura del backend | ⬜ |
-| 2.2 | Configurar Docker Compose con los cinco servicios | ⬜ |
-| 2.3 | Crear productor Python de eventos sintéticos | ⬜ |
-| 2.4 | Configurar Kafka y verificar la publicación de mensajes | ⬜ |
-| 2.5 | Crear consumidor y persistencia PostgreSQL | ⬜ |
-| 2.6 | Implementar API mínima con FastAPI | ⬜ |
-| 2.7 | Conectar Angular y visualizar el terremoto | ⬜ |
-| 2.8 | Ejecutar pruebas de extremo a extremo y cerrar MVP | ⬜ |
+| 2.1 | Revisar SDD y preparar estructura del backend | ✅ |
+| 2.2 | Configurar Docker Compose con los cinco servicios | ✅ (`postgres` y `kafka` verificados `healthy`; `producer`, `consumer` y `api` aún no pueden arrancar por falta de puntos de entrada; T015 configurada, validación final en 2.8) |
+| 2.3 | Crear productor Python de eventos sintéticos | ✅ |
+| 2.4 | Configurar Kafka y verificar la publicación de mensajes | ✅ |
+| 2.5 | Crear consumidor y persistencia PostgreSQL | ✅ |
+| 2.6 | Implementar API mínima con FastAPI | ✅ |
+| 2.7 | Conectar Angular y visualizar el terremoto | ✅ |
+| 2.8 | Ejecutar pruebas de extremo a extremo y cerrar MVP | ✅ |
 
 *Correspondencia orientativa con `specs/001-mvp-evento-sintetico/tasks.md` (por revisar al empezar F2).* Cada tarea tiene **un único paso principal**; las dependencias entre pasos se indican aparte y no duplican la asignación:
 
 | Paso | Tareas asignadas | Dependencias de otros pasos |
 |---|---|---|
-| 2.1 | T001–T005 | — |
-| 2.2 | T006–T010, T012–T017 | T016 comprueba los cinco servicios, incluido el broker definido en T008 |
-| 2.3 | T018, T022, T023 | Requiere T009 (2.2) |
-| 2.4 | T011 | Requiere T008 y T010 (2.2); la publicación de mensajes se evidencia con T023 (2.3) y con los pasos 1–5 del quickstart de T031 (2.7) |
-| 2.5 | T019, T020, T024, T025 | Requiere T006 y T007 (2.2) y T022 (2.3) |
-| 2.6 | T021, T026, T027 | Requiere T006 y T007 (2.2) |
+| 2.1 | T002 | — |
+| 2.2 | T001, T003–T008, T010, T015 | T015 está escrita en `compose.yaml`, pero su validación final (arranque de los tres servicios Python) se hace en 2.8 con T016 |
+| 2.3 | T009, T012, T018, T022, T023 | — |
+| 2.4 | T011 | Requiere T008 y T010 (2.2). La retención ya se comprobó en el broker (`kafka-configs.sh`); la tarea se cierra en este paso. La publicación de mensajes se evidencia con T023 (2.3) y con los pasos 1–5 del quickstart de T031 (2.7) |
+| 2.5 | T013, T019, T020, T024, T025 | Requiere T006 y T007 (2.2) y T022 (2.3) |
+| 2.6 | T014, T021, T026, T027 | Requiere T006 y T007 (2.2) |
 | 2.7 | T028, T029, T031 | T031 requiere T022–T027 (2.3, 2.5 y 2.6) |
-| 2.8 | T030, T032–T047 | T030 requiere T018–T027 (2.3, 2.5 y 2.6); T038–T041 requieren el bloque US1 completo |
+| 2.8 | T016, T017, T030, T032–T047 | T016 y T017 validan los cinco servicios y los reintentos (pueden hacerse comprobaciones parciales antes); T030 requiere T018–T027 (2.3, 2.5 y 2.6); T038–T041 requieren el bloque US1 completo |
 
 Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
@@ -317,8 +317,8 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 - `mode = "synthetic"` es una excepción temporal del MVP, que se retira o aísla en el paso 3.1.
 
 ### Próximos pasos
-1. Realizar manualmente, desde VS Code, el commit `[F1]` de cierre de la Fase 1.
-2. Con autorización expresa, iniciar F2 en el paso 2.1.
+1. Realizar manualmente, desde VS Code, el commit `[F2]` de cierre de la Fase 2 (evidencias en `docs/evidencias/mvp/`).
+2. Con autorización expresa, iniciar F3 en el paso 3.1 (retirar o aislar `synthetic` antes de la ingesta real).
 3. Crear las skills propias (`requirements-review`, `learning-explainer`, etc.) cuando haga falta.
 
 ### Reglas
