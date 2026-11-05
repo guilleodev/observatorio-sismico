@@ -1,0 +1,29 @@
+# 3.4 — pruebas automatizadas (PostgreSQL real, transacciones revertidas). 2026-11-05T20:43:22Z
+Python 3.13.18
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+test_consumidor_reintentos.py::test_una_version_antigua_tambien_confirma_el_offset PASSED [  5%]
+test_consumidor_reintentos.py::test_versiones_fuera_de_orden_dejan_la_mas_reciente_y_confirman_en_orden PASSED [ 10%]
+test_consumidor_reintentos.py::test_si_falla_la_confirmacion_tras_guardar_el_reintento_no_duplica PASSED [ 15%]
+test_consumidor_reintentos.py::test_si_falla_postgres_se_reintenta_el_mismo_registro_sin_confirmar_hasta_guardar PASSED [ 20%]
+test_consumidor_reintentos.py::test_la_espera_entre_reintentos_tiene_tope PASSED [ 25%]
+test_consumidor_reintentos.py::test_un_registro_con_fallos_no_deja_pasar_al_siguiente PASSED [ 30%]
+test_consumidor_transaccional.py::test_la_transaccion_es_atomica_si_falla_la_segunda_sentencia PASSED [ 35%]
+test_consumidor_transaccional.py::test_si_falla_la_confirmacion_el_reintento_no_duplica_ni_cambia_los_datos PASSED [ 40%]
+test_consumidor_transaccional.py::test_la_reentrega_completa_de_una_secuencia_no_cambia_los_recuentos PASSED [ 45%]
+test_consumidor_transaccional.py::test_versiones_fuera_de_orden_y_reentregadas_dejan_siempre_la_mas_reciente PASSED [ 50%]
+test_consumidor_transaccional.py::test_un_error_de_datos_no_confirma_ni_deja_estado_parcial PASSED [ 55%]
+test_consumidor_transaccional.py::test_las_pruebas_no_dejan_datos_en_las_tablas_definitivas PASSED [ 60%]
+test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [ 65%]
+test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [ 70%]
+test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 75%]
+test_consumidor_flujo.py::test_una_revision_posterior_actualiza_el_estado_actual PASSED [ 80%]
+test_consumidor_flujo.py::test_mensaje_invalido_se_descarta_con_commit_sin_guardar PASSED [ 85%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[synthetic] PASSED [ 90%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[replay] PASSED [ 95%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[otro] PASSED [100%]
+============================== 20 passed in 0.57s ==============================
+115 passed, 1 warning in 10.01s
+
+tablas definitivas tras las pruebas: evento_actual=0 evento_version=0 cuarentena=0 version_publicada=0
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy  | productor en modo INGESTA_PUBLICAR=false
+mensajes en terremotos.live: terremotos.live:0:3 (sin cambios: 3 de las pruebas del paso 3.1)

@@ -1,4 +1,4 @@
-"""Consultas a sintetico.evento_actual y conversión a GeoJSON (contracts/api-mvp.md)."""
+"""Consultas a live.evento_actual y conversión a GeoJSON (CONTRATO-API.md)."""
 
 import math
 from collections.abc import Callable
@@ -8,7 +8,7 @@ import psycopg
 from psycopg import AsyncConnection
 from psycopg_pool import PoolTimeout
 
-from observatorio.sintetico import MODO_MVP  # TEMPORAL: se retira o aísla como máximo al cerrar el paso 3.1
+from observatorio.modos import MODO_LIVE, MODOS_CONTRACTUALES
 
 VENTANA_MS = 24 * 3600 * 1000
 
@@ -17,12 +17,10 @@ SELECT event_id, longitude, latitude, depth_km, mag, mag_type, place,
        (extract(epoch FROM event_time) * 1000)::bigint,
        (extract(epoch FROM updated_at) * 1000)::bigint,
        country_id, country_name
-FROM sintetico.evento_actual
+FROM live.evento_actual
 WHERE event_time >= to_timestamp(%s / 1000.0)
 ORDER BY event_time DESC
 """
-
-SQL_ULTIMA_INGESTION = "SELECT (extract(epoch FROM max(ingested_at)) * 1000)::bigint FROM sintetico.evento_actual"
 
 
 class BaseDatosNoDisponible(Exception):
@@ -68,19 +66,26 @@ class RepositorioApi:
             for f in filas
         ]
 
+    async def comprobar_base(self) -> None:
+        await self._consultar("SELECT 1")
+
     async def ultima_ingestion(self) -> int | None:
-        """Significado provisional (MVP): último mensaje sintético procesado; None si no hay."""
-        filas = await self._consultar(SQL_ULTIMA_INGESTION)
-        return filas[0][0] if filas else None
+        """Instante de la última consulta CORRECTA a USGS. Sin consultas todavía (paso 3.2): None.
+
+        El registro del estado de ingesta (y por tanto el valor real) llega en el paso 3.6.
+        """
+        return None
 
 
-def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None) -> dict:
+def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None, modo: str = MODO_LIVE) -> dict:
+    if modo not in MODOS_CONTRACTUALES:
+        raise ValueError(f"mode no contractual: {modo!r}")
     return {
         "type": "FeatureCollection",
         "metadata": {
             "generated": generado_ms,
             "last_ingestion": ultima_ingestion_ms,
-            "mode": MODO_MVP,
+            "mode": modo,
             "count": len(eventos),
             "truncated": False,
         },

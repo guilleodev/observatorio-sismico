@@ -133,17 +133,29 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además (SDD del MVP):** datos sintéticos aislados (topic y esquema propios) y etiquetados; `mode = "synthetic"` solo como excepción temporal; healthchecks y reintentos; retención base de Kafka (research R-004); CORS desde el origen de desarrollo; criterios SC-001 a SC-010 con evidencias reales.
 
-### F3 — Ingesta real y calidad · ⬜ pendiente
+### F3 — Ingesta real y calidad · 🔄 en curso (3.1 a 3.4 completados)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 3.1 | Retirar o aislar el modo temporal `synthetic` | ⬜ |
-| 3.2 | Implementar consultas periódicas a USGS cada 60 segundos | ⬜ |
-| 3.3 | Detectar duplicados y versiones actualizadas | ⬜ |
-| 3.4 | Implementar transacciones, offsets e idempotencia | ⬜ |
+| 3.1 | Retirar o aislar el modo temporal `synthetic` | ✅ |
+| 3.2 | Implementar consultas periódicas a USGS cada 60 segundos | ✅ (modo seco; la publicación real se activa en T026) |
+| 3.3 | Detectar duplicados y versiones actualizadas | ✅ (verificado con PostgreSQL real en transacciones revertidas; con datos reales tras T026) |
+| 3.4 | Implementar transacciones, offsets e idempotencia | ✅ (verificado con PostgreSQL y Kafka reales en recursos temporales; con datos reales tras T026) |
 | 3.5 | Validar coordenadas, campos y gestionar cuarentena | ⬜ |
 | 3.6 | Registrar estado de ingesta y comprobar retención | ⬜ |
 | 3.7 | Probar fallos, reinicios y recuperación sin duplicados | ⬜ |
+
+*Correspondencia con `specs/002-ingesta-real-calidad/tasks.md` (SDD de F3, 48 tareas; cada tarea con un único paso principal):*
+
+| Paso | Tareas | Notas |
+|---|---|---|
+| 3.2 | T001–T013 | Ingesta en **modo seco** (`INGESTA_PUBLICAR=false`): consulta, registra y conserva, sin publicar |
+| 3.3 | T014–T016 | Historial de versiones y estado actual |
+| 3.4 | T017–T018 | Transacción atómica y offset tras guardar |
+| 3.5 | T019–T029 | Calidad y cuarentena; **T026 activa la publicación real** y T027–T028 verifican con datos reales los pasos 3.3 y 3.4 |
+| 3.6 | T030–T036 | Estado de ingesta, retención; T036 (volumen de Kafka) condicionada a la decisión D4 |
+| 3.7 | T037–T048 | Fallos y recuperación; SC-010 (24 h) pendiente de observación real |
+
 
 **Criterio obligatorio del paso 3.1:** retirada o aislamiento completo de `synthetic`, completado como máximo al cerrar el paso 3.1, es decir, **antes de conectar la ingesta real (paso 3.2)**. La API definitiva solo admite `mode` = `live` o `replay`; ninguna respuesta contiene `synthetic` y ninguna consulta de la API referencia el esquema `sintetico` (`specs/001-mvp-evento-sintetico/research.md`, R-001).
 
@@ -317,8 +329,8 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 - `mode = "synthetic"` es una excepción temporal del MVP, que se retira o aísla en el paso 3.1.
 
 ### Próximos pasos
-1. Realizar manualmente, desde VS Code, el commit `[F2]` de cierre de la Fase 2 (evidencias en `docs/evidencias/mvp/`).
-2. Con autorización expresa, iniciar F3 en el paso 3.1 (retirar o aislar `synthetic` antes de la ingesta real).
+1. Con autorización expresa, continuar F3 en el paso 3.2 (consulta periódica a USGS), con especificación propia en Spec Kit (`specs/002-ingesta-real-calidad/`).
+2. El commit `[F3]` se realiza manualmente al cerrar la fase (evidencias en `docs/evidencias/f3/`).
 3. Crear las skills propias (`requirements-review`, `learning-explainer`, etc.) cuando haga falta.
 
 ### Reglas

@@ -72,11 +72,11 @@ de defensa. Las explicaciones se dan en español, de forma clara y progresiva.
   milisegundos Unix UTC; `null` (nunca NaN/Infinity) para valores desconocidos. Se implementan
   también `/api/salud` y `/api/estadisticas` y los filtros `start`, `end`, `min_mag` y
   `country_id`. Si la base falla, la API devuelve un error explícito, no cero eventos.
-- **Valores de `mode`:** el contrato del profesor solo admite `live` y `replay`; la API definitiva
-  MUST NOT exponer ningún otro. El valor `synthetic` es una excepción temporal, limitada al circuito
-  aislado del MVP (topic y esquema propios); se retira o aísla por completo como máximo al cerrar
-  el paso 3.1 de la hoja de ruta (antes de la ingesta real del paso 3.2), según
-  `specs/001-mvp-evento-sintetico/research.md` (R-001).
+- **Valores de `mode`:** el contrato del profesor solo admite `live` y `replay`; la API, el consumidor
+  y las tablas definitivas MUST NOT admitir ni exponer ningún otro. La excepción temporal `synthetic`
+  del MVP (F2) se retiró en el paso 3.1: el MVP se conserva en Git (commit `0a56f65`), en
+  `docs/evidencias/mvp/` y en el esquema archivado `sintetico`, que ningún componente lee. Un dato de
+  prueba MUST NOT insertarse en las tablas definitivas (las pruebas usan transacciones que se revierten).
 - **Kafka:** la clave del mensaje es el id del evento; el mensaje incluye `source`,
   `ingested_at`, `mode` (`live` o `replay`) y el evento original. El productor confirma con Kafka
   antes de marcar una versión como publicada.
@@ -110,4 +110,4 @@ material una guía, PATCH para aclaraciones. Cada especificación, plan y revisi
 comprobar el cumplimiento de estos principios; cualquier desviación se justifica por escrito.
 La guía operativa diaria está en `CLAUDE.md` y `docs/HOJA-DE-RUTA.md`.
 
-**Versión**: 1.0.2 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-03
+**Versión**: 1.0.3 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-05

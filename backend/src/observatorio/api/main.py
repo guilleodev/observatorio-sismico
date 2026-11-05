@@ -10,7 +10,7 @@ from psycopg_pool import AsyncConnectionPool
 
 from observatorio.api.repositorio import BaseDatosNoDisponible, RepositorioApi, a_geojson
 from observatorio.config import ConfigPostgres, leer_obligatoria
-from observatorio.sintetico import ahora_ms
+from observatorio.tiempo import ahora_ms
 
 log = logging.getLogger("api")
 
@@ -22,7 +22,7 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms) -> FastAPI:
         yield
         await repositorio.cerrar()
 
-    app = FastAPI(title="Observatorio sísmico (MVP)", lifespan=ciclo_de_vida)
+    app = FastAPI(title="Observatorio sísmico", lifespan=ciclo_de_vida)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origenes,
@@ -47,8 +47,8 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms) -> FastAPI:
 
     @app.get("/api/salud")
     async def salud():
-        ultima = await repositorio.ultima_ingestion()  # falla con 503 si la base no responde
-        return {"status": "ok", "database": "ok", "last_ingestion": ultima}
+        await repositorio.comprobar_base()  # falla con 503 si la base no responde
+        return {"status": "ok", "database": "ok", "last_ingestion": await repositorio.ultima_ingestion()}
 
     return app
 

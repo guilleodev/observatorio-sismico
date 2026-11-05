@@ -46,3 +46,59 @@ class ConfigPostgres:
 
     def conninfo(self) -> str:
         return f"host={self.host} dbname={self.base} user={self.usuario} password={self.password}"
+
+
+SOURCE_ADMITIDO = "usgs-all-day"
+URL_USGS = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
+
+
+def _entero(nombre: str, defecto: int, minimo: int = 1) -> int:
+    texto = os.environ.get(nombre, "").strip()
+    if not texto:
+        return defecto
+    try:
+        valor = int(texto)
+    except ValueError:
+        raise ConfigError(f"{nombre} debe ser un entero, no {texto!r}") from None
+    if valor < minimo:
+        raise ConfigError(f"{nombre} debe ser >= {minimo}, no {valor}")
+    return valor
+
+
+def _booleano(nombre: str, defecto: bool) -> bool:
+    texto = os.environ.get(nombre, "").strip().lower()
+    if not texto:
+        return defecto
+    if texto in ("true", "1", "si", "sí", "yes"):
+        return True
+    if texto in ("false", "0", "no"):
+        return False
+    raise ConfigError(f"{nombre} debe ser true o false, no {texto!r}")
+
+
+@dataclass(frozen=True)
+class ConfigIngesta:
+    """Ingesta de USGS. Las variables son opcionales: si faltan se usan los valores por defecto documentados."""
+
+    usgs_url: str
+    intervalo_s: int
+    timeout_s: int
+    max_reintentos: int
+    retencion_respuestas_dias: int
+    retencion_consultas_dias: int
+    publicar: bool  # False = modo seco: consulta y registra, pero no publica ni marca versiones (R-015)
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigIngesta":
+        url = os.environ.get("USGS_URL", "").strip() or URL_USGS
+        if not url.startswith(("http://", "https://")):
+            raise ConfigError(f"USGS_URL debe empezar por http:// o https://, no {url!r}")
+        return cls(
+            usgs_url=url,
+            intervalo_s=_entero("USGS_INTERVAL_S", 60),
+            timeout_s=_entero("USGS_TIMEOUT_S", 20),
+            max_reintentos=_entero("USGS_MAX_REINTENTOS", 3, minimo=0),
+            retencion_respuestas_dias=_entero("RETENCION_RESPUESTAS_DIAS", 3),
+            retencion_consultas_dias=_entero("RETENCION_CONSULTAS_DIAS", 30),
+            publicar=_booleano("INGESTA_PUBLICAR", False),
+        )

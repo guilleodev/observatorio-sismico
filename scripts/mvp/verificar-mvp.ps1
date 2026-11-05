@@ -1,3 +1,5 @@
+# HISTORICO (MVP, fase F2): solo valido en el commit 0a56f65. Usa el generador y el esquema sinteticos, retirados en el paso 3.1.
+# Se conserva como evidencia del MVP; no se mantiene y ya no funciona contra el sistema actual.
 # Verificacion final del MVP (quickstart pasos 1-14). NO borra datos ni volumenes (sin "down -v").
 # Uso (desde la raiz del repositorio, con Docker Desktop abierto):  powershell -File scripts\verificar-mvp.ps1
 # Anade 4 eventos sinteticos nuevos (siguientes secuencias libres) al almacen. Salida real: docs/evidencias/mvp/verificacion-final.txt

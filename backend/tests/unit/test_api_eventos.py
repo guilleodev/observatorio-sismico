@@ -9,19 +9,19 @@ import pytest
 from fastapi.testclient import TestClient
 
 from observatorio.api.main import crear_app
-from observatorio.api.repositorio import BaseDatosNoDisponible, RepositorioApi
+from observatorio.api.repositorio import BaseDatosNoDisponible, RepositorioApi, a_geojson
 from observatorio.config import ConfigPostgres
 from observatorio.consumer.mensaje import interpretar_mensaje
 from observatorio.consumer.repositorio import RepositorioEventos
-from observatorio.sintetico import construir_evento, construir_mensaje, serializar
+from fixtures.mensajes import construir_evento, construir_mensaje, serializar
 
 AHORA = 1_793_113_140_000
 ORIGEN = "http://localhost:4200"
 
 
-def fila(id_="synthetic-mvp-001", **cambios):
+def fila(id_="prueba-001", **cambios):
     base = {"id": id_, "lon": -3.7, "lat": 40.4, "depth": 12.0, "mag": 3.2, "mag_type": "ml",
-            "place": "SINTÉTICO: ejemplo de prueba", "time": AHORA - 600_000, "updated": AHORA - 600_000,
+            "place": "Lugar de prueba", "time": AHORA - 600_000, "updated": AHORA - 600_000,
             "country_id": None, "country_name": None}
     return {**base, **cambios}
 
@@ -32,6 +32,10 @@ class RepoFalso:
 
     async def abrir(self): ...
     async def cerrar(self): ...
+
+    async def comprobar_base(self):
+        if self.falla:
+            raise BaseDatosNoDisponible("OperationalError")
 
     async def eventos_recientes(self, ahora_ms):
         if self.falla:
@@ -54,9 +58,9 @@ def test_estructura_geojson_y_metadatos():
     cuerpo = r.json()
     assert cuerpo["type"] == "FeatureCollection"
     assert cuerpo["metadata"] == {"generated": AHORA, "last_ingestion": AHORA - 5_000,
-                                  "mode": "synthetic", "count": 1, "truncated": False}
+                                  "mode": "live", "count": 1, "truncated": False}
     f = cuerpo["features"][0]
-    assert f["type"] == "Feature" and f["id"] == "synthetic-mvp-001"
+    assert f["type"] == "Feature" and f["id"] == "prueba-001"
     assert f["geometry"] == {"type": "Point", "coordinates": [-3.7, 40.4, 12.0]}  # lon, lat, prof.
     assert set(f["properties"]) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name"}
     assert f["properties"]["time"] == AHORA - 600_000
@@ -85,10 +89,28 @@ def test_base_caida_devuelve_503_no_lista_vacia():
 
 
 def test_salud_ok_y_503():
-    ok = cliente(RepoFalso(ultima=42)).get("/api/salud")
+    ok = cliente(RepoFalso(ultima=None)).get("/api/salud")
     assert ok.status_code == 200
-    assert ok.json() == {"status": "ok", "database": "ok", "last_ingestion": 42}
+    assert ok.json() == {"status": "ok", "database": "ok", "last_ingestion": None}
     assert cliente(RepoFalso(falla=True)).get("/api/salud").status_code == 503
+
+
+def test_ninguna_respuesta_contiene_synthetic_y_el_modo_es_contractual():
+    for ruta in ("/api/eventos", "/api/salud"):
+        r = cliente(RepoFalso([fila()])).get(ruta)
+        assert "synthetic" not in r.text.lower()
+    assert cliente(RepoFalso()).get("/api/eventos").json()["metadata"]["mode"] in ("live", "replay")
+
+
+@pytest.mark.parametrize("modo", ["synthetic", "otro", ""])
+def test_a_geojson_rechaza_modos_no_contractuales(modo):
+    with pytest.raises(ValueError):
+        a_geojson([], AHORA, None, modo=modo)
+
+
+def test_a_geojson_admite_replay_y_live():
+    assert a_geojson([], AHORA, None, modo="replay")["metadata"]["mode"] == "replay"
+    assert a_geojson([], AHORA, None)["metadata"]["mode"] == "live"
 
 
 def test_cors_origen_permitido():
@@ -131,11 +153,11 @@ def test_ventana_24h_excluye_el_antiguo_e_incluye_el_reciente():
                     yield conn
 
                 escritor, lector = RepositorioEventos(conn), RepositorioApi(misma_conexion)
-                await escritor.guardar(_mensaje(950, 10), "t", 0, 1)     # reciente (10 min)
-                await escritor.guardar(_mensaje(951, 1500), "t", 0, 2)   # 25 h: fuera de la ventana
+                await escritor.guardar_version(_mensaje(950, 10), "t", 0, 1)     # reciente (10 min)
+                await escritor.guardar_version(_mensaje(951, 1500), "t", 0, 2)   # 25 h: fuera de la ventana
                 ids = [e["id"] for e in await lector.eventos_recientes(AHORA)]
-                assert "synthetic-mvp-950" in ids and "synthetic-mvp-951" not in ids
-                assert await lector.ultima_ingestion() >= AHORA  # max(ingested_at), incluye el antiguo
+                assert "prueba-950" in ids and "prueba-951" not in ids
+                assert await lector.ultima_ingestion() is None  # sin consultas a USGS todavía (paso 3.2)
     asyncio.run(prueba())
 
 

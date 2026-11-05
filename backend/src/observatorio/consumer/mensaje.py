@@ -1,9 +1,9 @@
-"""Validación del mensaje de Kafka (contracts/mensaje-kafka.md). Un mensaje inválido se descarta con motivo."""
+"""Validación del mensaje de Kafka (ENUNCIADO.md §5.4). Un mensaje inválido se descarta con motivo."""
 
 import json
 from dataclasses import dataclass
 
-from observatorio.sintetico import MODO_MVP, PREFIJO_ID
+from observatorio.modos import MODO_REPLAY, MODOS_CONTRACTUALES
 
 
 class MensajeInvalido(Exception):
@@ -49,12 +49,15 @@ def interpretar_mensaje(valor: bytes) -> EventoRecibido:
     if not isinstance(msg, dict) or not isinstance(msg.get("event"), dict):
         raise MensajeInvalido("falta el objeto 'event'")
 
-    if msg.get("mode") != MODO_MVP:
-        raise MensajeInvalido(f"mode no permitido: {msg.get('mode')!r}")
+    modo = msg.get("mode")
+    if modo not in MODOS_CONTRACTUALES:
+        raise MensajeInvalido(f"mode no contractual (solo {', '.join(MODOS_CONTRACTUALES)}): {modo!r}")
+    if modo == MODO_REPLAY:  # la reproducción (F6) usa su propio topic y esquema; no se mezcla con live
+        raise MensajeInvalido("mode replay: este consumidor solo procesa live")
     evento = msg["event"]
     event_id = evento.get("id")
-    if not isinstance(event_id, str) or not event_id.startswith(PREFIJO_ID):
-        raise MensajeInvalido(f"id sin el prefijo {PREFIJO_ID!r}: {event_id!r}")
+    if not isinstance(event_id, str) or not event_id:
+        raise MensajeInvalido(f"id de evento ausente o no textual: {event_id!r}")
 
     coords = (evento.get("geometry") or {}).get("coordinates")
     if not isinstance(coords, list) or len(coords) < 2:

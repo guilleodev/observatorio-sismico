@@ -1,0 +1,46 @@
+# Prueba 3.4 con servicios reales en recursos TEMPORALES: base scratch_f34, tema prueba-f34, grupo prueba-f34. 2026-11-05T20:41:55Z
+Tablas definitivas ANTES: live.evento_actual=0 evento_version=0
+
+## A. Base temporal con los esquemas 001 y 002
+CREATE DATABASE
+tablas: evento_actual,cuarentena,evento_version,version_publicada,consulta_extraccion,respuesta_original,estado_ingesta
+
+## B. Versiones fuera de orden y repetida: updated 3000, 1000, 2000, 3000 (4 mensajes)
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+(consumidor al dia)
+consumer INFO GUARDADA id=prueba-f34 offset=0
+consumer INFO ANTIGUA id=prueba-f34 offset=1
+consumer INFO ANTIGUA id=prueba-f34 offset=2
+consumer INFO DUPLICADA id=prueba-f34 offset=3
+   historial=3 | actual_updated_ms=3000 | offset_confirmado=4 fin_del_tema=4 lag=0
+ESPERADO: historial=3 (updated 1000, 2000, 3000) | actual_updated_ms=3000 | lag=0 (offset_confirmado=4)
+
+## C. Fallo durante el procesamiento: se rompe la 2a sentencia (estado actual) en la base temporal y llega la version 4000
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+consumer ERROR Fallo al procesar offset=4 (relation "live.evento_actual" does not exist
+consumer ERROR Fallo al procesar offset=4 (relation "live.evento_actual" does not exist
+con el fallo activo -> historial=3 (sigue 3: la transaccion se revirtio entera) | offset_confirmado=4 fin_del_tema=5 lag=1 (NO se confirma el offset 4)
+(recuperado)
+   historial=4 | actual_updated_ms=4000 | offset_confirmado=5 fin_del_tema=5 lag=0
+ESPERADO: historial=4 | actual_updated_ms=4000 | lag=0 | sin duplicados
+duplicados de (event_id, updated_at): 0
+
+## D. Reentrega: parar el consumidor, rebobinar el grupo temporal al principio y reprocesar los 5 mensajes
+(grupo vacio)
+rebobinado: prueba-f34      prueba-f34      0          0
+tras rebobinar: offset_confirmado=0 fin_del_tema=5 lag=5
+(reprocesado)
+consumer INFO DUPLICADA id=prueba-f34 offset=0
+consumer INFO DUPLICADA id=prueba-f34 offset=1
+consumer INFO DUPLICADA id=prueba-f34 offset=2
+consumer INFO DUPLICADA id=prueba-f34 offset=3
+consumer INFO DUPLICADA id=prueba-f34 offset=4
+   historial=4 | actual_updated_ms=4000 | offset_confirmado=5 fin_del_tema=5 lag=0
+ESPERADO: todos DUPLICADA o ANTIGUA-> sin cambios: historial=4, actual 4000, lag=0
+
+## E. Limpieza (solo recursos temporales)
+DROP DATABASE
+temas restantes: __consumer_offsets terremotos.live terremotos.sintetico 
+Tablas definitivas DESPUES: live.evento_actual=0 evento_version=0
+sintetico intacto: 18 filas
+bases: postgres,observatorio

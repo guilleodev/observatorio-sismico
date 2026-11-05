@@ -1,17 +1,21 @@
 # Observatorio de actividad sísmica
 
-Proyecto académico de Sistemas de Big Data. Estado actual: **MVP de la Fase F2**, en el que un
-**evento sintético** (claramente identificado, no es un terremoto real) recorre el circuito completo:
-productor Python → Kafka → consumidor Python → PostgreSQL → API FastAPI → mapa Angular/Leaflet.
+Proyecto académico de Sistemas de Big Data. Arquitectura: productor Python → Apache Kafka → consumidor Python →
+PostgreSQL → API FastAPI → mapa Angular/Leaflet, en cinco servicios de Docker Compose.
 
-El MVP **no consulta USGS** ni usa ngrok o Netlify (fases posteriores). Documentación de trabajo:
-[`docs/HOJA-DE-RUTA.md`](docs/HOJA-DE-RUTA.md) y [`specs/001-mvp-evento-sintetico/`](specs/001-mvp-evento-sintetico/).
-Requisitos originales en [`docs/referencias/`](docs/referencias/).
+**Estado:** fase F3 en curso. El MVP de la fase F2 (un evento sintético que recorría todo el circuito) está
+**retirado del sistema** (paso 3.1) y se conserva en Git (commit `0a56f65`), en `docs/evidencias/mvp/` y en el esquema
+archivado `sintetico` de PostgreSQL, que ningún componente lee. El servicio `producer` consulta ya el feed de USGS cada 60 s **en modo seco**
+(`INGESTA_PUBLICAR=false`): registra las consultas y conserva la respuesta original en PostgreSQL, pero no publica en Kafka hasta que el
+consumidor definitivo esté listo (pasos 3.3–3.5); mientras tanto la API devuelve `features: []` con `mode: "live"`.
+
+Documentación de trabajo: [`docs/HOJA-DE-RUTA.md`](docs/HOJA-DE-RUTA.md), [`specs/`](specs/) y la constitución del
+proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
 
 ## Requisitos
 
 - Docker Desktop (Docker Compose v2) en marcha.
-- Node.js y npm (solo para el mapa; las dependencias ya están en `frontend/package.json`).
+- Node.js y npm (solo para el mapa).
 
 ## Arranque
 
@@ -21,7 +25,7 @@ Requisitos originales en [`docs/referencias/`](docs/referencias/).
    cp .env.example .env
    ```
 
-2. Levantar los cinco servicios (productor, Kafka, consumidor, PostgreSQL y API):
+2. Levantar los cinco servicios:
 
    ```bash
    docker compose up --build -d --wait
@@ -30,15 +34,12 @@ Requisitos originales en [`docs/referencias/`](docs/referencias/).
 
    Solo la API se publica en el equipo (`127.0.0.1:8000`); Kafka y PostgreSQL quedan internos.
 
-3. Emitir el evento sintético (se ejecuta dentro del servicio `producer`):
+3. Si el volumen de PostgreSQL ya existía, aplicar a mano los esquemas `001_esquema_live.sql` y `002_esquema_f3.sql` (los scripts de `sql/` solo
+   se ejecutan al crear el volumen; el comando no borra nada):
 
    ```bash
-   docker compose exec producer python -m observatorio.producer.emitir_sintetico
+   docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -f /docker-entrypoint-initdb.d/001_esquema_live.sql -f /docker-entrypoint-initdb.d/002_esquema_f3.sql'
    ```
-
-   Opciones: `--repeat N` (reenvía el mismo mensaje N veces), `--secuencia N` (otro evento:
-   `synthetic-mvp-00N`) y `--minutos-atras M` (hora del evento; con más de 1440 queda fuera de la
-   ventana de 24 h de la API).
 
 4. Comprobar la API:
 
@@ -47,33 +48,27 @@ Requisitos originales en [`docs/referencias/`](docs/referencias/).
    curl http://127.0.0.1:8000/api/eventos
    ```
 
-5. Ver el mapa (en `frontend/`; `public/config.json` usa `mode: "api"`; con `mode: "demo"` vuelve el ejemplo estático):
+5. Ver el mapa (`frontend/public/config.json`: `mode: "api"`; con `mode: "demo"` se ve el ejemplo estático):
 
    ```bash
    cd frontend
    npm start
    ```
 
-   Abrir `http://localhost:4200`: debe verse la insignia «DATOS SINTÉTICOS» y un marcador sobre la
-   península ibérica.
+   Abrir `http://localhost:4200`.
 
-## Repetir la demostración
+## Datos y modos
 
-El reenvío del mismo id se ignora y no actualiza la hora del evento. Para ver un evento nuevo usar
-`--secuencia N`. Empezar desde cero **borra los datos sintéticos y los mensajes del broker**
-(`docker compose down -v`); no se hace sin querer.
+- La API y el consumidor solo admiten los modos del contrato del profesor: `live` y `replay`. El consumidor procesa solo
+  `live`; cualquier otro mensaje se descarta con motivo en el registro. La reproducción (`replay`) llegará en F6 con su
+  propio topic y esquema.
+- Los datos definitivos viven en el esquema `live` (`sql/001_esquema_live.sql`, estructura provisional hasta el paso 3.3).
+- `sql/mvp/` y `scripts/mvp/` son material histórico del MVP: no se ejecutan ni se mantienen.
 
-## Verificación automatizada
+## Pruebas
 
-`scripts/verificar-mvp.ps1` encadena las comprobaciones del `quickstart.md` y guarda la salida real en
-`docs/evidencias/mvp/verificacion-final.txt`. Detiene y reinicia servicios, y **añade eventos
-sintéticos 003 a 006**; no borra datos ni volúmenes.
-
-```bash
-powershell -File scripts/verificar-mvp.ps1
-```
-
-Pruebas unitarias y de integración (Python 3.13 en contenedor; ver `docs/evidencias/mvp/`).
+Las pruebas están en `backend/tests/unit/` (Python 3.13). Las de PostgreSQL se ejecutan solo si existe `POSTGRES_HOST` y
+corren en transacciones que se revierten: no dejan datos en las tablas definitivas. Resultados en `docs/evidencias/`.
 
 ## Parada
 
@@ -81,8 +76,3 @@ Pruebas unitarias y de integración (Python 3.13 en contenedor; ver `docs/eviden
 docker compose stop      # conserva contenedores y datos
 docker compose down      # elimina contenedores y red; conserva el volumen de PostgreSQL (los mensajes de Kafka no tienen volumen y se pierden)
 ```
-
-## Aviso
-
-`mode = "synthetic"` es una excepción **temporal** del MVP: el contrato de la API del profesor solo
-admite `live` y `replay`. Se retira o aísla como máximo al cerrar el paso 3.1 de la hoja de ruta.

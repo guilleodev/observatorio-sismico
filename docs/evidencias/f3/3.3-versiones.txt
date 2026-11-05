@@ -1,0 +1,57 @@
+# 3.3 — duplicados y versiones. 2026-11-05T20:34:40Z. Publicación real DESACTIVADA (INGESTA_PUBLICAR=false).
+
+## Pruebas (Python 3.13 en contenedor, PostgreSQL real; integración en transacciones revertidas)
+Python 3.13.18
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+test_consumidor_version.py::test_evento_nuevo_crea_estado_actual_e_historial PASSED [  3%]
+test_consumidor_version.py::test_misma_version_repetida_no_cambia_los_recuentos PASSED [  7%]
+test_consumidor_version.py::test_mismo_updated_con_otro_contenido_prevalece_lo_almacenado PASSED [ 10%]
+test_consumidor_version.py::test_version_posterior_actualiza_el_estado_y_conserva_ambas_en_el_historial PASSED [ 14%]
+test_consumidor_version.py::test_version_antigua_tardia_no_sustituye_a_la_actual_pero_queda_en_el_historial PASSED [ 17%]
+test_consumidor_version.py::test_cada_evento_tiene_su_propio_estado PASSED [ 21%]
+test_consumidor_version.py::test_reclasificacion_a_no_sismico_retira_el_evento_sin_borrarlo_y_conserva_el_historial PASSED [ 25%]
+test_consumidor_version.py::test_una_version_antigua_no_reactiva_un_evento_retirado_pero_una_posterior_si PASSED [ 28%]
+test_consumidor_version.py::test_retirar_un_evento_nunca_visto_no_crea_fila PASSED [ 32%]
+test_consumidor_version.py::test_retirar_con_una_version_no_posterior_no_cambia_nada PASSED [ 35%]
+test_consumidor_version.py::test_marcas_temporales_separadas_en_utc_y_original_conservado PASSED [ 39%]
+test_consumidor_version.py::test_nulos_se_conservan_como_null_y_nunca_como_cero PASSED [ 42%]
+test_consumidor_version.py::test_mag_cero_y_profundidad_negativa_son_validas PASSED [ 46%]
+test_consumidor_version.py::test_las_pruebas_no_dejan_datos_en_las_tablas_definitivas PASSED [ 50%]
+test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [ 53%]
+test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [ 57%]
+test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 60%]
+test_consumidor_flujo.py::test_una_revision_posterior_actualiza_el_estado_actual PASSED [ 64%]
+test_consumidor_flujo.py::test_mensaje_invalido_se_descarta_con_commit_sin_guardar PASSED [ 67%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[synthetic] PASSED [ 71%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[replay] PASSED [ 75%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[otro] PASSED [ 78%]
+test_repositorio_integracion.py::test_inserta_la_version_y_el_estado_actual_con_sus_campos PASSED [ 82%]
+test_repositorio_integracion.py::test_nulos_se_guardan_como_null PASSED [ 85%]
+test_repositorio_integracion.py::test_restricciones_check_rechazan_modos_y_rangos_invalidos PASSED [ 89%]
+test_repositorio_integracion.py::test_fallo_de_postgres_se_propaga PASSED [ 92%]
+test_aislamiento.py::test_el_codigo_de_produccion_no_menciona_synthetic_ni_el_esquema_sintetico PASSED [ 96%]
+test_aislamiento.py::test_consultas_solo_sobre_el_esquema_live PASSED [100%]
+============================== 28 passed in 0.86s ==============================
+103 passed, 1 warning in 9.93s
+
+## Tablas de eventos tras las pruebas (esperado 0: todo se revirtió)
+evento_actual=0 evento_version=0 cuarentena=0 version_publicada=0
+sintetico (MVP) intacto: 18 filas, huella 0e043e736d45b40c95ada2056dee05c7
+
+## Desplegar el consumidor con guardar_version (la publicación sigue desactivada)
+ Image observatorio-backend Built 
+ Container observatorio-consumer-1 Recreate 
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-consumer-1 Healthy 
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+2026-11-05 20:35:13,960 consumer INFO Consumiendo terremotos.live con el grupo consumidor-live
+producer en modo seco: INGESTA_PUBLICAR=false; últimas consultas: 10 consultas, 10 ok, publicadas totales=0
+mensajes nuevos en terremotos.live: terremotos.live:0:3 (antes: terremotos.live:0:3)

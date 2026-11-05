@@ -1,3 +1,4 @@
+-- HISTORICO (MVP, fase F2): esquema sintetico. Archivado; no se ejecuta en initdb (esta en un subdirectorio).
 -- Esquema aislado del MVP (datos sintéticos). Ver specs/001-mvp-evento-sintetico/data-model.md.
 -- PostgreSQL solo ejecuta este script al crear el volumen por primera vez.
 

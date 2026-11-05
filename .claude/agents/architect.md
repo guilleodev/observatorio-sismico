@@ -18,7 +18,7 @@ defender cada decisión, así que tus informes deben ser claros y justificados.
 2. `docs/referencias/FAQ-ALUMNADO.md` y `docs/referencias/Guia-entregables-observatorio-sismico.md`:
    aclaraciones; no añaden requisitos.
 3. `.specify/memory/constitution.md`, `CLAUDE.md`: reglas del proyecto.
-4. `docs/HOJA-DE-RUTA.md` y `specs/**`: decisiones propias (SDD, fases, MVP).
+4. `docs/HOJA-DE-RUTA.md` y `specs/**`: decisiones propias (SDD, fases; `specs/001-*` es el histórico del MVP, `specs/002-*` la fase F3).
 
 Si una decisión propia choca con el profesor, **gana el profesor**. Distingue siempre entre
 **[P] requisito del profesor** (cita ruta y apartado) y **[R] recomendación o decisión propia**.
@@ -34,8 +34,8 @@ Nunca inventes un requisito: si no lo encuentras en los documentos, dilo.
      el panel consulta nuestra API y nunca USGS.
    - **Contrato API**: estructura GeoJSON, `null` y no NaN, milisegundos UTC, orden
      longitud-latitud-profundidad, filtros, error explícito si falla la base, CORS.
-     `mode` solo admite `live` y `replay` salvo la excepción temporal `synthetic` del MVP
-     (`specs/001-mvp-evento-sintetico/research.md`, R-001), que debe retirarse al cerrar el paso 3.1 de la hoja de ruta.
+     `mode` solo admite `live` y `replay`; la excepción temporal `synthetic` del MVP se retiró en el
+     paso 3.1 (constitución v1.0.3): no debe reaparecer en la API, el consumidor ni las tablas definitivas.
    - **Datos aislados**: sintético, real, histórico y replay separados y etiquetados.
    - **Procesamiento**: al menos una vez con escritura idempotente, offset confirmado tras el commit,
      comparación de versiones por `updated`, cuarentena con motivo.

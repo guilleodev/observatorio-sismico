@@ -1,0 +1,66 @@
+# 3.2 — migración sql/002_esquema_f3.sql sobre el volumen existente. 2026-11-05T20:21:22Z. Sin borrar datos.
+ANTES: sintetico=18 filas, huella 0e043e736d45b40c95ada2056dee05c7; live.evento_actual=0 filas
+
+## Aplicación 1
+ALTER TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+INSERT 0 1
+
+## Aplicación 2 (idempotente)
+errores: 0
+
+## Tablas de live y restricciones
+                  List of relations
+ Schema |        Name         | Type  |    Owner     
+--------+---------------------+-------+--------------
+ live   | consulta_extraccion | table | observatorio
+ live   | cuarentena          | table | observatorio
+ live   | estado_ingesta      | table | observatorio
+ live   | evento_actual       | table | observatorio
+ live   | evento_version      | table | observatorio
+ live   | respuesta_original  | table | observatorio
+ live   | version_publicada   | table | observatorio
+(7 rows)
+
+                         Table "live.evento_version"
+    "evento_version_pkey" PRIMARY KEY, btree (event_id, updated_at)
+    "evento_version_event_id_check" CHECK (event_id <> ''::text)
+    "evento_version_latitude_check" CHECK (latitude >= '-90'::integer::double precision AND latitude <= 90::double precision)
+    "evento_version_longitude_check" CHECK (longitude >= '-180'::integer::double precision AND longitude <= 180::double precision)
+    "evento_version_mode_check" CHECK (mode = 'live'::text)
+                       Table "live.version_publicada"
+    "version_publicada_pkey" PRIMARY KEY, btree (event_id, updated_ms)
+                                           Table "live.consulta_extraccion"
+    "consulta_extraccion_pkey" PRIMARY KEY, btree (id)
+    "idx_consulta_extraccion_iniciada" btree (iniciada_at)
+    "consulta_extraccion_resultado_check" CHECK (resultado = ANY (ARRAY['ok'::text, 'error'::text]))
+Referenced by:
+    TABLE "live.respuesta_original" CONSTRAINT "respuesta_original_consulta_id_fkey" FOREIGN KEY (consulta_id) REFERENCES live.consulta_extraccion(id) ON DELETE CASCADE
+                      Table "live.respuesta_original"
+    "respuesta_original_pkey" PRIMARY KEY, btree (consulta_id)
+    "idx_respuesta_original_creada" btree (creada_at)
+    "respuesta_original_consulta_id_fkey" FOREIGN KEY (consulta_id) REFERENCES live.consulta_extraccion(id) ON DELETE CASCADE
+                                             Table "live.cuarentena"
+    "cuarentena_pkey" PRIMARY KEY, btree (id)
+    "cuarentena_huella_key" UNIQUE CONSTRAINT, btree (huella)
+    "idx_cuarentena_categoria_motivo" btree (categoria, motivo)
+    "idx_cuarentena_evento" btree (event_id, updated_ms)
+    "cuarentena_categoria_check" CHECK (categoria = ANY (ARRAY['excluido'::text, 'invalido'::text]))
+                            Table "live.estado_ingesta"
+    "estado_ingesta_pkey" PRIMARY KEY, btree (id)
+    "estado_ingesta_id_check" CHECK (id = 1)
+ retirado        | boolean                  |           | not null | false
+    "idx_live_evento_actual_vigente" btree (event_time) WHERE NOT retirado
+
+DESPUÉS: sintetico=18 filas, huella 0e043e736d45b40c95ada2056dee05c7
+live.evento_actual=0, evento_version=0, version_publicada=0, cuarentena=0, estado_ingesta=1 fila

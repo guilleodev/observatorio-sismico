@@ -1,0 +1,73 @@
+# 3.2 — ingesta de USGS en MODO SECO (INGESTA_PUBLICAR=false). 2026-11-05T20:25:23Z
+## Antes
+offsets finales de terremotos.live (ANTES): terremotos.live:0:3
+consultas=0, version_publicada=0, evento_actual=0, evento_version=0
+
+## Reconstruir y arrancar solo producer
+ Image observatorio-backend Built 
+ Container observatorio-producer-1 Recreate 
+ Container observatorio-producer-1 Recreated 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+arranque: 2026-11-05T20:25:37Z
+variables: USGS_INTERVAL_S=60 USGS_TIMEOUT_S=20 USGS_MAX_REINTENTOS=3 INGESTA_PUBLICAR=false 
+2026-11-05 20:25:32,468 producer INFO Ingesta USGS cada 60 s en modo SECO: no se publica en Kafka (https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson)
+2026-11-05 20:25:32,585 producer.ingesta INFO Consulta ok: 216 eventos, 154242 bytes, 95 ms, 1 intento(s), copia guardada; publicadas=0 (modo seco)
+
+## Resultados tras 20:30:50 UTC
+ id |        iniciada_at         | seg_desde_anterior | resultado | http_status | duracion_ms | bytes  | eventos | intentos | publicadas | omitidas 
+----+----------------------------+--------------------+-----------+-------------+-------------+--------+---------+----------+------------+----------
+ 11 | 2026-11-05 20:25:32.482+00 |                    | ok        |         200 |          95 | 154242 |     216 |        1 |            |         
+ 12 | 2026-11-05 20:26:32.54+00  |               60.1 | ok        |         200 |          91 | 154937 |     217 |        1 |            |         
+ 13 | 2026-11-05 20:27:32.554+00 |               60.0 | ok        |         200 |         103 | 154923 |     217 |        1 |            |         
+ 14 | 2026-11-05 20:28:32.608+00 |               60.1 | ok        |         200 |          94 | 154923 |     217 |        1 |            |         
+ 15 | 2026-11-05 20:29:32.658+00 |               60.1 | ok        |         200 |          92 | 154923 |     217 |        1 |            |         
+ 16 | 2026-11-05 20:30:32.716+00 |               60.1 | ok        |         200 |          91 | 154923 |     217 |        1 |            |         
+(6 rows)
+
+ consultas | bytes_min | bytes_medio | bytes_max | ms_min | ms_medio | ms_max | ev_min | ev_max 
+-----------+-----------+-------------+-----------+--------+----------+--------+--------+--------
+         6 |    154242 |      154812 |    154937 |     91 |       94 |    103 |    216 |    217
+(1 row)
+
+-- copias comprimidas guardadas (solo cuando cambia el contenido):
+ consulta_id | original_bytes | comprimido_bytes |     hash     
+-------------+----------------+------------------+--------------
+          11 |         154242 |            19581 | b5fbef5a0c0c
+          12 |         154937 |            19657 | 69eb184a6b95
+          13 |         154923 |            19629 | 2817213ffa87
+(3 rows)
+
+-- estado de ingesta:
+   ultima_consulta_ok_at    | consultas_ok | consultas_error | ultimo_error |     hash     
+----------------------------+--------------+-----------------+--------------+--------------
+ 2026-11-05 20:30:32.807+00 |            6 |               0 |              | 2817213ffa87
+(1 row)
+
+
+## Nada se publica ni se procesa (modo seco)
+offsets finales de terremotos.live (DESPUÉS): terremotos.live:0:3   (antes: terremotos.live:0:3, los 3 mensajes de las pruebas negativas del paso 3.1)
+version_publicada=0, evento_actual=0, evento_version=0, cuarentena=0
+sintetico (MVP) intacto: 18 filas
+API: {"status":"ok","database":"ok","last_ingestion":null} ; eventos: count= 0 mode= live
+
+Nota: en modo seco last_ingestion (hoy aún provisional en la API: null) avanzará con las consultas correctas aunque la API devuelva 0 eventos; es válido según el contrato, pero todavía no hay datos.
+
+## Estado de los servicios
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+
+## Registro del productor (últimas líneas)
+2026-11-05 20:25:32,468 producer INFO Ingesta USGS cada 60 s en modo SECO: no se publica en Kafka (https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson)
+2026-11-05 20:25:32,585 producer.ingesta INFO Consulta ok: 216 eventos, 154242 bytes, 95 ms, 1 intento(s), copia guardada; publicadas=0 (modo seco)
+2026-11-05 20:26:32,638 producer.ingesta INFO Consulta ok: 217 eventos, 154937 bytes, 91 ms, 1 intento(s), copia guardada; publicadas=0 (modo seco)
+2026-11-05 20:27:32,666 producer.ingesta INFO Consulta ok: 217 eventos, 154923 bytes, 103 ms, 1 intento(s), copia guardada; publicadas=0 (modo seco)
+2026-11-05 20:28:32,706 producer.ingesta INFO Consulta ok: 217 eventos, 154923 bytes, 94 ms, 1 intento(s); publicadas=0 (modo seco)
+2026-11-05 20:29:32,754 producer.ingesta INFO Consulta ok: 217 eventos, 154923 bytes, 92 ms, 1 intento(s); publicadas=0 (modo seco)
+2026-11-05 20:30:32,811 producer.ingesta INFO Consulta ok: 217 eventos, 154923 bytes, 91 ms, 1 intento(s); publicadas=0 (modo seco)

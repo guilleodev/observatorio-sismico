@@ -1,0 +1,191 @@
+# Paso 3.1 — retirada de 'synthetic' del runtime. 2026-11-05T19:57:45Z. Sin down -v; sin borrar datos ni volúmenes.
+(Los contenedores estaban parados por reinicio de Docker Desktop; se arrancó solo postgres para este bloque.)
+
+## 1. Estado ANTES (esquema sintetico del MVP)
+filas sintetico.evento_actual: 18
+huella md5 del contenido:      0e043e736d45b40c95ada2056dee05c7
+esquemas: public,sintetico
+
+## 2. Aplicar sql/001_esquema_live.sql al volumen existente (CREATE ... IF NOT EXISTS; no destructivo)
+CREATE SCHEMA
+CREATE TABLE
+CREATE INDEX
+
+                         Table "live.evento_actual"
+     Column      |           Type           | Collation | Nullable | Default 
+-----------------+--------------------------+-----------+----------+---------
+ event_id        | text                     |           | not null | 
+ event_time      | timestamp with time zone |           | not null | 
+ updated_at      | timestamp with time zone |           | not null | 
+ mag             | numeric                  |           |          | 
+ mag_type        | text                     |           |          | 
+ depth_km        | numeric                  |           |          | 
+ longitude       | double precision         |           | not null | 
+ latitude        | double precision         |           | not null | 
+ place           | text                     |           |          | 
+ country_id      | text                     |           |          | 
+ country_name    | text                     |           |          | 
+ source          | text                     |           | not null | 
+ mode            | text                     |           | not null | 
+ ingested_at     | timestamp with time zone |           | not null | 
+ kafka_topic     | text                     |           | not null | 
+ kafka_partition | integer                  |           | not null | 
+ kafka_offset    | bigint                   |           | not null | 
+ raw             | jsonb                    |           | not null | 
+ stored_at       | timestamp with time zone |           | not null | now()
+Indexes:
+    "evento_actual_pkey" PRIMARY KEY, btree (event_id)
+    "idx_live_evento_actual_event_time" btree (event_time)
+Check constraints:
+    "evento_actual_event_id_check" CHECK (event_id <> ''::text)
+    "evento_actual_latitude_check" CHECK (latitude >= '-90'::integer::double precision AND latitude <= 90::double precision)
+    "evento_actual_longitude_check" CHECK (longitude >= '-180'::integer::double precision AND longitude <= 180::double precision)
+    "evento_actual_mode_check" CHECK (mode = 'live'::text)
+
+filas live.evento_actual tras crear: 0
+-- Re-aplicar (idempotente):
+CREATE TABLE
+psql:/docker-entrypoint-initdb.d/001_esquema_live.sql:31: NOTICE:  relation "idx_live_evento_actual_event_time" already exists, skipping
+CREATE INDEX
+
+## 3. Pruebas (Python 3.13 en contenedor, con PostgreSQL real; integración en transacciones revertidas)
+Python 3.13.18
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+test_aislamiento.py::test_el_codigo_de_produccion_no_menciona_synthetic_ni_el_esquema_sintetico PASSED [  1%]
+test_aislamiento.py::test_consultas_solo_sobre_el_esquema_live PASSED [  3%]
+test_api_eventos.py::test_estructura_geojson_y_metadatos PASSED [  5%]
+test_api_eventos.py::test_nulos_se_serializan_como_null PASSED [  7%]
+test_api_eventos.py::test_sin_eventos_devuelve_lista_vacia_y_last_ingestion_null PASSED [  9%]
+test_api_eventos.py::test_base_caida_devuelve_503_no_lista_vacia PASSED [ 11%]
+test_api_eventos.py::test_salud_ok_y_503 PASSED               [ 13%]
+test_api_eventos.py::test_ninguna_respuesta_contiene_synthetic_y_el_modo_es_contractual PASSED [ 15%]
+test_api_eventos.py::test_a_geojson_rechaza_modos_no_contractuales[synthetic] PASSED [ 17%]
+test_api_eventos.py::test_a_geojson_rechaza_modos_no_contractuales[otro] PASSED [ 19%]
+test_api_eventos.py::test_a_geojson_rechaza_modos_no_contractuales[] PASSED [ 21%]
+test_api_eventos.py::test_a_geojson_admite_replay_y_live PASSED [ 23%]
+test_api_eventos.py::test_cors_origen_permitido PASSED        [ 25%]
+test_api_eventos.py::test_cors_preflight_con_cabecera_de_ngrok PASSED [ 27%]
+test_api_eventos.py::test_cors_origen_no_autorizado_sin_cabecera PASSED [ 29%]
+test_api_eventos.py::test_ventana_24h_excluye_el_antiguo_e_incluye_el_reciente PASSED [ 31%]
+test_api_eventos.py::test_conexion_fallida_se_traduce_a_base_no_disponible PASSED [ 33%]
+test_config.py::test_config_kafka_desde_entorno PASSED        [ 35%]
+test_config.py::test_config_kafka_falta_variable PASSED       [ 37%]
+test_config.py::test_config_postgres_falta_variable PASSED    [ 39%]
+test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [ 41%]
+test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [ 43%]
+test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 45%]
+test_consumidor_flujo.py::test_revision_posterior_no_sobrescribe_en_el_mvp PASSED [ 47%]
+test_consumidor_flujo.py::test_mensaje_invalido_se_descarta_con_commit_sin_guardar PASSED [ 49%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[synthetic] PASSED [ 50%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[replay] PASSED [ 52%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[otro] PASSED [ 54%]
+test_consumidor_mensaje.py::test_mensaje_valido PASSED        [ 56%]
+test_consumidor_mensaje.py::test_nulos_se_conservan_como_none PASSED [ 58%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-no contractual0] PASSED [ 60%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-no contractual1] PASSED [ 62%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-solo procesa live] PASSED [ 64%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-id de evento] PASSED [ 66%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-rango] PASSED [ 68%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-time] PASSED [ 70%]
+test_consumidor_mensaje.py::test_mensaje_invalido_con_motivo[<lambda>-event] PASSED [ 72%]
+test_consumidor_mensaje.py::test_json_invalido[no es json] PASSED [ 74%]
+test_consumidor_mensaje.py::test_json_invalido[\xff\xfe] PASSED [ 76%]
+test_consumidor_mensaje.py::test_json_invalido[[1, 2]] PASSED [ 78%]
+test_consumidor_mensaje.py::test_un_id_de_usgs_sin_prefijo_es_valido PASSED [ 80%]
+test_fixtures_mensajes.py::test_evento_de_prueba_tiene_la_forma_del_feed PASSED [ 82%]
+test_fixtures_mensajes.py::test_secuencia_y_minutos_atras PASSED [ 84%]
+test_fixtures_mensajes.py::test_argumentos_invalidos[kwargs0] PASSED [ 86%]
+test_fixtures_mensajes.py::test_argumentos_invalidos[kwargs1] PASSED [ 88%]
+test_fixtures_mensajes.py::test_mensaje_por_defecto_es_live_y_serializa_con_clave_y_utf8 PASSED [ 90%]
+test_repositorio_integracion.py::test_inserta_y_conserva_los_campos PASSED [ 92%]
+test_repositorio_integracion.py::test_duplicado_y_revision_no_crean_ni_cambian_filas PASSED [ 94%]
+test_repositorio_integracion.py::test_nulos_se_guardan_como_null PASSED [ 96%]
+test_repositorio_integracion.py::test_restricciones_check_rechazan_modos_y_rangos_invalidos PASSED [ 98%]
+test_repositorio_integracion.py::test_fallo_de_postgres_se_propaga PASSED [100%]
+======================== 51 passed, 1 warning in 0.99s =========================
+
+filas live.evento_actual tras las pruebas de integración: 0  (esperado 0: todo se revirtió)
+
+## 4. Reconstruir y arrancar los cinco servicios (up --build -d --wait)
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Container observatorio-api-1 Recreate 
+ Container observatorio-producer-1 Recreate 
+ Container observatorio-consumer-1 Recreate 
+ Container observatorio-api-1 Recreated 
+ Container observatorio-producer-1 Recreated 
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-kafka-1 Started 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-api-1 Started 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-consumer-1 Started 
+ Container observatorio-producer-1 Started 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-api-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-consumer-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+api running healthy  puertos: 127.0.0.1:8000->8000/tcp
+consumer running healthy  puertos: 
+kafka running healthy  puertos: 9092/tcp
+postgres running healthy  puertos: 5432/tcp
+producer running healthy  puertos: 
+
+## 5. Configuración efectiva de los servicios Python (variables de entorno relevantes)
+-- producer: KAFKA_TOPIC=terremotos.live 
+-- consumer: KAFKA_TOPIC=terremotos.live KAFKA_CONSUMER_GROUP=consumidor-live 
+-- api: API_CORS_ORIGINS=http://localhost:4200 
+
+## 6. API (http://127.0.0.1:8000)
+-- /api/salud
+HTTP/1.1 200 OK
+{"status":"ok","database":"ok","last_ingestion":null}
+-- /api/eventos
+HTTP/1.1 200 OK
+content-type: application/json
+access-control-allow-origin: http://localhost:4200
+{"type":"FeatureCollection","metadata":{"generated":1793908705805,"last_ingestion":null,"mode":"live","count":0,"truncated":false},"features":[]}
+-- ¿aparece 'synthetic' en alguna respuesta? 0 coincidencias
+
+## 7. Registro del consumidor tras el arranque
+2026-11-05 19:58:21,518 consumer INFO Consumiendo terremotos.live con el grupo consumidor-live
+
+## 8. Prueba negativa: mensajes con mode no admitido publicados a mano en terremotos.live
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+Warning: --property is deprecated and will be removed in a future version. Use --reader-property instead.
+2026-11-05 19:58:38,088 consumer WARNING DESCARTADO offset=0 clave=b'prueba-neg-synthetic' motivo=mode no contractual (solo live, replay): 'synthetic'
+2026-11-05 19:58:39,833 consumer WARNING DESCARTADO offset=1 clave=b'prueba-neg-replay' motivo=mode replay: este consumidor solo procesa live
+2026-11-05 19:58:41,519 consumer WARNING DESCARTADO offset=2 clave=b'prueba-neg-otro' motivo=mode no contractual (solo live, replay): 'otro'
+filas live.evento_actual: 0  (esperado 0)
+-- lag del grupo consumidor-live:
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID   
+consumidor-live terremotos.live 0          3               3               0               aiokafka-0.15.
+
+## 9. Módulo del generador retirado del servicio producer
+/usr/local/bin/python: No module named observatorio.producer.emitir_sintetico
+ocurrencias de 'synthetic|sintetico' en el código de producción de la imagen: 0
+2026-11-05 19:58:18,396 producer INFO Conectado a Kafka (kafka:9092); a la espera de emisiones bajo demanda
+
+## 10. Datos históricos del MVP intactos (esquema sintetico)
+filas sintetico.evento_actual: 18  (antes: 18)
+huella md5 del contenido:      0e043e736d45b40c95ada2056dee05c7  (antes: 0e043e736d45b40c95ada2056dee05c7)
+volumen PostgreSQL: observatorio_pgdata
+ninguna consulta de la API/consumidor referencia el esquema antiguo: 0 archivos en backend/src
+
+## 11. Estado final
+api running healthy
+consumer running healthy
+kafka running healthy
+postgres running healthy
+producer running healthy
+
+## 12. Ajuste del texto de log del producer (ya no emite bajo demanda) y reconstrucción
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+2026-11-05 19:59:08,300 producer INFO Conectado a Kafka (kafka:9092); en espera (la consulta a USGS llega en el paso 3.2)
+api running healthy;consumer running healthy;kafka running healthy;postgres running healthy;producer running healthy;
