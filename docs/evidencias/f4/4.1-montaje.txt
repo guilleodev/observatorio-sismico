@@ -1,0 +1,17 @@
+# 4.1 T004 - montaje del catalogo (solo lectura) 2026-11-06T19:49:59Z
+## docker compose config (consumer, volumenes y CATALOGO_PATH)
+8:      CATALOGO_PATH: /datos/paises.geojson
+21:        source: C:\Users\guill\Documents\Máster IA y Big Data\Big Data\Sesión 8\Observatorio-Sismico\observatorio-claude\frontend\public\datos\paises.geojson
+22:        target: /datos/paises.geojson
+23:        read_only: true
+servicios definidos: kafka postgres consumer producer api  (5)
+## Montaje real probado con un contenedor temporal (ruta con tilde del proyecto), SIN tocar el consumidor en marcha
+-rwxrwxrwx 1 root root 838727 Nov  3 20:05 /datos/paises.geojson
+d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c  /datos/paises.geojson
+sh: 1: cannot create /datos/paises.geojson: Read-only file system
+codigo de salida de la escritura: 0
+sha256 del archivo en el anfitrion: d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c
+git: archivo del catalogo modificado: 0 (0 = intacto)
+consumidor en marcha (no reiniciado): Up 59 minutes (healthy)
+.gitignore:21:data/historico/	data/historico/x
+.gitignore:22:data/respaldo/	data/respaldo/x

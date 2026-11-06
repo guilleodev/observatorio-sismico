@@ -1,0 +1,44 @@
+# 4.1 T001 - entorno y linea base 2026-11-06T19:47:58Z
+Aprobacion de D1-D4 y de las decisiones complementarias: registrada en el mensaje de la persona estudiante que inicia el paso 4.1
+  (D1 Shapely+NumPy; D2 esquemas geo e historico; D3 carga directa a PostgreSQL preservando originales; D4 recuperacion a demanda con source=usgs-fdsn-recuperacion;
+   desempate por ADM0_A3, margen de 6 h y recuperacion sin filtro de magnitud ni tipo documentados; objetivos de rendimiento = umbrales pendientes de medicion).
+
+## Servicios
+api: Up 3 hours (healthy)
+consumer: Up 57 minutes (healthy)
+kafka: Up 2 hours (healthy)
+postgres: Up 2 hours (healthy)
+producer: Up 2 hours (healthy)
+INGESTA_PUBLICAR del productor: true
+
+## Kafka: grupo consumidor-live
+GROUP           TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                          HOST            CLIENT-ID
+consumidor-live terremotos.live 0          270             270             0               aiokafka-0.15.0-0f0be407-5065-4b19-9a38-01fae94622e7 /172.20.0.2     aiokafka-0.15.0
+
+## Reconciliacion F3 (debe ser 0): 0
+
+## Recuentos de referencia (SC-012)
+live.evento_actual: 231
+live.evento_version: 247
+live.version_publicada: 260
+live.cuarentena: 13
+live.consulta_extraccion: 213
+live.respuesta_original: 87
+live.estado_ingesta: 1
+esquemas geo/historico presentes: -
+sintetico.evento_actual: filas=18 md5=5b9d041e8ff21ee9822d336b53ee8aff
+volumenes: observatorio_kafkadata observatorio_pgdata 
+servicios definidos en compose: kafka postgres producer api consumer 
+
+## Git
+?? docs/evidencias/f4/
+?? specs/003-geografia-historico/
+5a93860 feat: [F3] completar ingesta real, calidad y recuperación
+365e6ea feat: [F3-WIP] avanzar ingesta real y versionado de eventos
+0a56f65 feat: [F2] implementar MVP funcional del observatorio sísmico
+
+## Suite de referencia (contenedor temporal, PostgreSQL real con transacciones revertidas)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+205 passed, 1 warning in 10.57s
+Recuentos tras la suite: actual=231 cuarentena=13

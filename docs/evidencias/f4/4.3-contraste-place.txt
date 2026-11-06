@@ -1,0 +1,16 @@
+eventos con país asignado: 201 (de 6 países distintos: {'USA': 196, 'MEX': 1, 'PRI': 1, 'CHN': 1, 'IRN': 1, 'PNG': 1})
+con criterio en `place`: 200 | sin criterio (sin coma o sufijo no reconocido): 1
+COINCIDEN: 199 de 200 (99.5 %) | DISCREPANCIAS: 1
+  us7000tw8p: «130 km NE of Thang, India» -> asignado CHN (a 0 km del polígono) / sugerido IND [nombre del catálogo (India)] (a 18 km)
+
+Sufijos sin criterio: {'MX': 1}
+
+== Causa de cada discrepancia y límites de este contraste ==
+- us7000tw8p («130 km NE of Thang, India»): NO es un error. USGS cita la localidad de referencia más cercana, que está en la India; el epicentro
+  está 130 km al noreste, al otro lado de la frontera, y cae dentro del polígono de China (0 km) a 18 km del de la India. La asignación usa las
+  coordenadas y el catálogo, no el país de la localidad de referencia. Causa: localidad de referencia en un país distinto del epicentro (zona fronteriza).
+- Sin criterio (1): sufijo «MX» (sigla de estado mexicano que no está en la tabla de alias); el evento está asignado a MEX. No cuenta a favor ni en contra.
+- Resultado frente al criterio SC-005 (>= 100 eventos, 0 discrepancias SIN causa asignada): 201 eventos con país, 200 con criterio, 199 coincidencias
+  (99,5 %), 1 discrepancia con causa asignada, 0 sin causa. CUMPLE con esta limitación: el feed en vivo está dominado por EE. UU. (196 de 201) por la
+  densidad de la red sísmica estadounidense, así que el contraste valida sobre todo la cobertura de EE. UU.; la diversidad internacional se
+  re-contrastará con el histórico de 2025 (paso 4.6), que es mundial.

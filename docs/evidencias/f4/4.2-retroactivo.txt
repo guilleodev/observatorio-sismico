@@ -1,0 +1,38 @@
+# 4.2 T020 - asignacion retroactiva real sobre live.evento_actual 2026-11-06T20:18:36Z
+## Respaldo logico previo (ignorado por Git): data/respaldo/evento_actual-pre-4.2-20261106T201836Z.csv | filas: 236
+ignorado por Git: si
+## ANTES: actual=236 sin asignar=234 asignados=2 | version=258 cuarentena=13 | reconciliacion=0 | offset=281 final=281 lag=0
+## Pasada 1
+ Container observatorio-producer-run-00ddd482e2c5 Creating 
+ Container observatorio-producer-run-00ddd482e2c5 Created 
+Catálogo sha256=d2aec98bfd1f… | geometrías reparadas en memoria: SDN, USA
+evento_actual: filas antes=236 después=236 (no se borra ni se crea ninguna)
+leídos=234 asignados=234 omitidos_por_carrera=0
+por resultado: {'interior': 198, 'sin_pais': 36}
+## Pasada 2 (idempotencia)
+ Container observatorio-producer-run-16f525c3d973 Creating 
+ Container observatorio-producer-run-16f525c3d973 Created 
+Catálogo sha256=d2aec98bfd1f… | geometrías reparadas en memoria: SDN, USA
+evento_actual: filas antes=236 después=236 (no se borra ni se crea ninguna)
+leídos=0 asignados=0 omitidos_por_carrera=0
+por resultado: {}
+## DESPUES: actual=236 sin asignar=0 | version=258 cuarentena=13 | reconciliacion=0 | offset=281 final=281 lag=0
+distribucion: interior=200, sin_pais=36
+coherencia (country_id nulo <=> sin_pais): incoherentes=0 | versiones de catalogo distintas: 1
+top 10 paises:
+USA Estados Unidos: 195
+(sin pais) : 36
+CHN China: 1
+IRN Irán: 1
+MEX México: 1
+PRI Puerto Rico: 1
+PNG Papúa Nueva Guinea: 1
+## Contraste independiente (recorrido secuencial de los 177 poligonos, sin indice ni codigo del asignador)
+ Container observatorio-producer-run-3d1b6dcae86d Creating 
+ Container observatorio-producer-run-3d1b6dcae86d Created 
+eventos leídos: 236 | sin asignar (omitidos): 0 | contrastados: 236
+resultado independiente (recorrido secuencial): {'interior': 200, 'sin_pais': 36}
+DISCREPANCIAS con lo guardado: 0
+codigo de salida: 0
+sintetico md5: 5b9d041e8ff21ee9822d336b53ee8aff
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

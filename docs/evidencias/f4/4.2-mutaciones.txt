@@ -1,0 +1,15 @@
+# 4.2 - comprobacion de que las pruebas detectan fallos (mutaciones temporales, revertidas) 2026-11-06T20:12:41Z
+## Mutacion 1: la violacion de la clave foranea de pais se trata como error permanente (cuarentena)
+DETAIL:  Key (country_id)=(ZZZ) is not present in table "pais".)
+=========================== short test summary info ============================
+FAILED tests/unit/test_consumidor_pais.py::test_una_clave_foranea_de_pais_rota_es_atomica_y_no_manda_un_terremoto_valido_a_cuarentena
+1 failed, 14 deselected in 0.63s
+## Mutacion 2: el UPDATE retroactivo ya no exige que updated_at sea el leido
+tests/unit/test_retroactivo.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_retroactivo.py::test_si_llega_una_version_mas_nueva_mientras_se_asigna_no_se_pisa
+1 failed, 3 deselected in 0.47s
+## Codigo restaurado: se vuelven a ejecutar las mismas pruebas
+...................                                                      [100%]
+19 passed in 0.80s
+restaurado main.py: identico | retroactivo.py: identico

@@ -1,0 +1,7 @@
+# 4.2 T018 - suite completa 2026-11-06T20:13:51Z
+antes:   geo.pais=177 geo.catalogo=1 live.cuarentena=13 prueba-/ZA1 en live=0 ZA1..ZG1 en geo.pais=0 historico=0
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+262 passed, 1 warning in 11.13s
+despues: geo.pais=177 geo.catalogo=1 live.cuarentena=13 prueba-/ZA1 en live=0 ZA1..ZG1 en geo.pais=0 historico=0

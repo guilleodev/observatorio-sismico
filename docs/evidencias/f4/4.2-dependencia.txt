@@ -1,0 +1,8 @@
+# 4.2 T010 - Shapely y NumPy en la imagen python:3.13-slim-trixie 2026-11-06T20:00:29Z
+Python 3.13.18
+[notice] A new release of pip is available: 26.2.2 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+numpy   2.5.4
+shapely 2.2.0
+shapely 2.2.0 | geos 3.14.1 | numpy 2.5.4
+covers borde: True | contains borde: False

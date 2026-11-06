@@ -1,0 +1,78 @@
+Catálogo sha256=d2aec98bfd1f… | entidades=177 | geometrías reparadas en memoria: SDN, USA
+
+== Batería de referencia: 46 puntos ==
+punto                                                         lon,lat  esperado inicial  vigente        obtenido               veredicto
+Madrid                                                 -3.70,  40.42  pais:ESP          pais:ESP       ESP/interior           OK
+París                                                   2.35,  48.85  pais:FRA          pais:FRA       FRA/interior           OK
+Tokio                                                 139.69,  35.69  pais:JPN          pais:JPN       JPN/interior           OK
+Santiago de Chile                                     -70.65, -33.45  pais:CHL          pais:CHL       CHL/interior           OK
+Lima                                                  -77.04, -12.05  pais:PER          pais:PER       PER/interior           OK
+Nairobi                                                36.82,  -1.29  pais:KEN          pais:KEN       KEN/interior           OK
+Canberra                                              149.13, -35.28  pais:AUS          pais:AUS       AUS/interior           OK
+Brasilia                                              -47.93, -15.78  pais:BRA          pais:BRA       BRA/interior           OK
+Ankara                                                 32.86,  39.93  pais:TUR          pais:TUR       TUR/interior           OK
+Katmandú                                               85.32,  27.72  pais:NPL          pais:NPL       NPL/interior           OK
+Anchorage (Alaska)                                   -149.90,  61.22  pais:USA          pais:USA       USA/interior           OK
+Ciudad de México                                      -99.13,  19.43  pais:MEX          pais:MEX       MEX/interior           OK
+Yakarta                                               106.85,  -6.21  pais:IDN          pais:IDN       IDN/interior           OK
+Moscú                                                  37.62,  55.75  pais:RUS          pais:RUS       RUS/interior           OK
+Teherán                                                51.39,  35.69  pais:IRN          pais:IRN       IRN/interior           OK
+Jartum                                                 32.53,  15.50  pais:SDN          pais:SDN       SDN/interior           OK
+Nome (Alaska, lado del estrecho de Bering)           -165.40,  64.50  pais:USA          escala:-       -/sin_pais             OK
+                                                     -> REVISADA (no es un error del asignador): Nome es costero: el catálogo 1:110 M simplifica la costa y el punto cae 2,0 km mar adentro del polígono de EE. UU. (realidad: USA)
+Atlántico Norte                                       -30.00,  30.00  mar:-             mar:-          -/sin_pais             OK
+Pacífico ecuatorial                                  -150.00,   0.00  mar:-             mar:-          -/sin_pais             OK
+Índico sur                                             80.00, -30.00  mar:-             mar:-          -/sin_pais             OK
+Golfo de Guinea (0, 0)                                  0.00,   0.00  mar:-             mar:-          -/sin_pais             OK
+Polo Norte                                              0.00,  90.00  mar:-             mar:-          -/sin_pais             OK
+Golfo de Vizcaya, a ~0,6° de España                    -4.00,  44.00  mar:-             mar:-          -/sin_pais             OK
+Mar de Alborán, entre España y Marruecos               -3.00,  36.00  mar:-             mar:-          -/sin_pais             OK
+Mediterráneo oriental                                  28.00,  34.00  mar:-             mar:-          -/sin_pais             OK
+Pacífico frente a Chile                               -75.00, -33.00  mar:-             mar:-          -/sin_pais             OK
+Fiyi, Viti Levu (lado este)                           178.00, -17.80  pais:FJI          pais:FJI       FJI/interior           OK
+Fiyi, Taveuni (lado oeste)                           -179.90, -16.85  pais:FJI          escala:-       -/sin_pais             OK
+                                                     -> REVISADA (no es un error del asignador): Taveuni no existe en el catálogo: el polígono de Fiyi más cercano está a 34 km (realidad: FJI)
+Chukotka, Rusia (este de 180°)                        178.00,  66.50  pais:RUS          pais:RUS       RUS/interior           OK
+Chukotka, Rusia (oeste de -180°)                     -175.00,  67.00  pais:RUS          pais:RUS       RUS/interior           OK
+Polo Sur                                                0.00, -90.00  pais:ATA          pais:ATA       ATA/frontera           OK
+Puerto Rico                                           -66.45,  18.20  especial:PRI      especial:PRI   PRI/interior           OK
+Hargeisa (Somalilandia)                                44.06,   9.56  especial:SOL      especial:SOL   SOL/interior           OK
+Ramala (Palestina)                                     35.20,  31.90  especial:PSX      especial:PSX   PSX/interior           OK
+Pristina (Kosovo)                                      21.17,  42.67  especial:KOS      especial:KOS   KOS/interior           OK
+Sáhara Occidental                                     -13.00,  25.00  especial:SAH      especial:MAR   MAR/interior           OK
+                                                     -> REVISADA (no es un error del asignador): el catálogo usa la línea de facto: MAR cubre (-13, 25) y SAH solo la franja oriental; se respeta el catálogo, sin reinterpretar políticamente
+Taipéi (Taiwán)                                       121.00,  23.70  especial:TWN      especial:TWN   TWN/interior           OK
+Kyrenia (norte de Chipre)                              33.32,  35.34  especial:CYN      especial:CYN   CYN/interior           OK
+Groenlandia                                           -42.00,  72.00  especial:GRL      especial:GRL   GRL/interior           OK
+Juba (Sudán del Sur)                                   31.58,   4.85  especial:SDS      especial:SDS   SDS/interior           OK
+Sáhara Occidental, zona que el catálogo asigna a SAH  -12.00,  26.00  especial:SAH      especial:SAH   SAH/interior           OK
+Malta (La Valeta)                                      14.51,  35.90  escala:-          escala:-       -/sin_pais             OK
+Mauricio (Port Louis)                                  57.50, -20.16  escala:-          escala:-       -/sin_pais             OK
+Maldivas (Malé)                                        73.51,   4.18  escala:-          escala:-       -/sin_pais             OK
+Tonga (Nukualofa)                                    -175.20, -21.14  escala:-          escala:-       -/sin_pais             OK
+Bermudas (Hamilton)                                   -64.78,  32.30  escala:-          escala:-       -/sin_pais             OK
+
+Resultado: 46/46 puntos coinciden con la expectativa vigente; 3 expectativas se revisaron tras la primera ejecución (causas arriba)
+Por categoría: {'pais': 20, 'escala': 7, 'mar': 9, 'especial': 10}
+
+== Vértices del catálogo (propiedad exhaustiva) ==
+vértices distintos: 7536 | con un solo dueño: 4878 | compartidos por 2 o más países: 2658
+resultado del asignador sobre todos los vértices: {'frontera': 4878, 'varias': 2658}
+vértices que no coinciden con la lista de «dueños» (trifinios con un tercer país que no tiene el punto como vértice): 1
+   ((33.963393, 9.464285), ['SDN', 'SDS'], ['ETH', 'SDN', 'SDS'], 'ETH') -> resultado correcto: varias con el menor ADM0_A3 de los que cubren el punto
+
+== Partes de cada entidad (antimeridiano incluido) ==
+290 polígonos individuales: el punto representativo de cada uno se asigna correctamente (0 fallos)
+entidades con alguna parte que toca ±180°: ATA, FJI, RUS
+
+== Aleatorio: 5 000 puntos del globo, índice espacial frente a recorrido secuencial ==
+diferencias: 0 | reparto: {'sin_pais': 3363, 'interior': 1637}
+«sin país» = ningún polígono cubre el punto (comprobado uno a uno); jamás se usó la distancia al país más cercano
+
+== Solapamientos reales entre polígonos del catálogo (T022/T026) ==
+pares de polígonos que se tocan solo en frontera (área de intersección 0): 311
+pares con SOLAPAMIENTO real (área de intersección > 1e-9 grados²): 3
+   ('ETH', 'SDS', '7.860e-08')
+   ('ETH', 'SDN', '7.860e-08')
+   ('SDN', 'SDS', '7.860e-08')
+Interpretación: los 3 «solapes» son astillas de ~1e-7 grados² (≈ 1e-3 km²) alrededor del trifinio Sudán–Sudán del Sur–Etiopía, donde Sudán es la geometría inválida reparada en memoria; no son solapes políticos. Si apareciera un solape real, ganaría el menor ADM0_A3 y quedaría marcado como «varias» (cubierto con la prueba de juguete ZE1/ZF1).

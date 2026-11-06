@@ -1,0 +1,59 @@
+# 4.2 T019 (ensayo previo) - arranque seguro del consumidor con recursos temporales 2026-11-06T20:14:54Z
+Recursos temporales: base obs_f42tmp, topic terremotos.f42tmp, grupo grupo-f42tmp. El consumidor, el grupo y la base reales no se tocan.
+## Construccion de la imagen con el codigo nuevo (no recrea contenedores)
+ Image observatorio-backend Built 
+## Preparacion
+base temporal creada
+aplicado 001_esquema_live.sql
+aplicado 002_esquema_f3.sql
+aplicado 003_esquema_f4.sql
+topic temporal creado
+1 mensaje valido publicado en el topic temporal
+mensajes en el topic: 2
+terremotos.f42tmp:0:1
+
+## Escenario A: CATALOGO_PATH inexistente
+2026-11-06 20:15:16,398 consumer.geo ERROR Catálogo geográfico no utilizable (CATALOGO_PATH debe ser un archivo existente (catálogo de países), no '/datos/no-existe.geojson'); el consumidor NO procesa eventos hasta tenerlo (reintento en 1 s)
+2026-11-06 20:15:17,400 consumer.geo ERROR Catálogo geográfico no utilizable (CATALOGO_PATH debe ser un archivo existente (catálogo de países), no '/datos/no-existe.geojson'); el consumidor NO procesa eventos hasta tenerlo (reintento en 2 s)
+2026-11-06 20:15:19,402 consumer.geo ERROR Catálogo geográfico no utilizable (CATALOGO_PATH debe ser un archivo existente (catálogo de países), no '/datos/no-existe.geojson'); el consumidor NO procesa eventos hasta tenerlo (reintento en 4 s)
+2026-11-06 20:15:23,406 consumer.geo ERROR Catálogo geográfico no utilizable (CATALOGO_PATH debe ser un archivo existente (catálogo de países), no '/datos/no-existe.geojson'); el consumidor NO procesa eventos hasta tenerlo (reintento en 8 s)
+estado: NO sano (/tmp/healthy no existe)
+grupo en Kafka (no debe haber consumido ni confirmado nada):
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.GroupIdNotFoundException: Group grupo-f42tmp not found.
+java.util.concurrent.ExecutionException: org.apache.kafka.common.errors.GroupIdNotFoundException: Group grupo-f42tmp not found.
+filas en la base temporal: evento_actual=0 evento_version=0 cuarentena=0
+
+## Escenario B: catalogo valido montado, pero la base NO tiene geo.catalogo cargado (incoherente)
+2026-11-06 20:15:45,907 consumer.geo ERROR Catálogo geográfico no utilizable (la versión d2aec98bfd1f… del catálogo no está en geo.catalogo: ejecutar python -m observatorio.geo.catalogo); el consumidor NO procesa eventos hasta tenerlo (reintento en 1 s)
+2026-11-06 20:15:46,934 consumer.geo ERROR Catálogo geográfico no utilizable (la versión d2aec98bfd1f… del catálogo no está en geo.catalogo: ejecutar python -m observatorio.geo.catalogo); el consumidor NO procesa eventos hasta tenerlo (reintento en 2 s)
+2026-11-06 20:15:48,962 consumer.geo ERROR Catálogo geográfico no utilizable (la versión d2aec98bfd1f… del catálogo no está en geo.catalogo: ejecutar python -m observatorio.geo.catalogo); el consumidor NO procesa eventos hasta tenerlo (reintento en 4 s)
+estado: NO sano (/tmp/healthy no existe)
+grupo en Kafka:
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.GroupIdNotFoundException: Group grupo-f42tmp not found.
+filas: evento_actual=0 cuarentena=0
+
+## Recuperacion SIN reiniciar: se carga el catalogo en la base temporal mientras el consumidor espera
+Catálogo paises.geojson sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+geo.catalogo: versión nueva registrada
+geo.pais: nuevos=177 actualizados=0 sin_cambios=0
+2026-11-06 20:16:01,027 consumer.geo ERROR Catálogo geográfico no utilizable (la versión d2aec98bfd1f… del catálogo no está en geo.catalogo: ejecutar python -m observatorio.geo.catalogo); el consumidor NO procesa eventos hasta tenerlo (reintento en 16 s)
+2026-11-06 20:16:17,071 consumer.geo INFO Catálogo geográfico listo: versión d2aec98bfd1f
+2026-11-06 20:16:20,087 consumer INFO Consumiendo terremotos.f42tmp con el grupo grupo-f42tmp
+2026-11-06 20:16:20,095 consumer INFO GUARDADA id=prueba-t01 offset=0
+estado: SANO (/tmp/healthy existe)
+grupo en Kafka:
+GROUP           TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                          HOST            CLIENT-ID
+grupo-f42tmp    terremotos.f42tmp 0          1               1               0               aiokafka-0.15.0-16d8b49e-4b0a-46bc-9417-be66286bcdc7 /172.20.0.7     aiokafka-0.15.0
+evento procesado (esperado: ESP interior):
+prueba-t01|ESP|España|interior|d2aec98bfd1f
+cuarentena=0
+
+## Limpieza de los recursos temporales
+* Group 'grupo-f42tmp' could not be deleted due to: org.apache.kafka.common.errors.GroupNotEmptyException: The group is not empty.
+topic temporal eliminado
+base temporal eliminada
+contenedores temporales restantes: 0
+consumidor real intacto: Up About an hour (healthy) | grupo real: lag=0
+grupos restantes: consumidor-live 

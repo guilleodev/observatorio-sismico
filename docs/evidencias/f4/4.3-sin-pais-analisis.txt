@@ -1,0 +1,71 @@
+evento_actual: 239 filas | reparto por resultado: {'interior': 201, 'sin_pais': 38}
+eventos «sin país» analizados: 38
+
+id                   lon      lat  mag  más cercano (km) texto sugiere          dist. al sugerido  cita  categoría | place
+aka2026vzubgv   -151.030   60.904  1.7  USA 7.1          USA                                 7 km    18  costa afuera | 18 km W of Point Possession, Alaska
+aka2026vzucbw   -147.534   60.584  2.1  USA 23.8         USA                                24 km    56  costa afuera | 56 km SW of Tatitlek, Alaska
+aka2026vyytrl   -147.226   60.268  1.7  USA 64.2         USA                                64 km    49  mar abierto | 49 km ENE of Chenega, Alaska
+aka2026vymcfp   -152.957   59.831    2  USA 4.0          USA                                 4 km    63  localidad/costa | 63 km W of Anchor Point, Alaska
+aka2026vzutum   -152.236   59.571  1.8  USA 24.7         USA                                25 km    29  costa afuera | 29 km NW of Nanwalek, Alaska
+aka2026wahreq   -151.891   59.472    3  USA 5.8          USA                                 6 km    10  costa afuera | 10 km WNW of Seldovia, Alaska
+aka2026vyvyqq   -152.872   59.382  2.2  USA 49.3         USA                                49 km    54  costa afuera | 54 km W of Nanwalek, Alaska
+aka2026vywxyu   -153.606   59.217  1.7  USA 11.5         USA                                11 km    63  costa afuera | 63 km SE of Pope-Vannoy Landing, Alaska
+aka2026vzpdzj   -152.180   58.509  2.4  USA 71.2         USA                                71 km    65  mar abierto | 65 km NE of Aleneva, Alaska
+aka2026vzvkcu   -152.394   58.296  2.3  USA 45.0         USA                                45 km    40  costa afuera | 40 km NE of Aleneva, Alaska
+aka2026vzoxde   -153.775   57.815    2  USA 0.3          USA *                               0 km    32  localidad/costa | 32 km NNE of Larsen Bay, Alaska
+aka2026wagewp   -156.098   57.087  2.5  USA 26.3         USA                                26 km    91  costa afuera | 91 km ESE of Ugashik, Alaska
+aka2026vyurpm   -155.448   56.975  2.5  USA 73.2         USA                                73 km    77  mar abierto | 77 km W of Akhiok, Alaska
+us7000twdf      -162.829   53.654  3.6  USA 116.2        USA                               116 km   138  mar abierto | 138 km SSE of False Pass, Alaska
+us7000tweq      -162.950   53.635  4.7  USA 116.9        USA                               117 km   139  mar abierto | 139 km SSE of False Pass, Alaska
+us7000twd4      -162.950   53.553  4.6  USA 125.8        USA                               126 km   147  mar abierto | 147 km SSE of False Pass, Alaska
+uw714135471     -122.674   47.594 0.91  USA 14.5         USA                                14 km     -  localidad/costa | 0 km WNW of Rocky Point, Washington
+us7000twey      -127.029   43.113  3.1  USA 206.8        USA                               207 km   210  mar abierto | 210 km W of Port Orford, Oregon
+us7000twaq       141.264   37.993  4.6  JPN 26.4         JPN                                26 km    36  costa afuera | 36 km E of Watari, Japan
+us7000twg9       142.118   34.968  6.1  JPN 155.9        JPN                               156 km   144  mar abierto | 144 km SE of Hasaki, Japan
+us7000twhq        26.499   34.304  4.5  GRC 83.7         GRC                                84 km   101  mar abierto | 101 km SSE of Palekastro, Greece
+ci41359263      -119.653   33.966 1.77  USA 44.7         USA                                45 km    14  costa afuera | 14 km WSW of Santa Cruz Is. (E end), CA
+us7000twhh       140.248   26.914  4.2  JPN 870.7        - *                                    -     -  mar abierto | Bonin Islands, Japan region
+hv75069096      -155.404   19.021 1.72  USA 12.8         USA                                13 km    19  costa afuera | 19 km ESE of Naalehu, Hawaii
+pr71538608       -65.477   18.892 3.15  PRI 60.4         PRI                                60 km    62  mar abierto | 62 km NNE of Luquillo, Puerto Rico
+pr71538593       -64.998   18.670  2.9  PRI 79.6         -                                      -    37  mar abierto | 37 km N of Charlotte Amalie, U.S. Virgin Islands
+pr71538598       -67.105   18.551  2.4  PRI 3.4          PRI                                 3 km     6  localidad/costa | 6 km N of San Antonio, Puerto Rico
+pr71538583       -64.942   18.524 2.67  PRI 76.0         -                                      -    20  mar abierto | 20 km N of Charlotte Amalie, U.S. Virgin Islands
+pr71538538       -66.408   17.845 2.95  PRI 15.1         PRI                                15 km    13  costa afuera | 13 km S of Santa Isabel, Puerto Rico
+us7000twmq       -79.937    7.508  4.4  PAN 8.6          PAN                                 9 km    10  costa afuera | 10 km ESE of Pedasí, Panama
+us7000twfk       125.098    5.300  4.9  PHL 42.7         PHL                                43 km    41  costa afuera | 41 km SW of Balangonan, Philippines
+us7000twf2       122.649    2.167  4.4  IDN 139.4        IDN                               139 km   185  mar abierto | 185 km NNW of Gorontalo, Indonesia
+us7000twkp      -178.191  -18.074  4.3  FJI 253.3        FJI                               253 km   263  mar abierto | 263 km E of Levuka, Fiji
+us7000twfu       169.264  -18.754  4.5  VUT 295.6        VUT                               296 km    87  a revisar | 87 km N of Isangel, Vanuatu
+us7000tweb       168.753  -19.365  4.6  VUT 334.5        VUT                               335 km    58  a revisar | 58 km WNW of Isangel, Vanuatu
+us7000twet       -70.623  -20.364  3.6  CHL 50.5         CHL                                51 km    51  mar abierto | 51 km WSW of Puerto, Chile
+us7000tw8r      -178.714  -21.198  6.1  FJI 533.7        - *                                    -     -  mar abierto | Fiji region
+us7000twcy       179.939  -23.532  4.6  FJI 615.5        -                                      -     -  mar abierto | south of the Fiji Islands
+
+Resumen por categoría orientativa: {'costa afuera': 14, 'mar abierto': 18, 'localidad/costa': 4, 'a revisar': 2}
+(* = el texto de place contiene un indicio de mar: región, dorsal, golfo, océano…)
+distancia mediana al polígono más cercano: 60.4 km | máxima: 870.7 km
+
+== Bloque «a revisar» ==
+us7000twfu: país sugerido VUT a 296 km; el catálogo tiene 2 polígono(s) de VUT con cajas (lon0,lat0,lon1,lat1): [(167.2, -16.6, 167.8, -15.9), (166.6, -15.7, 167.3, -14.6)]
+us7000tweb: país sugerido VUT a 335 km; el catálogo tiene 2 polígono(s) de VUT con cajas (lon0,lat0,lon1,lat1): [(167.2, -16.6, 167.8, -15.9), (166.6, -15.7, 167.3, -14.6)]
+
+== Conclusiones (razonadas a partir de lo anterior) ==
+Los 38 eventos «sin país» (36 en el primer recuento; el feed añadió 2 durante el paso) se explican así. NINGUNO es un error de la lógica:
+la comprobación independiente de 4.2 (recorrido secuencial de los 177 polígonos) y las 5 000 pruebas aleatorias de 4.3 confirman que «sin país»
+significa exactamente «ningún polígono del catálogo cubre el punto», y la asignación jamás usa la distancia al país más cercano.
+
+1. Mar abierto o costa afuera (32 de 38; 18 a más de 50 km del polígono más cercano y 14 entre 5 y 50 km). Resultado esperado y correcto: los
+   epicentros están en el mar (Golfo de Alaska y sur de las Aleutianas, fosa de Japón e islas Bonin, Pacífico frente a Oregón, Fiyi, Vanuatu, mar
+   de Célebes, Caribe al norte de Puerto Rico…). La distancia al polígono coincide con la que cita USGS a su localidad de referencia
+   (p. ej. «138 km SSE de False Pass»: 147 km citados y 126 km al polígono), por lo que las coordenadas son coherentes con el texto.
+2. Tierra firme o costa que el catálogo 1:110 M no recoge (4 de 38): aka2026vymcfp (4,0 km de EE. UU.), aka2026vzoxde (0,3 km; isla Kodiak),
+   uw714135471 (0 km de Rocky Point, Washington: Puget Sound queda fuera del trazo simplificado), pr71538598 (3,4 km de Puerto Rico). Es la
+   limitación de escala documentada (A-02), no un error: el catálogo simplifica la costa y estos puntos caen unos kilómetros fuera del polígono.
+   Con otro catálogo más detallado recibirían país; aquí se conservan como «Sin país asignado» sin atribuirlos al país más cercano.
+3. Islas ausentes del catálogo (incluidos en 1 y 2): Islas Vírgenes de EE. UU. (pr71538593, pr71538583: suffix no reconocido), islas del Canal
+   (Santa Cruz, CA: ci41359263, 45 km de EE. UU.) y el sur de Vanuatu (ver 4).
+4. Bloque «a revisar» (2 de 38): us7000twfu y us7000tweb, al norte y noroeste de Isangel (isla de Tanna, Vanuatu). La distancia al polígono de
+   VUT (296 y 335 km) supera con mucho a la citada (87 y 58 km) porque el catálogo solo trae los polígonos de Vanuatu indicados en el bloque
+   anterior y NO la isla de Tanna ni las vecinas (escala 1:110 M). Las coordenadas son coherentes con el texto de USGS: la anomalía está en la
+   cobertura del catálogo, no en el evento ni en el asignador.
+Conclusión: 0 errores de lógica, 0 eventos mal atribuidos; la proporción de «sin país» (38/239 = 15,9 %) refleja el mar y la escala del catálogo.

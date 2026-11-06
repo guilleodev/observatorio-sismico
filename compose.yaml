@@ -99,6 +99,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?definir en .env}
       POSTGRES_USER: ${POSTGRES_USER:?definir en .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?definir en .env}
+      CATALOGO_PATH: /datos/paises.geojson
+    volumes:
+      # Catálogo de países entregado (Natural Earth): solo lectura, nunca se copia ni se modifica (F4).
+      - ./frontend/public/datos/paises.geojson:/datos/paises.geojson:ro
     depends_on:
       kafka:
         condition: service_healthy

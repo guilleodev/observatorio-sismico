@@ -10,6 +10,7 @@ from aiokafka import AIOKafkaConsumer, TopicPartition
 from observatorio.config import ConfigKafka, ConfigPostgres, leer_obligatoria
 from observatorio.consumer.mensaje import Clasificacion, clasificar_mensaje
 from observatorio.consumer.repositorio import ReferenciaMensaje, RepositorioEventos
+from observatorio.geo.arranque import esperar_asignador, preparar_asignador
 
 MARCA_SALUD = Path("/tmp/healthy")
 ESPERA_MAX_S = 30
@@ -48,6 +49,9 @@ async def procesar_registro(consumidor, registro, repositorio) -> str:
 # viola una restricción (IntegrityError) o no se puede codificar (UnicodeError). Los de conexión (OperationalError,
 # InterfaceError) y los de Kafka son transitorios y siguen reintentándose.
 ERRORES_PERMANENTES = (psycopg.errors.DataError, psycopg.errors.IntegrityError, UnicodeError)
+# Excepción (F4): una violación de la clave foránea de país NO es un dato malo sino una configuración incoherente (catálogo o
+# `geo.pais` desincronizados): no se manda a cuarentena un terremoto válido, se reintenta sin confirmar hasta corregirlo.
+NO_PERMANENTES = (psycopg.errors.ForeignKeyViolation,)
 
 
 async def aislar_error_permanente(consumidor, registro, repositorio, exc: Exception) -> str:
@@ -72,7 +76,7 @@ async def procesar_con_reintentos(consumidor, registro, obtener_repositorio, ase
         try:
             return await procesar_registro(consumidor, registro, obtener_repositorio())
         except Exception as exc:
-            if isinstance(exc, ERRORES_PERMANENTES):
+            if isinstance(exc, ERRORES_PERMANENTES) and not isinstance(exc, NO_PERMANENTES):
                 # El mismo registro volvería a fallar siempre: reintentar bloquearía la partición (FR-014). Va a cuarentena.
                 try:
                     return await aislar_error_permanente(consumidor, registro, obtener_repositorio(), exc)
@@ -98,8 +102,8 @@ async def con_reintentos(accion, descripcion: str):
 class ConexionPostgres:
     """Conexión viva a PostgreSQL: se reabre si se cerró o se rompió (p. ej. tras reiniciar la base)."""
 
-    def __init__(self, config: ConfigPostgres, conexion):
-        self._config, self._conexion = config, conexion
+    def __init__(self, config: ConfigPostgres, conexion, asignador=None):
+        self._config, self._conexion, self.asignador = config, conexion, asignador
 
     @classmethod
     async def abrir(cls, config: ConfigPostgres) -> "ConexionPostgres":
@@ -111,7 +115,10 @@ class ConexionPostgres:
             lambda: psycopg.AsyncConnection.connect(config.conninfo(), autocommit=True), "PostgreSQL")
 
     def repositorio(self) -> RepositorioEventos:
-        return RepositorioEventos(self._conexion)
+        return RepositorioEventos(self._conexion, self.asignador)
+
+    def en_bruto(self):
+        return self._conexion
 
     async def asegurar(self) -> None:
         if self._conexion.closed or self._conexion.broken:
@@ -127,6 +134,9 @@ async def main() -> None:
     grupo = leer_obligatoria("KAFKA_CONSUMER_GROUP")
 
     conexion = await ConexionPostgres.abrir(pg)
+
+    # Sin catálogo válido y coherente con la base NO se consume ni se declara sano (4.2): ningún evento se procesa a ciegas.
+    conexion.asignador = await esperar_asignador(lambda: preparar_asignador(conexion.en_bruto()), conexion.asegurar)
 
     consumidor = AIOKafkaConsumer(
         kafka.topic, bootstrap_servers=kafka.bootstrap_servers, group_id=grupo,

@@ -1,0 +1,31 @@
+# 4.2 T021 - eventos reales nuevos procesados por el consumidor desplegado 2026-11-06T20:19:14Z
+(espera de 150 s para recoger eventos nuevos del feed real)
+## Eventos escritos por el consumidor nuevo (stored_at posterior al arranque 2026-11-06 20:17:46+00)
+total: 4
+nc75463222|-122.76,38.79|USA|Estados Unidos|interior|2 km NNW of The Geysers, CA
+ci41359079|-116.90,33.88|USA|Estados Unidos|interior|5 km SSW of Banning, CA
+ci41359199|-116.65,33.41|USA|Estados Unidos|interior|14 km N of Warner Springs, CA
+ci41359103|-116.65,33.41|USA|Estados Unidos|interior|14 km N of Warner Springs, CA
+sin geo_resultado entre ellos (debe ser 0): 0
+## Versiones nuevas desde el arranque: 5 | revisiones reales (id con >1 version y alguna posterior al arranque): 4
+ci41359199 versiones=3 pais_actual=USA resultado=interior
+nc75463222 versiones=2 pais_actual=USA resultado=interior
+ci41359079 versiones=2 pais_actual=USA resultado=interior
+ci41359103 versiones=3 pais_actual=USA resultado=interior
+## API /api/eventos
+metadata: {'generated': 1793996522710, 'last_ingestion': 1793996489927, 'mode': 'live', 'count': 199, 'truncated': False}
+eventos: 199 | con country_id: 165 | country_id null (Sin pais asignado): 34
+claves de properties (contrato intacto): ['country_id', 'country_name', 'mag', 'magType', 'place', 'time', 'updated']
+sin pais con country_name no nulo (debe ser 0): 0
+con pais y country_name nulo (debe ser 0): 0
+   nc75463232 [-122.797500610352, 38.8246650695801] USA Estados Unidos
+   aka2026wahbny [-142.893, 60.277] USA Estados Unidos
+   aka2026wagewp [-156.098, 57.087] None None
+NaN/Infinity en la respuesta: False
+## Invariantes de F3 tras el cambio
+reconciliacion=0 | offset=284 final=284 lag=0
+offsets duplicados=0 | actual desfasado=0
+publicadas=274 = versiones 261 + cuarentena 13
+sin asignar en todo evento_actual: 0
+sintetico md5: 5b9d041e8ff21ee9822d336b53ee8aff
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

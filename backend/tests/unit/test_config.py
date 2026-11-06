@@ -56,3 +56,36 @@ def test_config_ingesta_valores_invalidos(monkeypatch, nombre, valor):
     monkeypatch.setenv(nombre, valor)
     with pytest.raises(ConfigError, match=nombre):
         ConfigIngesta.desde_entorno()
+
+
+def test_config_geo_lee_la_ruta_y_exige_que_el_archivo_exista(monkeypatch, tmp_path):
+    from observatorio.config import ConfigGeo
+
+    archivo = tmp_path / "paises.geojson"
+    archivo.write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("CATALOGO_PATH", str(archivo))
+    assert ConfigGeo.desde_entorno().catalogo_path == archivo
+
+
+def test_config_geo_por_defecto_apunta_al_montaje_del_contenedor(monkeypatch):
+    from pathlib import Path
+
+    from observatorio.config import ConfigGeo, RUTA_CATALOGO_DEFECTO
+
+    monkeypatch.delenv("CATALOGO_PATH", raising=False)
+    assert RUTA_CATALOGO_DEFECTO == "/datos/paises.geojson"
+    if not Path(RUTA_CATALOGO_DEFECTO).is_file():  # fuera del contenedor no existe: error claro, no un valor inventado
+        with pytest.raises(ConfigError, match="CATALOGO_PATH"):
+            ConfigGeo.desde_entorno()
+
+
+@pytest.mark.parametrize("hacer_archivo", [False, True])
+def test_config_geo_falla_si_no_hay_archivo_o_es_un_directorio(monkeypatch, tmp_path, hacer_archivo):
+    from observatorio.config import ConfigGeo
+
+    ruta = tmp_path / "no-existe.geojson"
+    if hacer_archivo:  # un directorio no es un catalogo
+        ruta = tmp_path
+    monkeypatch.setenv("CATALOGO_PATH", str(ruta))
+    with pytest.raises(ConfigError, match="CATALOGO_PATH"):
+        ConfigGeo.desde_entorno()

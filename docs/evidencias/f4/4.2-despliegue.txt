@@ -1,0 +1,23 @@
+# 4.2 T019 - despliegue SOLO del consumidor 2026-11-06T20:17:30Z
+## Precondiciones (lag 0 y reconciliacion vacia)
+offset=279 final=279 lag=0
+actual=236 version=256 publicada=269 cuarentena=13 | reconciliacion=0 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff
+ids antes: 206d130477df b3f7629bc5dd 8334b55b327c 046081f539aa 3876e8a25cf2 
+volumenes: observatorio_kafkadata observatorio_pgdata 
+## Recreacion unicamente del consumidor (--no-deps; sin tocar Kafka, PostgreSQL, productor ni API)
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-consumer-1 Starting 
+ Container observatorio-consumer-1 Started 
+ids despues: 206d130477df a325189461b8 8334b55b327c 046081f539aa 3876e8a25cf2 
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+## Arranque del consumidor
+consumer-1  | 2026-11-06 20:17:39,557 consumer.geo WARNING Geometrías reparadas en memoria (catálogo sin modificar): SDN, USA
+consumer-1  | 2026-11-06 20:17:39,557 consumer.geo INFO Catálogo geográfico listo: versión d2aec98bfd1f
+consumer-1  | 2026-11-06 20:17:46,579 consumer INFO Consumiendo terremotos.live con el grupo consumidor-live
+montaje: -rwxrwxrwx 1 root root 838727 Nov  3 20:05 /datos/paises.geojson
+CATALOGO_PATH=/datos/paises.geojson
+## Estado tras el arranque
+offset=279 final=279 lag=0
+actual=236 version=256 publicada=269 cuarentena=13 | reconciliacion=0 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff
+INGESTA_PUBLICAR del productor: true
+volumenes: observatorio_kafkadata observatorio_pgdata 

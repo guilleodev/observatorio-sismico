@@ -1,6 +1,7 @@
 """Pruebas de la API con TestClient (repositorio simulado) y consulta real de la ventana de 24 h."""
 
 import asyncio
+import json
 import os
 from contextlib import asynccontextmanager
 
@@ -190,5 +191,44 @@ def test_los_eventos_retirados_no_aparecen_en_la_api():
                 assert "prueba-960" in ids and "prueba-961" not in ids
                 cur = await conn.execute("SELECT count(*) FROM live.evento_actual WHERE event_id = 'prueba-961'")
                 assert (await cur.fetchone())[0] == 1  # no se borra: solo deja de mostrarse
+
+    asyncio.run(prueba())
+
+
+@hay_pg
+def test_la_api_devuelve_el_pais_asignado_o_null_sin_cambiar_el_resto(tmp_path):
+    """F4: country_id y country_name salen de live.evento_actual (catálogo de juguete sembrado en la transacción revertida)."""
+    from fixtures.geo import escribir_catalogo
+    from observatorio.geo.asignador import Asignador
+    from observatorio.geo.catalogo import leer_catalogo
+
+    catalogo = leer_catalogo(escribir_catalogo(tmp_path / "juguete.geojson"))
+
+    def con_coordenadas(secuencia, lon, lat):
+        msg = construir_mensaje(construir_evento(secuencia, 10, ahora=AHORA), ahora=AHORA)
+        msg["event"]["geometry"]["coordinates"] = [lon, lat, 12]
+        return interpretar_mensaje(serializar(msg)[1])
+
+    async def prueba():
+        async with await psycopg.AsyncConnection.connect(ConfigPostgres.desde_entorno().conninfo()) as conn:
+            async with conn.transaction(force_rollback=True):
+                await conn.execute("INSERT INTO geo.catalogo (sha256, archivo, entidades) VALUES (%s, %s, %s)", (catalogo.sha256, catalogo.archivo, len(catalogo.paises)))
+                for p in catalogo.paises:
+                    await conn.execute("INSERT INTO geo.pais (country_id, nombre_es, nombre_en) VALUES (%s, %s, %s)", (p.country_id, p.nombre_es, p.nombre_en))
+
+                @asynccontextmanager
+                async def misma_conexion():
+                    yield conn
+
+                escritor, lector = RepositorioEventos(conn, Asignador(catalogo)), RepositorioApi(misma_conexion)
+                await escritor.guardar_version(con_coordenadas(970, 5, 5), "t", 0, 1)  # dentro de ZA1
+                await escritor.guardar_version(con_coordenadas(971, 100, 50), "t", 0, 2)  # mar abierto: sin país
+                por_id = {e["id"]: e for e in await lector.eventos_recientes(AHORA)}
+                assert (por_id["prueba-970"]["country_id"], por_id["prueba-970"]["country_name"]) == ("ZA1", "Alfa")
+                assert (por_id["prueba-971"]["country_id"], por_id["prueba-971"]["country_name"]) == (None, None)
+                cuerpo = a_geojson([por_id["prueba-970"], por_id["prueba-971"]], AHORA, None)
+                props = [f["properties"] for f in cuerpo["features"]]
+                assert all(set(p) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name"} for p in props)  # contrato intacto
+                assert "NaN" not in json.dumps(cuerpo)
 
     asyncio.run(prueba())

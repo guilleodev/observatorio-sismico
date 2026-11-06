@@ -18,6 +18,8 @@ coverage/
 # Local data and secrets
 data/raw/
 data/processed/
+data/historico/
+data/respaldo/
 *.log
 
 # Local Claude Code configuration

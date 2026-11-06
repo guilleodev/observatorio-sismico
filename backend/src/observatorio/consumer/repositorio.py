@@ -27,15 +27,18 @@ ON CONFLICT (event_id, updated_at) DO NOTHING
 """
 
 # Estado actual: se crea o se actualiza SOLO si la versión recibida es más reciente (una antigua no lo sobrescribe).
-# Una versión posterior de terremoto también reactiva un evento retirado.
+# Una versión posterior de terremoto también reactiva un evento retirado. El país (F4) se deriva de las coordenadas de la
+# versión vigente y se guarda en la misma sentencia: si la versión no gana, tampoco cambia el país. El historial no lleva país (A-03).
 SQL_ACTUAL = f"""
-INSERT INTO live.evento_actual ({COLUMNAS}, retirado)
-VALUES ({VALORES}, false)
+INSERT INTO live.evento_actual ({COLUMNAS}, country_id, country_name, geo_resultado, geo_catalogo, retirado)
+VALUES ({VALORES}, %(country_id)s, %(country_name)s, %(geo_resultado)s, %(geo_catalogo)s, false)
 ON CONFLICT (event_id) DO UPDATE SET
     event_time = EXCLUDED.event_time, updated_at = EXCLUDED.updated_at, mag = EXCLUDED.mag, mag_type = EXCLUDED.mag_type,
     depth_km = EXCLUDED.depth_km, longitude = EXCLUDED.longitude, latitude = EXCLUDED.latitude, place = EXCLUDED.place,
     source = EXCLUDED.source, mode = EXCLUDED.mode, ingested_at = EXCLUDED.ingested_at, kafka_topic = EXCLUDED.kafka_topic,
     kafka_partition = EXCLUDED.kafka_partition, kafka_offset = EXCLUDED.kafka_offset, raw = EXCLUDED.raw,
+    country_id = EXCLUDED.country_id, country_name = EXCLUDED.country_name,
+    geo_resultado = EXCLUDED.geo_resultado, geo_catalogo = EXCLUDED.geo_catalogo,
     retirado = false, stored_at = now()
 WHERE EXCLUDED.updated_at > live.evento_actual.updated_at
 """
@@ -81,8 +84,10 @@ def calcular_huella(categoria: str, motivo: str, base_huella: bytes) -> str:
 
 
 class RepositorioEventos:
-    def __init__(self, conexion: AsyncConnection):
+    def __init__(self, conexion: AsyncConnection, asignador=None):
+        # `asignador` (F4): asigna el país a cada versión. Sin él (pruebas de F3) el país queda sin asignar (nulo).
         self._conexion = conexion
+        self._asignador = asignador
 
     async def guardar_version(self, e: EventoRecibido, topic: str, partition: int, offset: int) -> str:
         """Guarda la versión y actualiza el estado actual en UNA transacción.
@@ -90,7 +95,11 @@ class RepositorioEventos:
         Devuelve «duplicada» (esa versión ya estaba), «guardada» (nueva y es la más reciente: crea o actualiza el estado
         actual) o «antigua» (nueva, pero ya hay una posterior: queda solo en el historial).
         """
+        # La asignación es un cálculo puro y va ANTES de la transacción; si falla, no se escribe nada ni se confirma el offset.
+        a = self._asignador.asignar(e.longitude, e.latitude) if self._asignador is not None else None
         parametros = {
+            "country_id": a.country_id if a else None, "country_name": a.nombre if a else None,
+            "geo_resultado": a.resultado if a else None, "geo_catalogo": a.catalogo if a else None,
             "event_id": e.event_id, "event_time": e.event_time_ms, "updated": e.updated_ms,
             "mag": e.mag, "mag_type": e.mag_type, "depth_km": e.depth_km,
             "longitude": e.longitude, "latitude": e.latitude, "place": e.place,

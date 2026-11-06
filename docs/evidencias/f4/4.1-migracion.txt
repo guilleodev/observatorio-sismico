@@ -1,0 +1,46 @@
+# 4.1 T006 - migracion 003 (parte geo) sobre el volumen existente 2026-11-06T19:50:21Z
+ANTES  -> live: actual=231 version=247 publicada=260 cuarentena=13 | sintetico: filas=18 md5=5b9d041e8ff21ee9822d336b53ee8aff
+archivo visible en el contenedor: 001_esquema_live.sql 002_esquema_f3.sql 003_esquema_f4.sql mvp 
+--- aplicacion 1
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+--- aplicacion 2
+psql:/docker-entrypoint-initdb.d/003_esquema_f4.sql:7: NOTICE:  schema "geo" already exists, skipping
+CREATE SCHEMA
+CREATE TABLE
+psql:/docker-entrypoint-initdb.d/003_esquema_f4.sql:15: NOTICE:  relation "catalogo" already exists, skipping
+psql:/docker-entrypoint-initdb.d/003_esquema_f4.sql:26: NOTICE:  relation "pais" already exists, skipping
+CREATE TABLE
+DESPUES -> live: actual=231 version=247 publicada=260 cuarentena=13 | sintetico: filas=18 md5=5b9d041e8ff21ee9822d336b53ee8aff
+--- estructura
+                          Table "geo.catalogo"
+   Column   |           Type           | Collation | Nullable | Default 
+------------+--------------------------+-----------+----------+---------
+ sha256     | text                     |           | not null | 
+ archivo    | text                     |           | not null | 
+ entidades  | integer                  |           | not null | 
+ cargado_at | timestamp with time zone |           | not null | now()
+Indexes:
+    "catalogo_pkey" PRIMARY KEY, btree (sha256)
+Check constraints:
+    "catalogo_entidades_check" CHECK (entidades > 0)
+    "catalogo_sha256_check" CHECK (sha256 ~ '^[0-9a-f]{64}$'::text)
+
+                  Table "geo.pais"
+   Column   | Type | Collation | Nullable | Default 
+------------+------+-----------+----------+---------
+ country_id | text |           | not null | 
+ nombre_es  | text |           |          | 
+ nombre_en  | text |           |          | 
+ continente | text |           |          | 
+ subregion  | text |           |          | 
+ tipo       | text |           |          | 
+ iso_a3     | text |           |          | 
+Indexes:
+    "pais_pkey" PRIMARY KEY, btree (country_id)
+Check constraints:
+    "pais_country_id_check" CHECK (country_id <> ''::text)
+
+filas: geo.catalogo=0 geo.pais=0
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

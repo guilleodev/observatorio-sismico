@@ -1,0 +1,26 @@
+== Entorno == Python 3.13.18 | shapely 2.2.0 (GEOS 3.14.1) | x86_64 | CPU lógicas: 16 | contenedor Docker (Windows 11, Docker Desktop)
+Las cifras dependen de la máquina y de la carga del momento: son observaciones de esta ejecución, no garantías.
+
+== 1. Arranque: lectura y validación del catálogo, y construcción del índice ==
+  leer_catalogo (JSON de 819 KiB, validación estructural): mediana 17 ms (5 repeticiones)
+  Asignador (177 polígonos, make_valid de 2 reparadas, STRtree): mediana 8 ms (5 repeticiones)
+  memoria Python adicional al construir el índice (tracemalloc, pico): 0.1 MiB
+
+== 2. Tiempo por llamada a asignar() ==
+  eventos reales de live (239 puntos, sobre todo EE. UU.): n=239 | media=10.4 µs | mediana=10.6 µs | p95=12.5 µs | p99=22.6 µs | máx=42.5 µs
+  puntos aleatorios del globo (20 000; ~2/3 mar): n=20000 | media=9.1 µs | mediana=7.6 µs | p95=13.8 µs | p99=25.3 µs | máx=104.1 µs
+  rendimiento sostenido: 110,640 asignaciones/s (9.0 µs por punto, incluida la sobrecarga del bucle)
+
+== 3. Índice espacial (STRtree) frente a recorrido secuencial de los 177 polígonos ==
+  recorrido secuencial (hasta el primer polígono que cubre; los puntos del mar recorren los 177): 24.8 µs por punto
+  STRtree + covers: 9.7 µs por punto | factor: 2.6×  (n=2 000 puntos del globo)
+  Nota: con 177 polígonos el índice ya compensa; el coste de cada `covers` crece con la complejidad del polígono, no con el número de países.
+
+== 4. Coste de la asignación dentro del guardado del consumidor (PostgreSQL real, transacción revertida) ==
+  guardar_version SIN asignación (país nulo): n=300 | media=649.2 µs | mediana=621.8 µs | p95=808.9 µs | p99=980.1 µs | máx=1910.8 µs
+  guardar_version CON asignación de país: n=300 | media=724.0 µs | mediana=696.9 µs | p95=908.6 µs | p99=1008.3 µs | máx=2132.9 µs
+  sobrecoste de la asignación en la mediana: 75.0 µs por evento (ruido de la base incluido)
+
+== Referencia para SC-011 (sin umbrales aprobados) ==
+  intervalo de consulta del productor: 60 s; volumen en vivo observado: del orden de 1 evento por minuto.
+  Los umbrales objetivo de SC-011 están PENDIENTES DE MEDICIÓN y los confirma la persona estudiante; este informe no declara ninguno cumplido.

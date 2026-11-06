@@ -1,0 +1,32 @@
+# 4.2 T013 - migracion 003 (parte live) 2026-11-06T20:10:01Z
+ANTES -> live: actual=234 version=252 publicada=265 cuarentena=13 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff | geo.pais=177
+--- aplicacion 1
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+--- aplicacion 2
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+DESPUES -> live: actual=234 version=252 publicada=265 cuarentena=13 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff | geo.pais=177
+--- columnas y restricciones de live.evento_actual
+country_id text
+country_name text
+geo_catalogo text
+geo_resultado text
+evento_actual_country_id_fkey : FOREIGN KEY (country_id) REFERENCES geo.pais(country_id)
+evento_actual_event_id_check : CHECK ((event_id <> ''::text))
+evento_actual_geo_catalogo_fkey : FOREIGN KEY (geo_catalogo) REFERENCES geo.catalogo(sha256)
+evento_actual_geo_coherente_check : CHECK (((geo_resultado IS NULL) OR ((country_id IS NULL) = (geo_resultado = 'sin_pais'::text))))
+evento_actual_geo_resultado_check : CHECK ((geo_resultado = ANY (ARRAY['interior'::text, 'frontera'::text, 'varias'::text, 'sin_pais'::text])))
+evento_actual_latitude_check : CHECK (((latitude >= ('-90'::integer)::double precision) AND (latitude <= (90)::double precision)))
+evento_actual_longitude_check : CHECK (((longitude >= ('-180'::integer)::double precision) AND (longitude <= (180)::double precision)))
+evento_actual_mode_check : CHECK ((mode = 'live'::text))
+sin asignar (geo_resultado nulo): 234
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

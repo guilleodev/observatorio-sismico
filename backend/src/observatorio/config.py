@@ -2,6 +2,7 @@
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class ConfigError(RuntimeError):
@@ -102,3 +103,20 @@ class ConfigIngesta:
             retencion_consultas_dias=_entero("RETENCION_CONSULTAS_DIAS", 30),
             publicar=_booleano("INGESTA_PUBLICAR", False),
         )
+
+
+RUTA_CATALOGO_DEFECTO = "/datos/paises.geojson"
+
+
+@dataclass(frozen=True)
+class ConfigGeo:
+    """Catálogo geográfico (Natural Earth entregado). Se monta de solo lectura; nunca se copia ni se modifica."""
+
+    catalogo_path: Path
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigGeo":
+        ruta = Path(os.environ.get("CATALOGO_PATH", "").strip() or RUTA_CATALOGO_DEFECTO)
+        if not ruta.is_file():
+            raise ConfigError(f"CATALOGO_PATH debe ser un archivo existente (catálogo de países), no {str(ruta)!r}")
+        return cls(catalogo_path=ruta)

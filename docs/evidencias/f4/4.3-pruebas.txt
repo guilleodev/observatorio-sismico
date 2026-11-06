@@ -1,0 +1,15 @@
+# 4.3 T027 - suite completa 2026-11-06T20:46:14Z
+antes:   geo.pais=177 geo.catalogo=1 cuarentena=13 prueba-% en live=0 Z??=0 sin asignar=0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+316 passed, 1 warning in 11.99s
+despues: geo.pais=177 geo.catalogo=1 cuarentena=13 prueba-% en live=0 Z??=0 sin asignar=0
+## Invariantes de F3 en el sistema real
+reconciliacion=0 | offset=307 final=307 lag=0
+offsets duplicados=0 | actual desfasado=0
+publicadas=297 = versiones 284 + cuarentena 13
+coherencia geo (country_id nulo <=> sin_pais): incoherentes=0 | reparto: interior=201, sin_pais=38
+sintetico md5: 5b9d041e8ff21ee9822d336b53ee8aff
+volumenes: observatorio_kafkadata observatorio_pgdata 
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores sin cambios desde 4.2 (ids): 206d130477df a325189461b8 8334b55b327c 046081f539aa 3876e8a25cf2 

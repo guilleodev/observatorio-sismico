@@ -1,0 +1,42 @@
+# 4.1 T008 - carga idempotente de geo.pais 2026-11-06T19:52:22Z
+ids de contenedores antes: 206d130477df b3f7629bc5dd 8334b55b327c 046081f539aa 3876e8a25cf2 
+ANTES -> live: actual=231 version=247 publicada=260 cuarentena=13 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff | geo.pais=0 geo.catalogo=0
+## Construccion de la imagen (no recrea contenedores en marcha)
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image observatorio-backend Built 
+## Ejecucion 1
+ Container observatorio-producer-run-881842363d59 Creating 
+ Container observatorio-producer-run-881842363d59 Created 
+Catálogo paises.geojson sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+geo.catalogo: versión nueva registrada
+geo.pais: nuevos=177 actualizados=0 sin_cambios=0
+## Ejecucion 2
+ Container observatorio-producer-run-5eb309e3bc97 Creating 
+ Container observatorio-producer-run-5eb309e3bc97 Created 
+Catálogo paises.geojson sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+geo.catalogo: versión ya registrada
+geo.pais: nuevos=0 actualizados=0 sin_cambios=177
+## Ejecucion con catalogo inexistente (debe fallar con mensaje claro y sin tocar la base)
+ Container observatorio-producer-run-512613a113a0 Creating 
+ Container observatorio-producer-run-512613a113a0 Created 
+ERROR: CATALOGO_PATH debe ser un archivo existente (catálogo de países), no '/datos/no-existe.geojson'
+
+codigo de salida: 2
+
+## Comprobacion de integridad en PostgreSQL
+geo.pais: filas=177 distintos=177 iso_a3 nulos=5 sin nombre_es=0
+geo.catalogo: filas=1 sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+sha256 del archivo en el anfitrion: d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c
+muestras:
+ESP|España|Spain|Europe|Sovereign country|ESP
+FJI|Fiyi|Fiji|Oceania|Sovereign country|FJI
+NOR|Noruega|Norway|Europe|Sovereign country|(nulo)
+PSX|Palestina|Palestine|Asia|Indeterminate|PSE
+SOL|Somalilandia|Somaliland|Africa|Sovereign country|(nulo)
+USA|Estados Unidos|United States of America|North America|Country|USA
+tipos: Country=10, Dependency=3, Disputed=3, Indeterminate=3, Sovereign country=156, Sovereignty=2
+DESPUES -> live: actual=231 version=247 publicada=260 cuarentena=13 | sintetico md5=5b9d041e8ff21ee9822d336b53ee8aff
+ids de contenedores despues: 206d130477df b3f7629bc5dd 8334b55b327c 046081f539aa 3876e8a25cf2 
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+catalogo intacto (git): 0 archivos modificados
