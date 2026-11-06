@@ -1,0 +1,64 @@
+# T029 — calidad con DATOS REALES (feed de USGS). 2026-11-06T16:56:55Z. Solo lectura (SELECT).
+
+## Lo que ha entrado
+ publicadas | versiones_validas | estado_actual | cuarentena 
+------------+-------------------+---------------+------------
+        206 |               198 |           198 |          8
+(1 row)
+
+## Cuarentena por categoría y motivo (explosiones, canteras, etc. reales del feed); ninguno de ellos aparece en la API
+ categoria |                  motivo                   | n 
+-----------+-------------------------------------------+---
+ excluido  | tipo de evento no sísmico: 'quarry blast' | 7
+ excluido  | tipo de evento no sísmico: 'ice quake'    | 1
+(2 rows)
+
+## 1. Completitud (% con valor, sobre evento_actual)
+ eventos | pct_mag | pct_magtype | pct_profundidad | pct_place | pct_felt_opcional 
+---------+---------+-------------+-----------------+-----------+-------------------
+     198 |   100.0 |       100.0 |           100.0 |     100.0 |               6.6
+(1 row)
+
+## 2. Unicidad
+ filas_actual | ids_distintos | versiones_duplicadas | eventos_con_revisiones 
+--------------+---------------+----------------------+------------------------
+          198 |           198 |                    0 |                      0
+(1 row)
+
+## 3. Validez (todo debería cumplirse; las restricciones CHECK lo garantizan)
+ coordenadas_en_rango | geometria_point | tres_valores | tipo_terremoto | total 
+----------------------+-----------------+--------------+----------------+-------
+                  198 |             198 |          198 |            198 |   198
+(1 row)
+
+## 4. Consistencia (updated >= time; unidades; secuencia de revisiones)
+ updated_posterior_o_igual_a_time | incoherentes | prof_min_km | prof_max_km | mag_min | mag_max 
+----------------------------------+--------------+-------------+-------------+---------+---------
+                              198 |            0 |       -1.64 |         535 |   -0.06 |     6.1
+(1 row)
+
+## 5. Actualidad (minutos entre la ocurrencia y la ingesta; y entre la actualización de USGS y la ingesta)
+ min_medios_ocurrencia_a_ingesta |  max   | min_medios_actualizacion_a_ingesta 
+---------------------------------+--------+------------------------------------
+                           784.8 | 1438.5 |                              651.0
+(1 row)
+
+## 6. Exactitud y límites
+ mag_cero_conservadas | mag_negativas | profundidad_negativa | mag_nulas 
+----------------------+---------------+----------------------+-----------
+                    0 |             2 |                    3 |         0
+(1 row)
+
+magType (no se mezclan escalas sin avisar):
+ mag_type |  n  
+----------+-----
+ ml       | 128
+ md       |  57
+ mb       |  11
+ mww      |   2
+(4 rows)
+
+Límites: no hay verdad terreno con la que contrastar magnitud o localización; solo se comprueban rangos y coherencia interna. El mapa usa un catálogo simplificado (F4) y los países no están asignados todavía.
+
+## En la API
+API: count=197; features con mag null=0 (se devuelven como null, ND en el mapa); features no s�smicas=0 por construcci�n

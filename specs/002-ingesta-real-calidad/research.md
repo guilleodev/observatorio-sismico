@@ -67,8 +67,8 @@ la conformidad de la persona estudiante (ver [plan.md](plan.md)).
 ## R-007 — Cuarentena única con categoría [R]
 
 - **Decisión**: una tabla `cuarentena` con `categoria` (`excluido` | `invalido`), motivo, referencia al original (clave,
-  `(topic, partición, offset)` y copia del contenido) y una `huella` única, idempotente ante reenvíos: `sha256` de
-  `categoria|event_id|updated_ms|motivo` cuando el mensaje es legible, o del contenido completo si no lo es. Así un reenvío con otro
+  `(topic, partición, offset)` y copia del contenido) y una `huella` única, idempotente ante reenvíos: `sha256` de categoría, motivo e identidad de la versión (`event_id|updated_ms`
+  si son legibles; si no, del evento canónico o, si ni eso se lee, del contenido completo). Así un reenvío con otro
   `ingested_at` no crea otra fila (§7: el recuento no aumenta).
 - **Por qué**: FAQ (cuarentena duradera con motivo y original) y simplicidad; los offsets no son únicos si se recrea Kafka,
   por eso se guarda también el contenido.
@@ -95,9 +95,10 @@ la conformidad de la persona estudiante (ver [plan.md](plan.md)).
 
 ## R-010 — Volumen persistente para Kafka (aprobación D4)
 
-- **Observado**: tras `docker compose down` el contenedor de Kafka se recrea con un volumen anónimo nuevo y se pierden
-  mensajes y offsets del grupo; los offsets vuelven a 0 (incidencia registrada en el MVP).
-- **Decisión recomendada**: volumen con nombre `kafkadata` en `/var/lib/kafka/data`. **Efecto**: se conservan mensajes (dentro de
+- **Observado**: tras `docker compose down` el contenedor de Kafka se recrea y se pierden mensajes y offsets del grupo; los offsets
+  vuelven a 0 (incidencia del MVP). **Causa real (comprobada en el paso 3.6)**: el broker escribía en `/tmp/kafka-logs`, dentro del contenedor y
+  fuera de cualquier volumen; el volumen anónimo de `/var/lib/kafka/data` que declara la imagen estaba vacío.
+- **Decisión (aprobada y aplicada)**: volumen con nombre `kafkadata` en `/var/lib/kafka/data` **más `KAFKA_LOG_DIRS=/var/lib/kafka/data`** (sin la variable el volumen no se usa). **Efecto**: se conservan mensajes (dentro de
   la retención de 24 h/100 MiB) y offsets entre paradas; los datos del volumen anónimo antiguo no se migran (ya están en PostgreSQL).
 - **Por qué [P]**: `ENUNCIADO.md` §9 pide «volúmenes persistentes para los datos y una retención limitada de Kafka».
 - **Alternativa**: dejarlo como está y documentar que la terna `(topic, partición, offset)` no es única entre recreaciones.

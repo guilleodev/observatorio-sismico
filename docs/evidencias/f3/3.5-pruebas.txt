@@ -1,0 +1,30 @@
+# 3.5 — pruebas automatizadas (PostgreSQL real, transacciones revertidas). 2026-11-06T16:44:06Z
+Python 3.13.18
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+test_cuarentena.py::test_un_evento_no_sismico_queda_en_cuarentena_con_motivo_y_referencia_y_no_en_el_estado_actual PASSED [ 62%]
+test_cuarentena.py::test_coordenadas_invalidas_van_a_cuarentena_y_no_dibujan_ningun_punto PASSED [ 63%]
+test_cuarentena.py::test_un_mensaje_ilegible_va_a_cuarentena_y_no_bloquea_la_cola PASSED [ 65%]
+test_cuarentena.py::test_el_reenvio_del_mismo_evento_y_version_no_crea_otra_fila_aunque_cambie_ingested_at PASSED [ 66%]
+test_cuarentena.py::test_una_version_invalida_no_sustituye_a_la_ultima_version_valida PASSED [ 67%]
+test_cuarentena.py::test_reclasificacion_a_no_sismico_retira_el_evento_y_una_posterior_lo_reactiva PASSED [ 68%]
+test_cuarentena.py::test_una_exclusion_anterior_a_la_version_actual_no_retira_el_evento PASSED [ 69%]
+test_cuarentena.py::test_los_modos_y_fuentes_fuera_de_contrato_se_descartan_sin_tocar_las_tablas PASSED [ 70%]
+test_cuarentena.py::test_las_pruebas_no_dejan_datos_en_las_tablas_definitivas PASSED [ 72%]
+test_consumidor_flujo.py::test_el_offset_se_confirma_solo_despues_de_guardar PASSED [ 73%]
+test_consumidor_flujo.py::test_si_guardar_falla_no_se_confirma PASSED [ 74%]
+test_consumidor_flujo.py::test_mensaje_repetido_se_guarda_una_vez_y_se_confirma PASSED [ 75%]
+test_consumidor_flujo.py::test_una_revision_posterior_actualiza_el_estado_actual PASSED [ 76%]
+test_consumidor_flujo.py::test_un_mensaje_ilegible_va_a_cuarentena_y_el_offset_se_confirma_despues PASSED [ 77%]
+test_consumidor_flujo.py::test_un_evento_no_sismico_se_excluye_y_el_offset_se_confirma_despues PASSED [ 79%]
+test_consumidor_flujo.py::test_un_mensaje_ilegible_no_bloquea_la_cola PASSED [ 80%]
+test_consumidor_flujo.py::test_si_falla_la_cuarentena_no_se_confirma PASSED [ 81%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[synthetic] PASSED [ 82%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[replay] PASSED [ 83%]
+test_consumidor_flujo.py::test_modos_no_live_se_descartan_con_commit_y_sin_guardar[otro] PASSED [ 84%]
+test_api_eventos.py::test_los_eventos_retirados_no_aparecen_en_la_api PASSED [100%]
+================= 86 passed, 3 deselected, 1 warning in 1.11s ==================
+181 passed, 1 warning in 10.26s
+
+tablas definitivas tras las pruebas: evento_actual=0 evento_version=0 cuarentena=0 version_publicada=0
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy  | INGESTA_PUBLICAR=false | terremotos.live: terremotos.live:0:3 (sin cambios: 3 mensajes del paso 3.1)
+API: count= 0 mode= live

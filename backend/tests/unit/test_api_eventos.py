@@ -157,7 +157,7 @@ def test_ventana_24h_excluye_el_antiguo_e_incluye_el_reciente():
                 await escritor.guardar_version(_mensaje(951, 1500), "t", 0, 2)   # 25 h: fuera de la ventana
                 ids = [e["id"] for e in await lector.eventos_recientes(AHORA)]
                 assert "prueba-950" in ids and "prueba-951" not in ids
-                assert await lector.ultima_ingestion() is None  # sin consultas a USGS todavía (paso 3.2)
+                assert await lector.ultima_ingestion() != 0  # viene de estado_ingesta; sus casos están en test_last_ingestion.py
     asyncio.run(prueba())
 
 
@@ -169,3 +169,26 @@ def test_conexion_fallida_se_traduce_a_base_no_disponible():
 
     with pytest.raises(BaseDatosNoDisponible):
         asyncio.run(RepositorioApi(rota).eventos_recientes(AHORA))
+
+
+@hay_pg
+def test_los_eventos_retirados_no_aparecen_en_la_api():
+    """Un evento reclasificado a no sísmico (retirado) se queda en la base pero la API no lo devuelve."""
+    async def prueba():
+        conninfo = ConfigPostgres.desde_entorno().conninfo()
+        async with await psycopg.AsyncConnection.connect(conninfo) as conn:
+            async with conn.transaction(force_rollback=True):
+                @asynccontextmanager
+                async def misma_conexion():
+                    yield conn
+
+                escritor, lector = RepositorioEventos(conn), RepositorioApi(misma_conexion)
+                await escritor.guardar_version(_mensaje(960, 10), "t", 0, 1)
+                await escritor.guardar_version(_mensaje(961, 10), "t", 0, 2)
+                assert await escritor.retirar_evento("prueba-961", AHORA + 1) is True
+                ids = [e["id"] for e in await lector.eventos_recientes(AHORA)]
+                assert "prueba-960" in ids and "prueba-961" not in ids
+                cur = await conn.execute("SELECT count(*) FROM live.evento_actual WHERE event_id = 'prueba-961'")
+                assert (await cur.fetchone())[0] == 1  # no se borra: solo deja de mostrarse
+
+    asyncio.run(prueba())

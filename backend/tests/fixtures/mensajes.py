@@ -1,15 +1,16 @@
 """Mensajes de Kafka de PRUEBA para los tests (no se usan en el camino de producción).
 
-Tienen la forma del feed de USGS. Los ids empiezan por `prueba-`. El modo por defecto es `live`;
+Tienen la forma del feed de USGS. Los ids empiezan por `prueba-` (así se identifican como datos de prueba). El modo por defecto es `live`;
 los tests lo cambian para comprobar los rechazos. Nunca se insertan en las tablas definitivas:
 las pruebas con PostgreSQL se ejecutan en una transacción que se revierte.
 """
 
 import json
 
+from observatorio.config import SOURCE_ADMITIDO
 from observatorio.tiempo import ahora_ms
 
-SOURCE = "fixture-pruebas"
+SOURCE = SOURCE_ADMITIDO  # misma fuente que el feed real: lo que identifica un dato de prueba es el id `prueba-`
 PREFIJO_ID = "prueba-"
 
 

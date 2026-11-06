@@ -1,0 +1,76 @@
+# T028 — reenvío real de mensajes que YA están en el topic (no fabricados). 2026-11-06T16:56:21Z
+mensaje válido (offset 0): clave=aka2026vzzrlt
+mensaje no sísmico (offset 53): clave=aka2026vzktjm
+ANTES:
+   evento_actual=198 evento_version=198 cuarentena=8 version_publicada=206 | offset=206 fin=206 lag=0
+-- republicar el MISMO mensaje válido 5 veces y el MISMO no sísmico 5 veces (clave y valor idénticos)
+DESPUÉS:
+   evento_actual=198 evento_version=198 cuarentena=8 version_publicada=206 | offset=216 fin=216 lag=0
+registro del consumidor para esos reenvíos:
+consumer INFO GUARDADA id=aka2026vzzrlt offset=0
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=53 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+consumer INFO DUPLICADA id=aka2026vzzrlt offset=206
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=207 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+consumer INFO DUPLICADA id=aka2026vzzrlt offset=208
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=209 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+consumer INFO DUPLICADA id=aka2026vzzrlt offset=210
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=211 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+consumer INFO DUPLICADA id=aka2026vzzrlt offset=212
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=213 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+consumer INFO DUPLICADA id=aka2026vzzrlt offset=214
+consumer INFO EXCLUIDA id=aka2026vzktjm offset=215 motivo=tipo de evento no sísmico: 'ice quake' retirado=False
+ESPERADO: evento_actual, evento_version y cuarentena sin cambios; version_publicada igual; offset del grupo +10; lag 0; el reenvío válido sale DUPLICADA y el no sísmico EXCLUIDA (sin fila nueva)
+
+# T027 — verificación con datos reales y SC-002. 2026-11-06T17:01:11Z
+## Estado real (una fila actual por evento, sin duplicados, invariante de reconciliación)
+ actual | versiones | publicadas | cuarentena | versiones_duplicadas | actual_sin_version | reconciliacion_publicadas_sin_destino 
+--------+-----------+------------+------------+----------------------+--------------------+---------------------------------------
+    201 |       201 |        209 |          8 |                    0 |                  0 |                                     0
+(1 row)
+
+## Ciclos recientes: solo se publican versiones nuevas o revisadas
+ id  |  inicio  | eventos | publicadas | omitidas 
+-----+----------+---------+------------+----------
+ 177 | 17:00:54 |     207 |          1 |      206
+ 176 | 16:59:54 |     207 |          2 |      205
+ 175 | 16:58:54 |     205 |          0 |      205
+ 156 | 16:57:54 |     205 |          0 |      205
+ 124 | 16:56:54 |     205 |          0 |      205
+ 123 | 16:55:54 |     206 |          0 |      206
+ 122 | 16:54:54 |     206 |        206 |        0
+(7 rows)
+
+## Revisiones observadas (eventos con más de una versión)
+ event_id | versiones | mag_min | mag_max 
+----------+-----------+---------+---------
+(0 rows)
+
+(si no aparece ninguna fila: USGS no publicó revisiones de ningún evento durante la ventana de observación; la versión posterior y la antigua quedan cubiertas por las pruebas en transacciones revertidas, T014 y T018)
+
+## SC-002: tiempo desde que el productor ingiere un evento NUEVO hasta que se ve en /api/eventos (sondeo de la API cada 3 s)
+(3 eventos nuevos observados en directo; salida del sondeo en el apartado siguiente)
+evento | ocurrencia -> ingesta | ingesta -> visible en la API (SC-002: <= 120 s)
+ci41359311 |   145.5 s desde la ocurrencia |   2.7 s tras la ingesta
+ci41359135 | 30955.0 s desde la ocurrencia |   2.7 s tras la ingesta
+uu80163171 | 26689.5 s desde la ocurrencia |   2.9 s tras la ingesta
+peor caso: 2.9 s (objetivo <= 120 s). Nota: el sondeo es cada 3 s y 'ingested_at' es el instante en que el productor termin� de recibir la respuesta de USGS; no se puede conocer cu�ndo apareci� el evento en el feed antes de esa consulta (hasta 60 s antes).
+
+## Revisiones REALES observadas (17:05:15 UTC): USGS revisó eventos y el consumidor conservó las dos versiones sin sobrescribir hacia atrás
+  event_id  | versiones | updated_actual_ms | max_updated_historial_ms | mag_actual |     mag_por_version      
+------------+-----------+-------------------+--------------------------+------------+--------------------------
+ ci41359103 |         2 |     1793984640003 |            1793984640003 |        2.6 | 2.57 -> 2.6
+ ci41359311 |         2 |     1793984458642 |            1793984458642 |       0.92 | 1.22720968132593 -> 0.92
+(2 rows)
+
+ESPERADO: updated_actual_ms = max_updated_historial_ms (el estado actual tiene la versión más reciente) y mag_actual = la última de mag_por_version
+Ciclos con publicación de revisiones (publicadas>0):
+ id  |  inicio  | eventos | publicadas | omitidas 
+-----+----------+---------+------------+----------
+ 181 | 17:04:54 |     206 |          2 |      204
+ 177 | 17:00:54 |     207 |          1 |      206
+ 176 | 16:59:54 |     207 |          2 |      205
+ 122 | 16:54:54 |     206 |        206 |        0
+(4 rows)
+
+Reconciliación final (esperado 0): 0  | lag del grupo: offset=221 fin=221 lag=0
+Estado: evento_actual=201 evento_version=203 cuarentena=8

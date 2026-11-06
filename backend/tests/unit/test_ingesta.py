@@ -30,6 +30,13 @@ class RepoFalso:
         self.marcadas, self.consultas, self.copias, self.conteos = [], [], [], []
         self.errores, self.errores_estado, self.hash = [], [], ultimo_hash
         self.llamadas = []
+        self.purgas, self.falla_purga = [], False
+
+    async def purgar(self, dias_respuestas, dias_consultas):
+        self.purgas.append((dias_respuestas, dias_consultas))
+        if self.falla_purga:
+            raise ConnectionError("PostgreSQL caído")
+        return 0, 0
 
     async def ultimo_hash(self):
         return self.hash
@@ -163,3 +170,27 @@ def test_un_evento_sin_id_o_sin_updated_se_publica_una_sola_vez_para_que_el_cons
 def test_hash_features_es_estable_y_cambia_con_el_contenido():
     assert hash_features([feature("a")]) == hash_features([feature("a")])
     assert hash_features([feature("a")]) != hash_features([feature("a", 2)])
+
+
+def test_la_retencion_se_aplica_en_cada_ciclo_con_los_dias_configurados():
+    repo = RepoFalso()
+    ciclo(repo, [feature("a")], publicar=False)
+    ciclo(repo, [feature("a")], publicar=False)
+    assert repo.purgas == [(3, 30), (3, 30)]  # RETENCION_RESPUESTAS_DIAS y RETENCION_CONSULTAS_DIAS
+
+
+def test_la_retencion_tambien_se_aplica_si_la_consulta_falla():
+    repo = RepoFalso()
+
+    async def consultar(*args, **kwargs):
+        raise ErrorUsgs("HTTP 503", http_status=503, intentos=4)
+
+    asyncio.run(ejecutar_ciclo(repo, config(), None, consultar=consultar, ahora=lambda: AHORA))
+    assert repo.purgas == [(3, 30)]
+
+
+def test_un_fallo_al_purgar_no_rompe_la_ingesta():
+    repo = RepoFalso()
+    repo.falla_purga = True
+    res = ciclo(repo, [feature("a")], publicar=False)
+    assert res.resultado == "ok" and len(repo.consultas) == 1  # la consulta se registró igualmente

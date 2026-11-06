@@ -1,0 +1,80 @@
+# 3.6 / T036 — persistencia de Kafka (D4 aprobada). 2026-11-06T16:51:26Z. Sin down -v; no se borra ningún volumen ni mensaje.
+
+## 1. Estado ANTES (comprobación de mensajes, offsets y riesgos de pérdida)
+-- montajes del contenedor kafka (volumenes ANONIMOS: se pierden al recrear el contenedor):
+/etc/kafka/secrets -> 403df27288a18a9aa6b68439006d39c0225ae6d217646125c476582eb0d88e28
+/mnt/shared/config -> 651930231d29c697299276a285660f39afea5338350131749eab7f143195fb61
+/var/lib/kafka/data -> e638798df726a83715f303c519fc5bd4b1c070e9d4e9e66d1e97267eee227616
+-- temas y offsets finales (ultimo+1):
+terremotos.live
+terremotos.sintetico
+terremotos.live:0:3
+terremotos.sintetico:0:14
+-- grupos de consumo y desfase:
+GROUP TOPIC offset=CURRENT-OFFSET fin=LOG-END-OFFSET lag=LAG
+consumidor-live terremotos.live offset=3 fin=3 lag=0
+consumidor-sintetico terremotos.sintetico offset=14 fin=14 lag=0
+-- retención efectiva de terremotos.live:
+  retention.bytes=104857600 sensitive=false synony
+  retention.ms=86400000 sensitive=false synonyms={
+  segment.ms=21600000 sensitive=false synonyms={}
+-- riesgos: lo que hay en Kafka son 3 mensajes de las pruebas negativas del paso 3.1 (terremotos.live) y los mensajes del MVP (terremotos.sintetico), ya procesados y guardados en PostgreSQL;
+   version_publicada=0 (nada publicado sin guardar). Consulta de reconciliación (versiones publicadas sin versión ni cuarentena): 0 filas (esperado 0)
+
+## 2. Migración SIN pérdida: copiar los datos del volumen anónimo al volumen con nombre y arrancar Kafka con él
+volumen anónimo con los datos actuales: e638798df726a83715f303c519fc5bd4b1c070e9d4e9e66d1e97267eee227616 (NO se borra; queda como copia de seguridad)
+-- parada ordenada de kafka (el consumidor y el productor reintentan hasta que vuelva)
+ Container observatorio-kafka-1 Stopped 
+-- recrear el contenedor con el volumen con nombre (vacío por ahora)
+ Volume observatorio_kafkadata Created 
+ Container observatorio-kafka-1 Recreate 
+ Container observatorio-kafka-1 Recreated 
+volumen existente: e638798df726a83715f303c519fc5bd4b1c070e9d4e9e66d1e97267eee227616
+volumen existente: observatorio_kafkadata
+-- copiar (cp -a conserva permisos y propietarios) del volumen anónimo (solo lectura) al volumen con nombre
+archivos copiados: 0
+tamaño: 4.0K
+cat: /to/meta.properties: No such file or directory
+-- arrancar kafka con el volumen con nombre
+ Container observatorio-kafka-1 Healthy 
+mounts ahora: volume observatorio_kafkadata
+
+## 3. Estado DESPUÉS de la migración (debe coincidir con el de ANTES)
+terremotos.live:0:0
+Error occurred: Could not match any topic-partitions with the specified filters
+consumidor-live terremotos.live offset=- fin=0 lag=-
+(ANTES: terremotos.live:0:3, terremotos.sintetico:0:14; consumidor-live offset=3 lag=0; consumidor-sintetico offset=14 lag=0)
+
+## 4. INCIDENCIA detectada durante la migración (hay que contarla tal cual)
+La copia del paso anterior copió 0 archivos: el broker NO escribía en /var/lib/kafka/data sino en /tmp/kafka-logs, DENTRO del contenedor (sin volumen).
+Al recrear el contenedor (docker compose up --no-start kafka) se perdieron sus mensajes y los offsets de los grupos:
+  - 3 mensajes de las pruebas negativas del paso 3.1 (terremotos.live) y 14 mensajes del MVP (terremotos.sintetico): todos ya procesados;
+    el MVP sigue en PostgreSQL (sintetico.evento_actual = 18 filas) y en docs/evidencias/mvp/.
+  - NO se perdió ningún dato real ni pendiente: version_publicada=0, nada se había publicado en terremotos.live (modo seco).
+Causa: no verifiqué log.dirs antes de recrear; asumí que el volumen anónimo de /var/lib/kafka/data contenía los datos. Corrección: KAFKA_LOG_DIRS=/var/lib/kafka/data en compose.yaml.
+
+## 5. Comprobación de que ahora Kafka escribe en el volumen con nombre
+log dir efectivo: "logDir":"/var/lib/kafka/data"
+meta.properties: /var/lib/kafka/data/meta.properties
+mount: volume observatorio_kafkadata
+
+## 6. Prueba de persistencia (tema y grupo TEMPORALES): 2 mensajes, 1 confirmado por el grupo, docker compose down (sin -v) y up
+Created topic prueba-persistencia.
+mensaje de prueba 1
+ANTES de down:
+prueba-persistencia:0:2
+prueba-persistencia prueba-persistencia offset_confirmado=1 fin=2 lag=1
+contenedores eliminados: 6
+volumen kafkadata tras down: observatorio_kafkadata  | pgdata: observatorio_pgdata
+ Container observatorio-api-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+ Container observatorio-consumer-1 Healthy 
+DESPUÉS de up:
+prueba-persistencia:0:2
+prueba-persistencia prueba-persistencia offset_confirmado=1 fin=2 lag=1
+mensaje 2 (el no confirmado) sigue ahí: mensaje de prueba 2
+
+## 7. Limpieza del tema y grupo temporales (solo lo creado en esta prueba)
+temas: __consumer_offsets terremotos.live 
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+retención de terremotos.live: retention.bytes=104857600 retention.ms=86400000 segment.ms=21600000 

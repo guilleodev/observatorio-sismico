@@ -1,0 +1,92 @@
+# 3.6 / T035 — medición del índice parcial con EXPLAIN ANALYZE sobre datos reales. 2026-11-06T16:57:12Z
+ filas en evento_actual: 198
+=== (a) Con los dos índices (el general de 3.1 y el parcial de 3.6) — consulta de la API, 3 ejecuciones
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.062..0.067 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.004..0.039 rows=197 loops=1)
+ Planning Time: 0.096 ms
+ Execution Time: 0.077 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.078..0.086 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.005..0.058 rows=197 loops=1)
+ Planning Time: 0.064 ms
+ Execution Time: 0.100 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.046..0.051 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.004..0.033 rows=197 loops=1)
+ Planning Time: 0.064 ms
+ Execution Time: 0.063 ms
+=== (b) SIN el índice parcial (DROP dentro de una transacción que se revierte)
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.040..0.045 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.005..0.028 rows=197 loops=1)
+ Planning Time: 0.048 ms
+ Execution Time: 0.053 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.034..0.038 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.002..0.024 rows=197 loops=1)
+ Planning Time: 0.028 ms
+ Execution Time: 0.046 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.078..0.084 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.004..0.060 rows=197 loops=1)
+ Planning Time: 0.039 ms
+ Execution Time: 0.096 ms
+=== (c) SIN ningún índice de event_time
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.042..0.047 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.003..0.029 rows=197 loops=1)
+ Planning Time: 0.038 ms
+ Execution Time: 0.057 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.036..0.040 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.004..0.025 rows=197 loops=1)
+ Planning Time: 0.023 ms
+ Execution Time: 0.049 ms
+ Sort  (cost=40.02..40.51 rows=198 width=19) (actual time=0.043..0.049 rows=197 loops=1)
+   Sort Key: event_time DESC
+   Sort Method: quicksort  Memory: 32kB
+   ->  Seq Scan on evento_actual  (cost=0.00..32.47 rows=198 width=19) (actual time=0.004..0.030 rows=197 loops=1)
+ Planning Time: 0.023 ms
+ Execution Time: 0.059 ms
+=== índices tras el ROLLBACK (siguen todos)
+ evento_actual_pkey
+ idx_live_evento_actual_event_time
+ idx_live_evento_actual_vigente
+
+## Conclusión (T035)
+En los tres casos el plan es Seq Scan + Sort y el tiempo de ejecución es 0,05–0,10 ms: con 198 filas el índice parcial NO aporta mejora medible, así que, según el SDD, se retira (DROP INDEX IF EXISTS en sql/002_esquema_f3.sql). No se afirma ninguna mejora de rendimiento; el índice general se mantiene para cuando la tabla crezca.
+
+## Aplicar el DROP al volumen existente
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:6: NOTICE:  column "retirado" of relation "evento_actual" already exists, skipping
+DROP INDEX
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:33: NOTICE:  relation "evento_version" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:43: NOTICE:  relation "version_publicada" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:58: NOTICE:  relation "consulta_extraccion" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:61: NOTICE:  relation "idx_consulta_extraccion_iniciada" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:70: NOTICE:  relation "respuesta_original" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:73: NOTICE:  relation "idx_respuesta_original_creada" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:89: NOTICE:  relation "cuarentena" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:91: NOTICE:  relation "idx_cuarentena_categoria_motivo" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:92: NOTICE:  relation "idx_cuarentena_evento" already exists, skipping
+psql:/docker-entrypoint-initdb.d/002_esquema_f3.sql:103: NOTICE:  relation "estado_ingesta" already exists, skipping
+índices de evento_actual ahora: evento_actual_pkey, idx_live_evento_actual_event_time
+datos intactos: evento_actual=198
+
+## Retención de Kafka en el tema real terremotos.live (T035/SC-011)
+  retention.bytes=104857600 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.bytes=104857600, DEFA
+  retention.ms=86400000 sensitive=false synonyms={}
+  segment.ms=21600000 sensitive=false synonyms={}
+(24 h = 86400000 ms; 100 MiB = 104857600 bytes; segmento 6 h = 21600000 ms)
+
+## Purga (T030/T032): verificada con pruebas en transacciones revertidas (docs/evidencias/f3/3.6-pruebas.txt); en tiempo real el ciclo la ejecuta sin error:
+avisos de fallo de retención en el registro del productor: 0
+consultas actuales=43 copias=22 (nada supera aún los 3/30 días, así que no hay purgas observables)

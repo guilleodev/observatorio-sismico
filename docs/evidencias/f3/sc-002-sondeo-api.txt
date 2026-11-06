@@ -1,0 +1,5 @@
+base: 198 eventos; esperando eventos nuevos del feed (hasta 20 min o 3 nuevos)
+NUEVO ci41359311 visto en la API a 1793984397220
+NUEVO ci41359135 visto en la API a 1793984397220
+NUEVO uu80163171 visto en la API a 1793984457465
+FIN {"ci41359311": 1793984397220, "ci41359135": 1793984397220, "uu80163171": 1793984457465}

@@ -147,31 +147,31 @@ quedan en T027 y T028 (tras la activación).
 
 ### Pruebas de la Historia 3 (escribir primero; deben fallar)
 
-- [ ] T019 [P] [US3] `backend/tests/unit/test_mensaje_calidad.py` (sin base de datos): clasificación **válido / excluido / inválido**: `explosion` → excluido con motivo;
+- [x] T019 [P] [US3] `backend/tests/unit/test_mensaje_calidad.py` (sin base de datos): clasificación **válido / excluido / inválido**: `explosion` → excluido con motivo;
   latitud 145, no finita, geometría que no es `Point`, dos valores, `time`/`updated` no enteros, `id` ausente, JSON ilegible y `source` distinto de `usgs-all-day` (D3)
-  → inválido con motivo; `mag` nula, `mag = 0` y profundidad negativa → válido; nunca se rellena un nulo con 0
-- [ ] T020 [P] [US3] `backend/tests/unit/test_cuarentena.py` (PostgreSQL real, transacción revertida): excluido e inválido → `cuarentena` con categoría, motivo, referencia y
+  → inválido con motivo (salvo `source`, `mode` no `live` y `replay`, que se **descartan** sin cuarentena: no son datos de USGS live, R-009); `NaN`/`Infinity`, `properties.type` ausente y propiedades de texto con otro tipo → inválido; `mag` nula, `mag = 0` y profundidad negativa → válido; nunca se rellena un nulo con 0
+- [x] T020 [P] [US3] `backend/tests/unit/test_cuarentena.py` (PostgreSQL real, transacción revertida): excluido e inválido → `cuarentena` con categoría, motivo, referencia y
   copia del contenido; reenvío del mismo evento y versión, **aunque cambie `ingested_at`** = una sola fila (`huella` única, R-007); flujo `procesar_registro` con simulados: el offset se confirma tras cuarentena y exclusión y un JSON ilegible no bloquea la cola (FR-014) en `backend/tests/unit/test_consumidor_flujo.py`; una versión inválida no sustituye a la actual; coordenadas 145° → 0 puntos; reclasificación a no sísmico →
   `retirado = true` y una versión posterior `earthquake` lo reactiva (D2)
 
 ### Implementación de la Historia 3
 
-- [ ] T021 [US3] `backend/src/observatorio/consumer/mensaje.py`: función de clasificación con las reglas de R-005 (válido/excluido/inválido, motivo, `event_id` y `updated_ms` si
+- [x] T021 [US3] `backend/src/observatorio/consumer/mensaje.py`: función de clasificación con las reglas de R-005 (válido/excluido/inválido, motivo, `event_id` y `updated_ms` si
   se pudieron leer) y comprobación de `source` con `SOURCE_ADMITIDO` de `config.py` (D3)
-- [ ] T022 [US3] `backend/src/observatorio/consumer/repositorio.py`: `registrar_cuarentena` (`ON CONFLICT (huella) DO NOTHING`; la huella se calcula según R-007) y la conexión de `retirar_evento` (ya implementado en T015) a la clasificación «excluido»; ambos en la misma transacción (D2)
-- [ ] T023 [US3] `backend/src/observatorio/consumer/main.py`: las tres salidas (guardar, excluir, cuarentena) con confirmación del offset después y registro claro de cada una
-- [ ] T024 [US3] `backend/src/observatorio/api/repositorio.py` y `backend/tests/unit/test_api_eventos.py`: la consulta excluye `retirado = true`; prueba de que un evento retirado no
+- [x] T022 [US3] `backend/src/observatorio/consumer/repositorio.py`: `registrar_cuarentena` (`ON CONFLICT (huella) DO NOTHING`; la huella se calcula según R-007) y la conexión de `retirar_evento` (ya implementado en T015) a la clasificación «excluido»; ambos en la misma transacción (D2)
+- [x] T023 [US3] `backend/src/observatorio/consumer/main.py`: las tres salidas (guardar, excluir, cuarentena) con confirmación del offset después y registro claro de cada una
+- [x] T024 [US3] `backend/src/observatorio/api/repositorio.py` y `backend/tests/unit/test_api_eventos.py`: la consulta excluye `retirado = true`; prueba de que un evento retirado no
   aparece en `/api/eventos` y de que una magnitud nula se devuelve como `null` (el «ND» del mapa)
-- [ ] T025 [US3] Casos preparados (explosión, coordenadas inválidas, JSON ilegible, `mag` nula, `mag = 0`, profundidad negativa, reclasificación) ejecutados con el código del consumidor en
-  una transacción revertida; documentar resultados **antes/después** y que los dañados quedan **separados e identificados** (ids `prueba-*` y fuente `fixture-pruebas`; no se escriben en tablas definitivas) en `docs/evidencias/f3/3.5-calidad.txt`
-- [ ] T026 [US3] **Activar la publicación real (R-015).** Precondiciones: T014–T025 superadas y `live.evento_actual`, `evento_version` y `version_publicada` en 0 filas. Reconstruir `consumer` y `api` y comprobar
+- [x] T025 [US3] Casos preparados (explosión, coordenadas inválidas, JSON ilegible, `mag` nula, `mag = 0`, profundidad negativa, reclasificación) ejecutados con el código del consumidor en
+  una transacción revertida; documentar resultados **antes/después** y que los dañados quedan **separados e identificados** (ids `prueba-*`, con la misma fuente que el feed real; no se escriben en tablas definitivas; la verificación con Kafka y PostgreSQL reales usa una base, un tema y un grupo temporales) en `docs/evidencias/f3/3.5-calidad.txt`
+- [x] T026 [US3] **Activar la publicación real (R-015).** Precondiciones: T014–T025 superadas y `live.evento_actual`, `evento_version` y `version_publicada` en 0 filas. Reconstruir `consumer` y `api` y comprobar
   que ejecutan la imagen nueva; relanzar `producer` con `INGESTA_PUBLICAR=true`. Comprobar en el primer ciclo: mensajes en `terremotos.live` con la clave y el JSON de `contracts/mensaje-kafka.md`; el consumidor
   clasifica (guarda terremotos, excluye lo no sísmico); 0 eventos no sísmicos o inválidos en `evento_actual`; lag 0; a partir del segundo ciclo solo se publican versiones nuevas. Guardar en `docs/evidencias/f3/3.5-activacion.txt`
-- [ ] T027 [US3] Verificación con datos reales de los pasos 3.3 y 3.4: comparar `evento_actual`, `evento_version` y `version_publicada` (una fila actual por evento, sin duplicados de `(event_id, updated_at)`, invariante
+- [x] T027 [US3] Verificación con datos reales de los pasos 3.3 y 3.4: comparar `evento_actual`, `evento_version` y `version_publicada` (una fila actual por evento, sin duplicados de `(event_id, updated_at)`, invariante
   versiones publicadas = guardadas + cuarentena con la **consulta de reconciliación** de `quickstart.md`, lag 0; si USGS no publica revisiones durante la ventana, la versión posterior y la antigua quedan cubiertas por T014); **medir SC-002**: instante `ingested_at` de un evento nuevo del feed frente a su primera aparición en `/api/eventos` (≤ 2 min); guardar en `docs/evidencias/f3/3.4-idempotencia.txt`
-- [ ] T028 [US3] Reenvío real: tomar un mensaje **ya presente en el topic** (no fabricado), republicarlo **5 veces** (SC-003) con `kafka-console-producer` (con `parse.key` y el id como clave) y comprobar que los recuentos no cambian y el lag vuelve a 0; guardar la salida
-- [ ] T029 [US3] Con datos reales: recuentos de `cuarentena` por categoría y motivo (explosiones y canteras reales del feed) y 0 de ellos en la API; **consultas de ejemplo de las seis dimensiones de calidad**
-  (completitud por campo, unicidad, validez, consistencia, actualidad y exactitud con sus límites, FR-017); guardar en `docs/evidencias/f3/3.5-calidad-real.txt`
+- [x] T028 [US3] Reenvío real: tomar un mensaje **ya presente en el topic** (no fabricado), republicarlo **5 veces** (SC-003) con `kafka-console-producer` (con `parse.key` y el id como clave) y comprobar que los recuentos no cambian y el lag vuelve a 0; guardar la salida
+- [x] T029 [US3] Con datos reales: recuentos de `cuarentena` por categoría y motivo (explosiones y canteras reales del feed) y 0 de ellos en la API; **consultas de ejemplo de las seis dimensiones de calidad**
+  (completitud por campo, unicidad, validez, consistencia, actualidad y exactitud con sus límites, FR-017); guardar en `docs/evidencias/f3/3.5-calidad-datos-reales.txt` (`3.5-calidad-real.txt` es la verificación con recursos temporales)
 
 **Punto de control del paso 3.5.** Explicar las reglas de calidad, la cuarentena y el orden de activación; pregunta de defensa.
 
@@ -185,24 +185,23 @@ quedan en T027 y T028 (tras la activación).
 
 ### Pruebas de la Historia 4 (escribir primero; deben fallar)
 
-- [ ] T030 [P] [US4] `backend/tests/unit/test_retencion.py` (PostgreSQL real, transacción revertida): se insertan filas antiguas de prueba, y la purga elimina respuestas
+- [x] T030 [P] [US4] `backend/tests/unit/test_retencion.py` (PostgreSQL real, transacción revertida): se insertan filas antiguas de prueba, y la purga elimina respuestas
   originales con más de 3 días y consultas con más de 30 días, sin tocar versiones, estado actual ni cuarentena
-- [ ] T031 [P] [US4] Ampliar `backend/tests/unit/test_api_eventos.py`: `last_ingestion` es `null` sin consultas, toma el valor de `estado_ingesta` tras una consulta correcta y no
+- [x] T031 [P] [US4] Ampliar `backend/tests/unit/test_api_eventos.py`: `last_ingestion` es `null` sin consultas, toma el valor de `estado_ingesta` tras una consulta correcta y no
   avanza con consultas fallidas; `/api/salud` con el mismo valor y `503` si falla la base
 
 ### Implementación de la Historia 4
 
-- [ ] T032 [US4] `backend/src/observatorio/producer/repositorio.py` e `ingesta.py`: purga de `respuesta_original` y `consulta_extraccion` en cada ciclo según
+- [x] T032 [US4] `backend/src/observatorio/producer/repositorio.py` e `ingesta.py`: purga de `respuesta_original` y `consulta_extraccion` en cada ciclo según
   `RETENCION_RESPUESTAS_DIAS` y `RETENCION_CONSULTAS_DIAS`
-- [ ] T033 [US4] `backend/src/observatorio/api/repositorio.py`: `ultima_ingestion` lee `live.estado_ingesta` (milisegundos Unix UTC o `None`); sin datos provisionales
-- [ ] T034 [US4] Verificación real: `/api/salud` coincide con la última consulta `ok` de `consulta_extraccion`; relanzar solo `producer` (conservando `INGESTA_PUBLICAR=true`) con `USGS_URL` apuntando a un puerto sin servicio
-  (sin tocar datos), comprobar que `last_ingestion` no avanza y que `ultimo_error` se registra; restaurar la URL real y **contar los ciclos hasta la primera consulta correcta (SC-008: ≤ 3)**;
+- [x] T033 [US4] `backend/src/observatorio/api/repositorio.py`: `ultima_ingestion` lee `live.estado_ingesta` (milisegundos Unix UTC o `None`); sin datos provisionales
+- [x] T034 [US4] Verificación real: `/api/salud` coincide con la última consulta `ok` de `consulta_extraccion`; provocar una caída REAL de USGS sin reiniciar el productor (añadiendo `earthquake.usgs.gov -> 127.0.0.1` al `/etc/hosts` del contenedor con `docker exec` como root y restaurándolo después; sin tocar datos), comprobar que `last_ingestion` no avanza y que `ultimo_error` se registra; restaurar el archivo y **contar los ciclos hasta la primera consulta correcta (SC-008: ≤ 3)**;
   guardar en `docs/evidencias/f3/3.6-estado-ingesta.txt`
-- [ ] T035 [US4] Comprobar la retención efectiva de Kafka (`kafka-configs.sh --describe`: 24 h, 100 MiB, segmento de 6 h) en `terremotos.live`; la purga de 3 y 30 días se verifica con T030 (en tiempo real solo se comprueba que el ciclo la ejecuta sin error); **medir con `EXPLAIN` el índice parcial
+- [x] T035 [US4] Comprobar la retención efectiva de Kafka (`kafka-configs.sh --describe`: 24 h, 100 MiB, segmento de 6 h) en `terremotos.live`; la purga de 3 y 30 días se verifica con T030 (en tiempo real solo se comprueba que el ciclo la ejecuta sin error); **medir con `EXPLAIN` el índice parcial
   `(event_time) WHERE NOT retirado`** frente a la consulta sin él y, si no aporta, retirarlo con un `DROP INDEX IF EXISTS` explícito añadido a `sql/002_esquema_f3.sql` y aplicado al volumen; guardar la salida
-- [ ] T036 [US4] **Condicionada a D4.** Si se aprueba: volumen con nombre `kafkadata` en `/var/lib/kafka/data` en `compose.yaml`. **Consultar antes de ejecutar**: la primera
+- [x] T036 [US4] **Condicionada a D4.** Si se aprueba: volumen con nombre `kafkadata` en `/var/lib/kafka/data` **y `KAFKA_LOG_DIRS=/var/lib/kafka/data`** en `compose.yaml` (sin esa variable el broker escribe en `/tmp/kafka-logs`, dentro del contenedor). **Consultar antes de ejecutar**: la primera
   recreación del contenedor pierde los mensajes del volumen anónimo. Precondición: **lag 0** y la consulta de reconciliación vacía (nada publicado sin guardar ni en cuarentena); si no, no se ejecuta. Después, `docker compose down` (sin `-v`) y `up`: los mensajes y los offsets del grupo se conservan;
-  documentar el resultado. Si no se aprueba: documentar la limitación en `docs/evidencias/f3/3.6-estado-ingesta.txt`
+  documentar el resultado. Si no se aprueba: documentar la limitación en `docs/evidencias/f3/3.6-estado-ingesta.txt`. **Resultado real (D4 aprobada):** se aplicó, pero la primera recreación del contenedor perdió los mensajes de prueba y del MVP ya procesados porque el broker no escribía en el volumen (incidencia en `3.6-kafka-persistencia.txt`); tras corregir `KAFKA_LOG_DIRS`, `docker compose down` y `up` conservan mensajes y offsets
 
 **Punto de control del paso 3.6.** Explicar `estado_ingesta`, `last_ingestion` y las retenciones; pregunta de defensa.
 
@@ -214,16 +213,16 @@ quedan en T027 y T028 (tras la activación).
 
 **Prueba independiente**: quickstart paso 6. **Invariante a comprobar tras cada prueba**: versiones publicadas = versiones guardadas + cuarentena, sin duplicados y con lag 0.
 
-- [ ] T037 [US5] Reinicio del consumidor **a mitad de procesamiento** (SC-007): `docker compose kill consumer` durante un ciclo que publica versiones, y `docker compose start consumer` (otra variante: `stop`, esperar versiones nuevas y `start`); **esperado**: el desfase pasa de > 0 a 0, sin duplicados
+- [x] T037 [US5] Reinicio del consumidor **a mitad de procesamiento** (SC-007): `docker compose kill consumer` durante un ciclo que publica versiones, y `docker compose start consumer` (otra variante: `stop`, esperar versiones nuevas y `start`); **esperado**: el desfase pasa de > 0 a 0, sin duplicados **Resultado real (T048):** reinicio real entre mensajes (el kill no cayó en mitad de una transacción); la atomicidad guardar+offset se acredita con T018 y `3.4-atomicidad-real.txt`.
   ni versiones perdidas (invariante); guardar en `docs/evidencias/f3/3.7-recuperacion.txt`
-- [ ] T038 [US5] Reinicio del productor: `docker compose restart producer`; **esperado**: no republica versiones ya publicadas y los ciclos se reanudan
-- [ ] T039 [US5] PostgreSQL parado: **esperado** (R-014) el productor no publica sin conocer el estado, registra el error y reanuda al volver; el consumidor no confirma y guarda al
+- [x] T038 [US5] Reinicio del productor: `docker compose restart producer`; **esperado**: no republica versiones ya publicadas y los ciclos se reanudan
+- [x] T039 [US5] PostgreSQL parado: **esperado** (R-014) el productor no publica sin conocer el estado, registra el error y reanuda al volver; el consumidor no confirma y guarda al
   recuperarse la base; sin duplicados
-- [ ] T040 [US5] Kafka parado: **esperado**: las versiones no se marcan publicadas, se reenvían al volver y el consumidor las tolera; sin pérdidas ni duplicados
-- [ ] T041 [P] [US5] Documentar en `docs/evidencias/f3/hueco-24h.md` (sin ejecutar) el procedimiento para un hueco superior a 24 h con el catálogo histórico (F4) y la limitación de las
+- [x] T040 [US5] Kafka parado: **esperado**: las versiones no se marcan publicadas, se reenvían al volver y el consumidor las tolera; sin pérdidas ni duplicados
+- [x] T041 [P] [US5] Documentar en `docs/evidencias/f3/hueco-24h.md` (sin ejecutar) el procedimiento para un hueco superior a 24 h con el catálogo histórico (F4) y la limitación de las
   eliminaciones o fusiones fuera del feed (FR-022)
-- [ ] T042 [US5] Ejecución continua de 30 minutos (SC-001) **en una ventana sin paradas ni inyecciones de fallos** (se ejecuta antes de T037 o en un periodo posterior sin incidencias): al menos 28 de las 30 consultas esperadas registradas; guardar el recuento real
-- [ ] T043 [US5] `scripts/verificar-f3.ps1` (solo ASCII, repetible, sin `down -v`): encadena las comprobaciones de T037 a T040 y el invariante, y guarda la salida en
+- [x] T042 [US5] Ejecución continua de 30 minutos (SC-001) **en una ventana sin paradas ni inyecciones de fallos** (se ejecuta antes de T037 o en un periodo posterior sin incidencias): al menos 28 de las 30 consultas esperadas registradas; guardar el recuento real
+- [x] T043 [US5] `scripts/verificar-f3.ps1` (solo ASCII, repetible, sin `down -v`): encadena las comprobaciones de T037 a T040 y el invariante, y guarda la salida en
   `docs/evidencias/f3/verificacion-f3.txt`; ejecutarlo completo
 - [ ] T044 [US5] **SC-010 — pendiente de observación real.** Con el sistema activo **más de 24 horas seguidas**, registrar el instante de activación (T026) como referencia y, pasadas 24 h, comprobar que hay eventos con `event_time` anterior a 24 h en `evento_actual` y `evento_version` (> 0) y que la
   consulta de reconciliación sigue vacía (ninguna versión publicada desapareció por salir de la ventana); las pruebas de fallos T034–T040 no borran datos y respetan ese reloj; guardar en `docs/evidencias/f3/sc-010-observacion-24h.txt`. **Hasta ejecutarla, SC-010 figura como «pendiente de
@@ -233,12 +232,12 @@ quedan en T027 y T028 (tras la activación).
 
 ## Bloque 7: Cierre y pulido — hito técnico «Resiliencia» (paso 3.7)
 
-- [ ] T045 [P] Registrar en `docs/evidencias/f3/resultados.md` el resultado **observado** de cada criterio de éxito (SC-001 a SC-012), con los incumplidos, las limitaciones y **SC-010 como pendiente
+- [x] T045 [P] Registrar en `docs/evidencias/f3/resultados.md` el resultado **observado** de cada criterio de éxito (SC-001 a SC-012), con los incumplidos, las limitaciones y **SC-010 como pendiente
   mientras T044 no se haya ejecutado**
-- [ ] T046 [P] Actualizar `README.md` (ingesta real, modo seco, variables, migración manual de `002`) y marcar los pasos 3.2 a 3.7 en `docs/HOJA-DE-RUTA.md` solo si las pruebas son satisfactorias
-- [ ] T047 Comprobar el aislamiento final: 0 filas de modo distinto de `live` ni de `source` distinto de `usgs-all-day` en `live.*`, ninguna mención de `synthetic`/`sintetico` en `backend/src`, Kafka y PostgreSQL sin puertos publicados y el
+- [x] T046 [P] Actualizar `README.md` (ingesta real, modo seco, variables, migración manual de `002`) y marcar los pasos 3.2 a 3.7 en `docs/HOJA-DE-RUTA.md` solo si las pruebas son satisfactorias
+- [x] T047 Comprobar el aislamiento final: 0 filas de modo distinto de `live` ni de `source` distinto de `usgs-all-day` en `live.*`, ninguna mención de `synthetic`/`sintetico` en `backend/src`, Kafka y PostgreSQL sin puertos publicados y el
   esquema `sintetico` intacto (18 filas, misma huella md5); guardar la salida
-- [ ] T048 Revisión final: Architect y QA Engineer, `git status` y `git diff --check`, comprobación contra la constitución, contraste con `ENUNCIADO.md` y `CONTRATO-API.md`; preparar la explicación
+- [x] T048 Revisión final: Architect y QA Engineer, `git status` y `git diff --check`, comprobación contra la constitución, contraste con `ENUNCIADO.md` y `CONTRATO-API.md`; preparar la explicación
   por bloques y tres preguntas de defensa
 
 **Punto de control del hito «Resiliencia» (cierre de F3)**: **detenerse**; revisión humana y commit manual **`[F3]`**.

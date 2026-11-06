@@ -39,8 +39,8 @@ Columnas actuales del paso 3.1 (`event_id` PK, `event_time`, `updated_at`, `mag`
 |---|---|---|
 | `retirado` | `boolean NOT NULL DEFAULT false` | `true` si la última versión no es `earthquake`; la API lo excluye |
 
-Índice `idx_live_evento_actual_event_time (event_time)` ya existe; **nuevo** índice parcial `(event_time) WHERE NOT retirado`
-para la consulta de la ventana de 24 h (se mide con `EXPLAIN` en la tarea T035; si no aporta, se retira de `sql/002_esquema_f3.sql`).
+Índice `idx_live_evento_actual_event_time (event_time)` ya existe; el índice parcial `(event_time) WHERE NOT retirado` previsto **se retiró tras medirlo** (T035: con ~200 filas el planificador usa Seq Scan con o sin
+índices, 0,05–0,10 ms); se mantiene el índice general de `event_time` para cuando la tabla crezca.
 
 ### `live.evento_version`
 | Columna | Tipo | Notas |
@@ -77,7 +77,7 @@ contenido, no por consulta.
 | `event_id`, `updated_ms` | `text NULL`, `bigint NULL` | Si se pudieron leer |
 | `kafka_topic`, `kafka_partition`, `kafka_offset`, `clave` | | Posición del mensaje |
 | `payload` | `bytea NOT NULL` | Copia del contenido recibido |
-| `huella` | `text NOT NULL UNIQUE` | Idempotencia ante reenvíos (R-007): `sha256` de `categoria|event_id|updated_ms|motivo`, o del contenido si es ilegible |
+| `huella` | `text NOT NULL UNIQUE` | Idempotencia ante reenvíos (R-007): `sha256` de categoría, motivo e identidad de la versión (`event_id|updated_ms`; si no se leen, del evento o del contenido) |
 | `registrado_at` | `timestamptz DEFAULT now()` | |
 
 Índices: `UNIQUE (huella)`, `(categoria, motivo)` para los recuentos del análisis de calidad.

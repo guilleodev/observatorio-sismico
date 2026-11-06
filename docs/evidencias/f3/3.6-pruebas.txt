@@ -1,0 +1,24 @@
+# 3.6 — pruebas automatizadas (PostgreSQL real, transacciones revertidas). 2026-11-06T16:57:39Z
+Python 3.13.18
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 -- /usr/local/bin/python
+test_retencion.py::test_las_copias_con_mas_de_3_dias_se_purgan_y_las_recientes_se_conservan PASSED [  4%]
+test_retencion.py::test_las_consultas_con_mas_de_30_dias_se_purgan_con_su_copia PASSED [  9%]
+test_retencion.py::test_la_purga_no_toca_versiones_estado_actual_publicaciones_ni_cuarentena PASSED [ 13%]
+test_retencion.py::test_con_una_retencion_mas_larga_no_se_purga_lo_que_aun_es_reciente PASSED [ 18%]
+test_retencion.py::test_las_pruebas_no_dejan_datos PASSED     [ 22%]
+test_last_ingestion.py::test_la_api_devuelve_el_instante_de_la_ultima_consulta_correcta_en_los_dos_endpoints PASSED [ 27%]
+test_last_ingestion.py::test_sin_consultas_correctas_last_ingestion_es_null_aunque_la_api_responda PASSED [ 31%]
+test_last_ingestion.py::test_last_ingestion_nulo_valor_y_no_avanza_con_consultas_fallidas PASSED [ 36%]
+test_last_ingestion.py::test_las_pruebas_no_alteran_el_estado_de_ingesta_real PASSED [ 40%]
+test_ingesta.py::test_la_retencion_se_aplica_en_cada_ciclo_con_los_dias_configurados PASSED [ 90%]
+test_ingesta.py::test_la_retencion_tambien_se_aplica_si_la_consulta_falla PASSED [ 95%]
+test_ingesta.py::test_un_fallo_al_purgar_no_rompe_la_ingesta PASSED [100%]
+======================== 22 passed, 1 warning in 1.04s =========================
+FAILED test_cuarentena.py::test_las_pruebas_no_dejan_datos_en_las_tablas_definitivas
+1 failed, 192 passed, 1 warning in 10.68s
+
+tras las pruebas el estado real NO cambió por ellas: consultas_ok=44 (sigue creciendo solo por las consultas reales del productor); consultas_error=0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+193 passed, 1 warning in 10.46s
+(Nota: una prueba que asumía tablas vacías falló al haber ya datos reales; se corrigió para comparar antes y después.)

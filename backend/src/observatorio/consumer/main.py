@@ -8,8 +8,8 @@ import psycopg
 from aiokafka import AIOKafkaConsumer, TopicPartition
 
 from observatorio.config import ConfigKafka, ConfigPostgres, leer_obligatoria
-from observatorio.consumer.mensaje import MensajeInvalido, interpretar_mensaje
-from observatorio.consumer.repositorio import RepositorioEventos
+from observatorio.consumer.mensaje import Clasificacion, clasificar_mensaje
+from observatorio.consumer.repositorio import ReferenciaMensaje, RepositorioEventos
 
 MARCA_SALUD = Path("/tmp/healthy")
 ESPERA_MAX_S = 30
@@ -18,20 +18,47 @@ log = logging.getLogger("consumer")
 
 
 async def procesar_registro(consumidor, registro, repositorio) -> str:
-    """Guarda la versión y SOLO después confirma su offset. Si guardar falla, no se confirma.
+    """Clasifica el mensaje, lo persiste y SOLO después confirma su offset. Si persistir falla, no se confirma.
 
-    Resultados: «guardada», «antigua» o «duplicada» (ver RepositorioEventos.guardar_version) y «descartado» si el mensaje no es válido."""
-    try:
-        evento = interpretar_mensaje(registro.value)
-    except MensajeInvalido as motivo:
-        # Descarte visible (la cuarentena duradera es de F3); se confirma para no bloquear la cola.
-        log.warning("DESCARTADO offset=%s clave=%r motivo=%s", registro.offset, registro.key, motivo)
+    Resultados: «guardada», «antigua» o «duplicada» (terremoto válido; ver RepositorioEventos.guardar_version), «excluida»
+    (no sísmico, a cuarentena y retirada si ya lo conocíamos), «cuarentena» (registro no tratable) y «descartado» (modo o
+    fuente fuera de contrato; solo se registra en el log).
+    """
+    c = clasificar_mensaje(registro.value)
+    ref = ReferenciaMensaje(registro.topic, registro.partition, registro.offset, registro.key, registro.value or b"")
+    if c.estado == "descartado":
+        log.warning("DESCARTADO offset=%s clave=%r motivo=%s", registro.offset, registro.key, c.motivo)
         resultado = "descartado"
+    elif c.estado == "valido":
+        resultado = await repositorio.guardar_version(c.evento, registro.topic, registro.partition, registro.offset)
+        log.info("%s id=%s offset=%s", resultado.upper(), c.event_id, registro.offset)
+    elif c.estado == "excluido":
+        _, retirado = await repositorio.excluir_evento(c, ref)
+        resultado = "excluida"
+        log.info("EXCLUIDA id=%s offset=%s motivo=%s retirado=%s", c.event_id, registro.offset, c.motivo, retirado)
     else:
-        resultado = await repositorio.guardar_version(evento, registro.topic, registro.partition, registro.offset)
-        log.info("%s id=%s offset=%s", resultado.upper(), evento.event_id, registro.offset)
+        await repositorio.poner_en_cuarentena(c, ref)
+        resultado = "cuarentena"
+        log.warning("CUARENTENA id=%s offset=%s clave=%r motivo=%s", c.event_id, registro.offset, registro.key, c.motivo)
     await consumidor.commit({TopicPartition(registro.topic, registro.partition): registro.offset + 1})
     return resultado
+
+
+# Errores que NO se arreglan reintentando: el dato en sí no cabe en la base (DataError: valor fuera de rango, NUL en texto),
+# viola una restricción (IntegrityError) o no se puede codificar (UnicodeError). Los de conexión (OperationalError,
+# InterfaceError) y los de Kafka son transitorios y siguen reintentándose.
+ERRORES_PERMANENTES = (psycopg.errors.DataError, psycopg.errors.IntegrityError, UnicodeError)
+
+
+async def aislar_error_permanente(consumidor, registro, repositorio, exc: Exception) -> str:
+    """Manda a cuarentena un registro que no se puede persistir (categoría invalido) y confirma su offset."""
+    contenido = registro.value or b""
+    ref = ReferenciaMensaje(registro.topic, registro.partition, registro.offset, registro.key, contenido)
+    motivo = f"error permanente de persistencia: {type(exc).__name__}"
+    await repositorio.poner_en_cuarentena(Clasificacion("invalido", motivo=motivo, base_huella=contenido), ref)
+    log.error("CUARENTENA offset=%s clave=%r motivo=%s (%s)", registro.offset, registro.key, motivo, exc)
+    await consumidor.commit({TopicPartition(registro.topic, registro.partition): registro.offset + 1})
+    return "cuarentena"
 
 
 async def procesar_con_reintentos(consumidor, registro, obtener_repositorio, asegurar_conexion, dormir=asyncio.sleep) -> str:
@@ -45,6 +72,12 @@ async def procesar_con_reintentos(consumidor, registro, obtener_repositorio, ase
         try:
             return await procesar_registro(consumidor, registro, obtener_repositorio())
         except Exception as exc:
+            if isinstance(exc, ERRORES_PERMANENTES):
+                # El mismo registro volvería a fallar siempre: reintentar bloquearía la partición (FR-014). Va a cuarentena.
+                try:
+                    return await aislar_error_permanente(consumidor, registro, obtener_repositorio(), exc)
+                except Exception as exc_cuarentena:
+                    exc = exc_cuarentena  # no se pudo ni aislar (p. ej. la base cayó entre medias): se trata como transitorio
             log.error("Fallo al procesar offset=%s (%s); NO se salta, reintento en %s s", registro.offset, exc, espera)
             await dormir(espera)
             espera = min(espera * 2, ESPERA_MAX_S)

@@ -1,0 +1,14 @@
+# T047 - Aislamiento final 2026-11-06T18:15:11Z
+evento_version con mode<>live o source<>usgs-all-day: 0
+evento_actual con mode<>live o source<>usgs-all-day: 0
+menciones de synthetic/sintetico en backend/src: 0
+puertos publicados:
+api -> [8000/tcp -> 127.0.0.1:8000]
+consumer -> []
+kafka -> [9092/tcp -> :0]
+postgres -> [5432/tcp -> :0]
+producer -> []
+esquema sintetico: filas=18
+tablas sintetico: evento_actual
+frontend/docs/referencias/specs 001 sin cambios (git): 0 archivos modificados
+git diff --check: sin_errores

@@ -1,0 +1,66 @@
+
+# Verificacion de fallos y recuperacion F3 (T037-T040) - inicio 2026-11-06T17:39:09Z
+Entorno: .env | espera maxima por evento nuevo: 20 min | sin down, rm ni -v
+Servicios: api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy
+Estado inicial: offset del grupo=229 final del topic=229 lag=0
+  INVARIANTE [inicial]: publicadas=219 versiones=211 cuarentena=8 (publicadas = versiones + cuarentena: True) | reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | evento_actual=207 | lag=0
+  INVARIANTE [inicial] -> CUMPLIDO
+
+## T037 - Reinicio del consumidor a mitad de procesamiento (kill)
+Se espera a que el productor publique una version nueva y se mata el consumidor justo al detectarla (publicadas antes: 219)
+consumer matado (SIGKILL) a las 2026-11-06T17:46:57Z; publicadas ahora=220
+  lag justo tras matar: 0 (si es 0, el consumidor alcanzo a terminar antes del kill)
+  con el consumidor caido: lag=3 (offset del grupo=230, final=233)
+consumer iniciado a las 2026-11-06T17:48:03Z
+  tras reiniciar: lag=0 (offset del grupo=233)
+  lineas del consumidor tras el reinicio: GUARDADA=4 DUPLICADA=0 EXCLUIDA=0
+  INVARIANTE [T037]: publicadas=223 versiones=215 cuarentena=8 (publicadas = versiones + cuarentena: True) | reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | evento_actual=211 | lag=0
+  INVARIANTE [T037] -> CUMPLIDO
+  RESULTADO T037: CUMPLIDO - lag con el consumidor caido > 0: True; lag final 0: True
+
+## T038 - Reinicio del productor (restart)
+producer reiniciado a las 2026-11-06T17:48:23Z; publicadas antes=223 final del topic antes=233
+  consultas correctas tras el reinicio: 3 (ciclos reanudados: True)
+  versiones marcadas publicadas durante la prueba=3 | mensajes nuevos en el topic=3 (deben coincidir: nada republicado)
+  INVARIANTE [T038]: publicadas=226 versiones=218 cuarentena=8 (publicadas = versiones + cuarentena: True) | reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | evento_actual=213 | lag=0
+  INVARIANTE [T038] -> CUMPLIDO
+  RESULTADO T038: CUMPLIDO - ciclos reanudados: True; publicadas nuevas=3 = mensajes nuevos=3
+
+## T039 - PostgreSQL parado (stop/start)
+consumer parado para acumular versiones nuevas en el topic (publicadas antes=226)
+  antes de parar PostgreSQL: offset del grupo=236 final=237 lag=1
+postgres parado a las 2026-11-06T17:51:30Z
+consumer iniciado con PostgreSQL parado (hay 1 mensaje(s) pendiente(s))
+  con PostgreSQL parado (170 s): offset del grupo=240 (antes 236) final=240 (antes 237) lag=0
+  consumidor: reintentos sin saltar el registro=0 | base no disponible=0 | GUARDADA=4
+  productor: errores de PostgreSQL=1 | Fallo al publicar=0 | consultas ok registradas en el log=3
+  contenedores con PostgreSQL parado: api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy
+postgres iniciado a las 2026-11-06T17:54:31Z
+  tras recuperar: servicios sanos=True | lag 0=True | productor con consultas correctas tras volver=True
+  contenedores: api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy
+  INVARIANTE [T039]: publicadas=232 versiones=224 cuarentena=8 (publicadas = versiones + cuarentena: True) | reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | evento_actual=216 | lag=0
+  INVARIANTE [T039] -> CUMPLIDO
+  RESULTADO T039: NO CUMPLIDO - offset sin confirmar con la base parada: False; productor sin publicar: False; recuperacion: lag 0=True, ciclos=True; hubo mensajes pendientes: True
+
+## T040 - Kafka parado (stop/start)
+  antes: offset del grupo=242 final del topic=242 publicadas=232
+kafka parado a las 2026-11-06T17:56:34Z (se espera un evento nuevo real que el productor no pueda publicar)
+  con Kafka parado: Fallo al publicar=1 | consultas ok=2 | publicadas=232 (antes 232)
+  contenedores con Kafka parado: api=running/healthy consumer=running/healthy kafka=exited/ postgres=running/healthy producer=running/healthy
+kafka iniciado a las 2026-11-06T17:59:32Z
+  tras volver Kafka: offset del grupo=245 (antes 242) final=245 (antes 242) lag=0
+  tras recuperar: servicios sanos=True | lag 0=True | publicadas=235 (reenviadas tras volver: 3) | final del topic=245 (mensajes nuevos desde la parada: 3)
+  contenedores: api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy
+  INVARIANTE [T040]: publicadas=235 versiones=227 cuarentena=8 (publicadas = versiones + cuarentena: True) | reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | evento_actual=218 | lag=0
+  INVARIANTE [T040] -> CUMPLIDO
+  RESULTADO T040: CUMPLIDO - hubo fallo de publicacion real: True; sin marcar publicadas con Kafka parado: True; offsets y mensajes conservados: True; lag 0: True
+
+## Estado final
+Servicios: api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy
+Ingesta real activa: INGESTA_PUBLICAR=true
+## Resumen
+T037: CUMPLIDO - lag con el consumidor caido > 0: True; lag final 0: True
+T038: CUMPLIDO - ciclos reanudados: True; publicadas nuevas=3 = mensajes nuevos=3
+T039: NO CUMPLIDO - offset sin confirmar con la base parada: False; productor sin publicar: False; recuperacion: lag 0=True, ciclos=True; hubo mensajes pendientes: True
+T040: CUMPLIDO - hubo fallo de publicacion real: True; sin marcar publicadas con Kafka parado: True; offsets y mensajes conservados: True; lag 0: True
+Fin 2026-11-06T17:59:51Z

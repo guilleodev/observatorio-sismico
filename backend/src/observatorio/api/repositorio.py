@@ -18,9 +18,12 @@ SELECT event_id, longitude, latitude, depth_km, mag, mag_type, place,
        (extract(epoch FROM updated_at) * 1000)::bigint,
        country_id, country_name
 FROM live.evento_actual
-WHERE event_time >= to_timestamp(%s / 1000.0)
+WHERE event_time >= to_timestamp(%s / 1000.0) AND NOT retirado
 ORDER BY event_time DESC
 """
+
+
+SQL_ULTIMA_INGESTION = "SELECT (extract(epoch FROM ultima_consulta_ok_at) * 1000)::bigint FROM live.estado_ingesta WHERE id = 1"
 
 
 class BaseDatosNoDisponible(Exception):
@@ -70,11 +73,12 @@ class RepositorioApi:
         await self._consultar("SELECT 1")
 
     async def ultima_ingestion(self) -> int | None:
-        """Instante de la última consulta CORRECTA a USGS. Sin consultas todavía (paso 3.2): None.
+        """Instante (ms Unix UTC) de la última consulta CORRECTA a USGS; None si todavía no hubo ninguna.
 
-        El registro del estado de ingesta (y por tanto el valor real) llega en el paso 3.6.
+        No avanza con consultas fallidas: viene de `estado_ingesta`, que solo actualiza el productor al recibir una respuesta válida.
         """
-        return None
+        filas = await self._consultar(SQL_ULTIMA_INGESTION)
+        return filas[0][0] if filas else None
 
 
 def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None, modo: str = MODO_LIVE) -> dict:

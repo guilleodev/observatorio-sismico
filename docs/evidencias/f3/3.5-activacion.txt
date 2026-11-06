@@ -1,0 +1,64 @@
+# T026 — activación de la publicación real (R-015). 2026-11-06T16:54:43Z
+## Precondiciones
+tablas de eventos ANTES: evento_actual=0 evento_version=0 version_publicada=0 cuarentena=0 (esperado 0)
+terremotos.live ANTES: terremotos.live:0:0 | productor ANTES: INGESTA_PUBLICAR=false
+esquema sintetico intacto: 18 filas
+
+## Reconstruir consumer, api y producer con el código final y activar la publicación
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Image observatorio-backend Built 
+ Container observatorio-api-1 Recreate 
+ Container observatorio-consumer-1 Recreate 
+ Container observatorio-producer-1 Recreate 
+ Container observatorio-api-1 Recreated 
+ Container observatorio-producer-1 Recreated 
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-postgres-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-api-1 Healthy 
+ Container observatorio-producer-1 Healthy 
+ Container observatorio-consumer-1 Healthy 
+T0=2026-11-06T16:55:04Z
+productor AHORA: INGESTA_PUBLICAR=true
+
+## Resultado del primer ciclo con publicación real (16:55:21 UTC)
+ id  |        iniciada_at         | duracion_ms | bytes  | eventos | intentos | publicadas | omitidas 
+-----+----------------------------+-------------+--------+---------+----------+------------+----------
+ 122 | 2026-11-06 16:54:54.309+00 |         114 | 147080 |     206 |        1 |        206 |        0
+ 121 | 2026-11-06 16:53:52.85+00  |         126 | 147080 |     206 |        1 |            |         
+ 120 | 2026-11-06 16:53:28.463+00 |          87 | 147798 |     207 |        1 |            |         
+ 119 | 2026-11-06 16:52:28.409+00 |         101 | 147798 |     207 |        1 |            |         
+(4 rows)
+
+mensajes en terremotos.live: terremotos.live:0:206   |  version_publicada=206
+grupo: offset_confirmado=206 fin=206 lag=0
+
+## Lo que hizo el consumidor (registro)
+      8 EXCLUIDA 
+    198 GUARDADA 
+
+## Tablas de eventos
+evento_actual=198 (retirados=0) | evento_version=198 | cuarentena=8
+ categoria |                  motivo                   | count 
+-----------+-------------------------------------------+-------
+ excluido  | tipo de evento no sísmico: 'quarry blast' |     7
+ excluido  | tipo de evento no sísmico: 'ice quake'    |     1
+(2 rows)
+
+eventos NO sísmicos en el estado actual (esperado 0): 0
+modos distintos de live o fuentes distintas de usgs-all-day (esperado 0): 0
+consulta de reconciliación (publicadas sin versión ni cuarentena; esperado 0): 0
+duplicados de (event_id, updated_at) (esperado 0): 0
+
+## API
+{"status":"ok","database":"ok","last_ingestion":1793984094423}
+count= 198 mode= live last_ingestion= 1793984094423 truncated= False
+ejemplo: {"type": "Feature", "id": "aka2026vzzrlt", "geometry": {"type": "Point", "coordinates": [-152.931, 60.03, 16.4]}, "properties": {"mag": 0.6, "magType": "ml", "place": "67 km W of Happy Valley, Alaska", "time": 1793982423862, "updated": 1793982546162, "country_id": null, "country_name": null}}
+last_ingestion de estado_ingesta: 1793984094423
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

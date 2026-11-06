@@ -72,6 +72,19 @@ class RepositorioProductor:
             "UPDATE live.consulta_extraccion SET publicadas = %s, omitidas = %s WHERE id = %s",
             (publicadas, omitidas, consulta_id))
 
+    async def purgar(self, dias_respuestas: int, dias_consultas: int) -> tuple[int, int]:
+        """Retención (R-004): copias de respuestas con más de `dias_respuestas` y registro de consultas con más de `dias_consultas`.
+
+        Borrar una consulta borra también su copia (ON DELETE CASCADE). No toca versiones, estado actual, publicaciones ni cuarentena.
+        Devuelve (copias borradas, consultas borradas).
+        """
+        async with self._conexion.transaction():
+            copias = (await self._conexion.execute(
+                "DELETE FROM live.respuesta_original WHERE creada_at < now() - make_interval(days => %s)", (dias_respuestas,))).rowcount
+            consultas = (await self._conexion.execute(
+                "DELETE FROM live.consulta_extraccion WHERE iniciada_at < now() - make_interval(days => %s)", (dias_consultas,))).rowcount
+        return copias, consultas
+
     async def registrar_error_publicacion(self, mensaje: str) -> None:
         await self._conexion.execute(
             "UPDATE live.estado_ingesta SET ultimo_error_at = now(), ultimo_error = %s WHERE id = 1", (mensaje,))

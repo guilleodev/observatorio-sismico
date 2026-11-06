@@ -1,0 +1,51 @@
+# Prueba 3.5 con servicios reales en recursos TEMPORALES: base scratch_f35, tema prueba-f35, grupo prueba-f35. 2026-11-06T16:42:35Z
+Tablas definitivas ANTES: evento_actual=0 evento_version=0 cuarentena=0
+CREATE DATABASE
+
+## A. Terremoto valido (updated 1000), explosion de un evento nuevo, latitud 145, mensaje ilegible y modo synthetic
+(consumidor al dia)
+consumer INFO GUARDADA id=prueba-f35 offset=0
+consumer INFO EXCLUIDA id=prueba-f35-explosion offset=1 motivo=tipo de evento no sísmico: 'explosion' retirado=False
+consumer WARNING CUARENTENA id=prueba-f35-lat145 offset=2 clave=b'prueba-f35-lat145' motivo=coordenadas fuera de rango
+consumer WARNING CUARENTENA id=None offset=3 clave=b'prueba-f35-ilegible' motivo=JSON ilegible
+consumer WARNING DESCARTADO offset=4 clave=b'prueba-f35-synthetic' motivo=mode no contractual (solo live, replay): 'synthetic'
+   evento_actual: prueba-f35 updated=1000 retirado=false
+   evento_version=1  cuarentena: excluido/prueba-f35-explosion@1000; invalido/prueba-f35-lat145@1000; invalido/(sin id)@-
+   offset_confirmado=5 fin_del_tema=5 lag=0
+ESPERADO: actual=prueba-f35 (retirado=False); cuarentena=excluido/explosion_nueva, invalido/lat145, invalido/ilegible; el modo synthetic solo DESCARTADO; lag=0 (offset 5)
+
+## B. Reclasificacion: el mismo evento llega como explosion con updated 2000
+consumer INFO EXCLUIDA id=prueba-f35 offset=5 motivo=tipo de evento no sísmico: 'explosion' retirado=True
+   evento_actual: prueba-f35 updated=2000 retirado=true
+   evento_version=1  cuarentena: excluido/prueba-f35-explosion@1000; invalido/prueba-f35-lat145@1000; invalido/(sin id)@-; excluido/prueba-f35@2000
+   offset_confirmado=6 fin_del_tema=6 lag=0
+ESPERADO: prueba-f35 retirado=True updated=2000 (NO borrado); evento_version=1; cuarentena +1 excluido
+
+## C. Una version valida posterior (updated 3000) lo reactiva
+consumer INFO GUARDADA id=prueba-f35 offset=6
+   evento_actual: prueba-f35 updated=3000 retirado=false
+   evento_version=2  cuarentena: excluido/prueba-f35-explosion@1000; invalido/prueba-f35-lat145@1000; invalido/(sin id)@-; excluido/prueba-f35@2000
+   offset_confirmado=7 fin_del_tema=7 lag=0
+ESPERADO: prueba-f35 retirado=False updated=3000; evento_version=2
+
+## D. Reentrega: parar el consumidor, rebobinar el grupo y reprocesar los 8 mensajes
+(grupo vacio)
+tras rebobinar: offset_confirmado=0 fin_del_tema=7 lag=7
+(reprocesado)
+consumer INFO DUPLICADA id=prueba-f35 offset=0
+consumer INFO EXCLUIDA id=prueba-f35-explosion offset=1 motivo=tipo de evento no sísmico: 'explosion' retirado=False
+consumer WARNING CUARENTENA id=prueba-f35-lat145 offset=2 clave=b'prueba-f35-lat145' motivo=coordenadas fuera de rango
+consumer WARNING CUARENTENA id=None offset=3 clave=b'prueba-f35-ilegible' motivo=JSON ilegible
+consumer WARNING DESCARTADO offset=4 clave=b'prueba-f35-synthetic' motivo=mode no contractual (solo live, replay): 'synthetic'
+consumer INFO EXCLUIDA id=prueba-f35 offset=5 motivo=tipo de evento no sísmico: 'explosion' retirado=False
+consumer INFO DUPLICADA id=prueba-f35 offset=6
+   evento_actual: prueba-f35 updated=3000 retirado=false
+   evento_version=2  cuarentena: excluido/prueba-f35-explosion@1000; invalido/prueba-f35-lat145@1000; invalido/(sin id)@-; excluido/prueba-f35@2000
+   offset_confirmado=7 fin_del_tema=7 lag=0
+cuarentena antes=4 despues=4 | evento_version antes=2 despues=2   (ESPERADO: iguales; reenvios no duplican)
+
+## E. Limpieza (solo recursos temporales)
+DROP DATABASE
+temas: __consumer_offsets terremotos.live terremotos.sintetico  | grupos: consumidor-sintetico consumidor-live 
+Tablas definitivas DESPUES: evento_actual=0 evento_version=0 cuarentena=0 version_publicada=0
+sintetico intacto: 18 filas; bases: postgres,observatorio

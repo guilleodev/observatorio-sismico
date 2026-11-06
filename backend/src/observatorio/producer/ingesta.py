@@ -66,7 +66,23 @@ async def _publicar(repo, publicador, features, ingested_at: int) -> tuple[int, 
     return publicadas, omitidas
 
 
+async def _purgar(repo, config: ConfigIngesta) -> None:
+    """Aplica la retención en cada ciclo. Un fallo al purgar nunca debe romper la ingesta."""
+    try:
+        copias, consultas = await repo.purgar(config.retencion_respuestas_dias, config.retencion_consultas_dias)
+        if copias or consultas:
+            log.info("Retención: %s copias y %s consultas antiguas purgadas", copias, consultas)
+    except Exception as exc:
+        log.warning("No se pudo aplicar la retención (%s); se reintenta en el ciclo siguiente", exc)
+
+
 async def ejecutar_ciclo(repo, config: ConfigIngesta, publicador, consultar=usgs.consultar, ahora=ahora_ms) -> ResultadoCiclo:
+    resultado = await _consultar_y_publicar(repo, config, publicador, consultar, ahora)
+    await _purgar(repo, config)
+    return resultado
+
+
+async def _consultar_y_publicar(repo, config: ConfigIngesta, publicador, consultar, ahora) -> ResultadoCiclo:
     iniciada = ahora()
     try:
         resp = await consultar(config.usgs_url, config.timeout_s, config.max_reintentos)

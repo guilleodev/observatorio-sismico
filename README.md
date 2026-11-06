@@ -5,9 +5,10 @@ PostgreSQL → API FastAPI → mapa Angular/Leaflet, en cinco servicios de Docke
 
 **Estado:** fase F3 en curso. El MVP de la fase F2 (un evento sintético que recorría todo el circuito) está
 **retirado del sistema** (paso 3.1) y se conserva en Git (commit `0a56f65`), en `docs/evidencias/mvp/` y en el esquema
-archivado `sintetico` de PostgreSQL, que ningún componente lee. El servicio `producer` consulta ya el feed de USGS cada 60 s **en modo seco**
-(`INGESTA_PUBLICAR=false`): registra las consultas y conserva la respuesta original en PostgreSQL, pero no publica en Kafka hasta que el
-consumidor definitivo esté listo (pasos 3.3–3.5); mientras tanto la API devuelve `features: []` con `mode: "live"`.
+archivado `sintetico` de PostgreSQL, que ningún componente lee. El servicio `producer` consulta el feed de USGS cada 60 s, registra las consultas, conserva la respuesta original y publica en
+Kafka solo las versiones nuevas o revisadas (con `INGESTA_PUBLICAR=true` en el `.env`; el valor por defecto `false` es el modo seco, sin publicar). El consumidor
+valida cada evento, guarda el historial de versiones y el estado actual, y manda a cuarentena lo no sísmico o no tratable. La API
+sirve los terremotos de las últimas 24 h con `mode: "live"` y `last_ingestion` (última consulta correcta a USGS).
 
 Documentación de trabajo: [`docs/HOJA-DE-RUTA.md`](docs/HOJA-DE-RUTA.md), [`specs/`](specs/) y la constitución del
 proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
@@ -24,6 +25,9 @@ proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
    ```bash
    cp .env.example .env
    ```
+
+   `INGESTA_PUBLICAR` vale `false` por defecto (instalación nueva = modo seco: el productor consulta y registra, pero no publica en
+   Kafka). Para ingerir y publicar datos reales, ponerlo a `true` en el `.env` local.
 
 2. Levantar los cinco servicios:
 
@@ -74,5 +78,5 @@ corren en transacciones que se revierten: no dejan datos en las tablas definitiv
 
 ```bash
 docker compose stop      # conserva contenedores y datos
-docker compose down      # elimina contenedores y red; conserva el volumen de PostgreSQL (los mensajes de Kafka no tienen volumen y se pierden)
+docker compose down      # elimina contenedores y red; conserva los volúmenes de PostgreSQL y de Kafka (mensajes y offsets)
 ```

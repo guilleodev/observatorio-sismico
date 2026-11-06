@@ -4,10 +4,13 @@ Una versión es `(event_id, updated)`. Cada versión distinta va al historial (`
 (`evento_actual`) solo avanza si la versión recibida es más reciente que la almacenada.
 """
 
+import hashlib
+from dataclasses import dataclass
+
 from psycopg import AsyncConnection
 from psycopg.types.json import Jsonb
 
-from observatorio.consumer.mensaje import EventoRecibido
+from observatorio.consumer.mensaje import Clasificacion, EventoRecibido
 
 COLUMNAS = """event_id, event_time, updated_at, mag, mag_type, depth_km, longitude, latitude, place,
     source, mode, ingested_at, kafka_topic, kafka_partition, kafka_offset, raw"""
@@ -45,6 +48,38 @@ WHERE event_id = %(event_id)s AND updated_at < to_timestamp(%(updated)s / 1000.0
 """
 
 
+# Cuarentena (R-007): excluidos (no sísmicos) e inválidos, con motivo y referencia al mensaje original.
+SQL_CUARENTENA = """
+INSERT INTO live.cuarentena (categoria, motivo, event_id, updated_ms, kafka_topic, kafka_partition, kafka_offset, clave, payload, huella)
+VALUES (%(categoria)s, %(motivo)s, %(event_id)s, %(updated_ms)s, %(topic)s, %(partition)s, %(offset)s, %(clave)s, %(payload)s, %(huella)s)
+ON CONFLICT (huella) DO NOTHING
+"""
+
+
+@dataclass(frozen=True)
+class ReferenciaMensaje:
+    """Dónde estaba el mensaje original y qué contenía."""
+
+    topic: str
+    partition: int
+    offset: int
+    clave: bytes | None
+    contenido: bytes
+
+
+def _sin_nul(texto: str | None) -> str | None:
+    """PostgreSQL no admite NUL en `text`: la cuarentena nunca debe fallar por el propio dato que aísla (el original va en `payload`)."""
+    return texto.replace("\x00", "") if texto is not None else None
+
+
+def calcular_huella(categoria: str, motivo: str, base_huella: bytes) -> str:
+    """Identidad de un registro de cuarentena: categoría, motivo y versión del evento (o, si no es legible, su contenido).
+
+    No incluye `ingested_at`, así que un reenvío del mismo evento y versión no crea otra fila (ENUNCIADO.md §7).
+    """
+    return hashlib.sha256(categoria.encode() + b"|" + motivo.encode() + b"|" + base_huella).hexdigest()
+
+
 class RepositorioEventos:
     def __init__(self, conexion: AsyncConnection):
         self._conexion = conexion
@@ -68,6 +103,30 @@ class RepositorioEventos:
                 return "duplicada"
             vigente = (await self._conexion.execute(SQL_ACTUAL, parametros)).rowcount == 1
             return "guardada" if vigente else "antigua"
+
+    async def poner_en_cuarentena(self, c: Clasificacion, ref: ReferenciaMensaje) -> bool:
+        """Registra el mensaje (categoría `excluido` o `invalido`). True si es nuevo, False si ya estaba (reenvío)."""
+        async with self._conexion.transaction():
+            return await self._insertar_cuarentena(c, ref)
+
+    async def excluir_evento(self, c: Clasificacion, ref: ReferenciaMensaje) -> tuple[bool, bool]:
+        """Evento que dejó de ser terremoto: lo registra y, en la misma transacción, retira el evento si ya lo conocíamos.
+
+        Devuelve (registro nuevo en cuarentena, evento retirado).
+        """
+        async with self._conexion.transaction():
+            nuevo = await self._insertar_cuarentena(c, ref)
+            retirado = c.event_id is not None and c.updated_ms is not None and await self.retirar_evento(c.event_id, c.updated_ms)
+            return nuevo, retirado
+
+    async def _insertar_cuarentena(self, c: Clasificacion, ref: ReferenciaMensaje) -> bool:
+        parametros = {
+            "categoria": c.estado, "motivo": c.motivo, "event_id": _sin_nul(c.event_id), "updated_ms": c.updated_ms,
+            "topic": ref.topic, "partition": ref.partition, "offset": ref.offset,
+            "clave": _sin_nul(ref.clave.decode("utf-8", errors="replace")) if ref.clave is not None else None,
+            "payload": ref.contenido, "huella": calcular_huella(c.estado, c.motivo, c.base_huella),
+        }
+        return (await self._conexion.execute(SQL_CUARENTENA, parametros)).rowcount == 1
 
     async def retirar_evento(self, event_id: str, updated_ms: int) -> bool:
         """Marca como retirado un evento ya conocido cuya versión más reciente deja de ser terremoto (D2)."""

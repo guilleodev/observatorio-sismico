@@ -1,0 +1,48 @@
+# T034 — caída real de USGS y recuperación automática (sin reiniciar el productor). 2026-11-06T17:01:33Z
+Método: se añade 'earthquake.usgs.gov -> 127.0.0.1' al /etc/hosts del contenedor producer (docker exec como root): la URL real no cambia, pero la conexión falla. Se restaura el archivo original al final.
+
+## ANTES
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=0 ultimo_error='-' | evento_actual=201 evento_version=201
+(última consulta antes de la caída: id=177)
+caída inyectada a las 17:01:37
+
+## DURANTE la caída (~150 s: al menos 2 ciclos fallidos; cada ciclo reintenta 3 veces con esperas de 5, 10 y 20 s)
+t+15 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=0 ultimo_error='-' | evento_actual=201 evento_version=201
+t+30 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=0 ultimo_error='-' | evento_actual=201 evento_version=201
+t+45 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=0 ultimo_error='-' | evento_actual=201 evento_version=201
+t+60 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=1 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+75 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=1 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+90 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=1 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+105 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=2 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+120 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=2 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+135 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=2 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+t+150 s:
+   api.last_ingestion=1793984454588 | estado_ingesta: ok=47 errores=3 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=201
+consultas desde la caída:
+     178|17:01:54|error|4|error de red: [Errno 111] Connection refused
+     179|17:02:54|error|4|error de red: [Errno 111] Connection refused
+     180|17:03:54|error|4|error de red: [Errno 111] Connection refused
+¿avanzó last_ingestion durante la caída? antes=1793984454588 ahora=1793984454588  -> NO avanzó (correcto)
+API durante la caída: HTTP 200, count=198 (se sirve el último estado válido)
+
+## RECUPERACIÓN: se restaura /etc/hosts a las 17:04:32
+restaurado
+primera consulta correcta tras restaurar: 22 s después de restaurar
+consultas desde la restauración (id > 180):
+     181|17:04:54|ok|1|
+ciclos iniciados desde la restauración hasta la primera consulta correcta (SC-008: <= 3): 1
+
+## DESPUÉS
+   api.last_ingestion=1793984694617 | estado_ingesta: ok=48 errores=3 ultimo_error='error de red: [Errno 111] Connection refused' | evento_actual=201 evento_version=203
+¿last_ingestion volvió a avanzar? antes=1793984454588 ahora=1793984694617  -> SÍ avanzó (correcto)
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+hosts del producer restaurado: 0  (0 = sin la línea inyectada)

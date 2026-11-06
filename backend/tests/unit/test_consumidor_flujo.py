@@ -37,6 +37,14 @@ class RepositorioFalso:
             return "guardada"
         return "antigua"
 
+    async def poner_en_cuarentena(self, c, ref):
+        self.eventos.append(("cuarentena", ref.offset))
+        return True
+
+    async def excluir_evento(self, c, ref):
+        self.eventos.append(("excluida", ref.offset))
+        return True, False
+
 
 def registro(offset=0, valor=None):
     if valor is None:
@@ -80,11 +88,40 @@ def test_una_revision_posterior_actualiza_el_estado_actual():
     assert repo.filas["prueba-001"].updated_ms == AHORA + 60_000 - 600_000
 
 
-def test_mensaje_invalido_se_descarta_con_commit_sin_guardar():
+def test_un_mensaje_ilegible_va_a_cuarentena_y_el_offset_se_confirma_despues():
     eventos = []
     res = ejecutar(procesar_registro(ConsumidorFalso(eventos), registro(2, b"basura"), RepositorioFalso(eventos)))
-    assert res == "descartado"
-    assert eventos == [("commit", {0: 3})]  # no bloquea la cola
+    assert res == "cuarentena"
+    assert eventos == [("cuarentena", 2), ("commit", {0: 3})]  # registrado primero, confirmado después (FR-014)
+
+
+def test_un_evento_no_sismico_se_excluye_y_el_offset_se_confirma_despues():
+    eventos = []
+    ev = construir_evento(ahora=AHORA)
+    ev["properties"]["type"] = "explosion"
+    valor = serializar(construir_mensaje(ev, ahora=AHORA))[1]
+    res = ejecutar(procesar_registro(ConsumidorFalso(eventos), registro(4, valor), RepositorioFalso(eventos)))
+    assert res == "excluida" and eventos == [("excluida", 4), ("commit", {0: 5})]
+
+
+def test_un_mensaje_ilegible_no_bloquea_la_cola():
+    eventos = []
+    consumidor, repo = ConsumidorFalso(eventos), RepositorioFalso(eventos)
+    resultados = [ejecutar(procesar_registro(consumidor, registro(o, v), repo)) for o, v in ((0, b"\xff\xfe"), (1, None), (2, None))]
+    assert resultados == ["cuarentena", "guardada", "duplicada"]  # los siguientes siguen su curso
+    assert [e[1] for e in eventos if e[0] == "commit"] == [{0: 1}, {0: 2}, {0: 3}]
+
+
+def test_si_falla_la_cuarentena_no_se_confirma():
+    eventos = []
+
+    class RepoCaido(RepositorioFalso):
+        async def poner_en_cuarentena(self, c, ref):
+            raise ConnectionError("PostgreSQL caído")
+
+    with pytest.raises(ConnectionError):
+        ejecutar(procesar_registro(ConsumidorFalso(eventos), registro(2, b"basura"), RepoCaido(eventos)))
+    assert eventos == []  # sin registrar en cuarentena no se confirma nada
 
 
 @pytest.mark.parametrize("modo", ["synthetic", "replay", "otro"])

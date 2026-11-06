@@ -5,8 +5,10 @@
 -- Estado actual: se amplia con la marca de retirada (reclasificacion a no sismico, D2)
 ALTER TABLE live.evento_actual ADD COLUMN IF NOT EXISTS retirado boolean NOT NULL DEFAULT false;
 
-CREATE INDEX IF NOT EXISTS idx_live_evento_actual_vigente
-    ON live.evento_actual (event_time) WHERE NOT retirado;
+-- Se creo un indice parcial (event_time) WHERE NOT retirado y se MIDIO con EXPLAIN ANALYZE (docs/evidencias/f3/3.6-indices-y-retencion.txt):
+-- con ~200 filas el planificador usa Seq Scan con o sin indices (0,05-0,10 ms), asi que no aporta y se retira. El indice
+-- general idx_live_evento_actual_event_time (001) se mantiene para cuando la tabla crezca (F4-F5).
+DROP INDEX IF EXISTS live.idx_live_evento_actual_vigente;
 
 -- Historial: una fila por version distinta (event_id, updated_at); el evento original se conserva en raw
 CREATE TABLE IF NOT EXISTS live.evento_version (

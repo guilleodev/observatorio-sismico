@@ -1,0 +1,10 @@
+# 3.7 T048 - despliegue de la correccion de errores permanentes (solo consumer) 2026-11-06T18:50:14Z
+antes: reconciliacion=0 lag: offset=259 final=259 lag=0
+#13 DONE 0.0s
+ Image observatorio-backend Built 
+ Container observatorio-consumer-1 Starting 
+ Container observatorio-consumer-1 Started 
+despues: consumer=healthy reconciliacion=0 lag: offset=260 final=260 lag=0
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+volumenes: observatorio_kafkadata observatorio_pgdata 
+codigo desplegado contiene aislar_error_permanente: 2

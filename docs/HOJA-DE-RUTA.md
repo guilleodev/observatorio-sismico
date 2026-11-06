@@ -133,7 +133,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además (SDD del MVP):** datos sintéticos aislados (topic y esquema propios) y etiquetados; `mode = "synthetic"` solo como excepción temporal; healthchecks y reintentos; retención base de Kafka (research R-004); CORS desde el origen de desarrollo; criterios SC-001 a SC-010 con evidencias reales.
 
-### F3 — Ingesta real y calidad · 🔄 en curso (3.1 a 3.4 completados)
+### F3 — Ingesta real y calidad · 🔄 en curso (cierre técnico: 3.1 a 3.7 y T048 completados; SC-010/T044 pendientes de observación >24 h; publicación real ACTIVA; falta revisión humana y commit `[F3]`)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -141,9 +141,9 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 | 3.2 | Implementar consultas periódicas a USGS cada 60 segundos | ✅ (modo seco; la publicación real se activa en T026) |
 | 3.3 | Detectar duplicados y versiones actualizadas | ✅ (verificado con PostgreSQL real en transacciones revertidas; con datos reales tras T026) |
 | 3.4 | Implementar transacciones, offsets e idempotencia | ✅ (verificado con PostgreSQL y Kafka reales en recursos temporales; con datos reales tras T026) |
-| 3.5 | Validar coordenadas, campos y gestionar cuarentena | ⬜ |
-| 3.6 | Registrar estado de ingesta y comprobar retención | ⬜ |
-| 3.7 | Probar fallos, reinicios y recuperación sin duplicados | ⬜ |
+| 3.5 | Validar coordenadas, campos y gestionar cuarentena | ✅ (clasificación, cuarentena, retirada y API; publicación real activada en T026 y verificada con datos reales en T027–T029) |
+| 3.6 | Registrar estado de ingesta y comprobar retención | ✅ (estado de ingesta, `last_ingestion`, purga, retención de Kafka y volumen persistente; incidencia con Kafka documentada) |
+| 3.7 | Probar fallos, reinicios y recuperación sin duplicados | ✅ (SC-001 30/30; consumidor, productor, PostgreSQL y Kafka recuperados sin pérdidas ni duplicados; revisión T048 de Architect y QA: APTO CON RESERVAS, corregido el bloqueo por errores permanentes, 205 pruebas; **SC-010 y T044 pendientes de observación >24 h**) |
 
 *Correspondencia con `specs/002-ingesta-real-calidad/tasks.md` (SDD de F3, 48 tareas; cada tarea con un único paso principal):*
 

@@ -1,0 +1,30 @@
+# 3.5 — casos de calidad con el código real del consumidor y PostgreSQL real, en una transacción REVERTIDA. 2026-11-06T16:41:43Z
+Los casos dañados quedan identificados (ids prueba-cNN) y separados: no se escribe nada en las tablas definitivas.
+
+ANTES   (evento_actual, evento_version, cuarentena) = (0, 0, 0)
+caso                                                              | resultado   | estado actual (mag, retirado)       | cuarentena (categoría: motivo)
+01 terremoto válido                                               | guardada    | mag=3.2, prof=12.0, retirado=False  | —
+02 magnitud nula                                                  | guardada    | mag=None, prof=12.0, retirado=False | —
+03 magnitud 0                                                     | guardada    | mag=0.0, prof=12.0, retirado=False  | —
+04 profundidad negativa (-2,6 km)                                 | guardada    | mag=3.2, prof=-2.6, retirado=False  | —
+05 explosión                                                      | excluida    | —                                   | excluido: tipo de evento no sísmico: 'explosion'
+06 quarry blast                                                   | excluida    | —                                   | excluido: tipo de evento no sísmico: 'quarry blast'
+CUARENTENA id=prueba-c07 offset=6 clave=b'k' motivo=coordenadas fuera de rango
+07 latitud 145                                                    | cuarentena  | —                                   | invalido: coordenadas fuera de rango
+CUARENTENA id=prueba-c08 offset=7 clave=b'k' motivo=longitud no finita
+08 longitud NaN                                                   | cuarentena  | —                                   | invalido: longitud no finita
+CUARENTENA id=prueba-c09 offset=8 clave=b'k' motivo=la geometría falta o no es un Point
+09 geometría LineString                                           | cuarentena  | —                                   | invalido: la geometría falta o no es un Point
+CUARENTENA id=prueba-c10 offset=9 clave=b'k' motivo=updated debe ser un entero (ms Unix UTC)
+10 updated no entero                                              | cuarentena  | —                                   | invalido: updated debe ser un entero (ms Unix UTC)
+CUARENTENA id=None offset=10 clave=b'k' motivo=id de evento ausente o no textual: None
+11 sin id                                                         | cuarentena  | —                                   | invalido: id de evento ausente o no textual: None
+CUARENTENA id=None offset=11 clave=b'k' motivo=JSON ilegible
+12 JSON ilegible                                                  | cuarentena  | —                                   | invalido: JSON ilegible
+13 reclasificación (válido 1000 -> explosión 2000 -> válido 3000) | guardada/excluida/guardada | mag=3.2, prof=12.0, retirado=False  | excluido: tipo de evento no sísmico: 'explosion'
+DESCARTADO offset=15 clave=b'k' motivo=mode no contractual (solo live, replay): 'synthetic'
+14 modo synthetic (fuera de contrato)                             | descartado  | —                                   | —
+DESCARTADO offset=16 clave=b'k' motivo=source no admitido: 'otra-fuente' (solo usgs-all-day)
+15 source no admitido                                             | descartado  | —                                   | —
+DENTRO  (evento_actual, evento_version, cuarentena) = (5, 6, 9)
+DESPUÉS (evento_actual, evento_version, cuarentena) = (0, 0, 0)  <- todo se revirtió

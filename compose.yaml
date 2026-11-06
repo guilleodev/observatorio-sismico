@@ -40,6 +40,11 @@ services:
       KAFKA_LOG_RETENTION_HOURS: 24
       KAFKA_LOG_RETENTION_BYTES: 104857600
       KAFKA_LOG_ROLL_HOURS: 6
+      # Sin esta variable el broker escribe en /tmp/kafka-logs (dentro del contenedor, sin volumen) y se pierde al recrearlo
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      # Persistencia: mensajes y offsets de los grupos sobreviven a `docker compose down` (research R-010, decisión D4)
+      - kafkadata:/var/lib/kafka/data
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
       interval: 10s
@@ -66,7 +71,8 @@ services:
       USGS_MAX_REINTENTOS: ${USGS_MAX_REINTENTOS:-3}
       RETENCION_RESPUESTAS_DIAS: ${RETENCION_RESPUESTAS_DIAS:-3}
       RETENCION_CONSULTAS_DIAS: ${RETENCION_CONSULTAS_DIAS:-30}
-      # false = modo seco: consulta y registra sin publicar en Kafka (se activa en el paso 3.5, tarea T026)
+      # true = publicación real en Kafka (activada en la tarea T026, con el consumidor definitivo desplegado);
+      # false = modo seco: consulta y registra sin publicar ni marcar versiones
       INGESTA_PUBLICAR: ${INGESTA_PUBLICAR:-false}
     depends_on:
       kafka:
@@ -135,3 +141,4 @@ networks:
 
 volumes:
   pgdata:
+  kafkadata:
