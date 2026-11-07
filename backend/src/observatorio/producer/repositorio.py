@@ -3,20 +3,40 @@
 El productor solo escribe estas tablas; el estado de los eventos (evento_actual, evento_version, cuarentena) es del consumidor.
 """
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timedelta, timezone
 
 from psycopg import AsyncConnection
 
 from observatorio.producer.usgs import ErrorUsgs, Respuesta
 
 
+log = logging.getLogger("producer.huecos")
+UMBRAL = timedelta(hours=24)  # el feed all_day solo cubre las últimas 24 h
+
+
 def _instante(ms: int) -> datetime:
     return datetime.fromtimestamp(ms / 1000, tz=timezone.utc)
 
 
+def calcular_hueco(anterior: datetime, ahora: datetime, margen_s: int) -> tuple[datetime, datetime] | None:
+    """Intervalo sin cobertura entre dos consultas correctas, o None si no hay hueco.
+
+    Hay hueco si pasó MÁS de `24 h − margen` desde la consulta correcta anterior. El intervalo es
+    (anterior − margen, ahora − 24 h + margen): el margen cubre los eventos publicados con retraso y se aplica por ambos lados.
+    """
+    margen = timedelta(seconds=margen_s)
+    if ahora - anterior <= UMBRAL - margen:
+        return None
+    inicio, fin = anterior - margen, ahora - UMBRAL + margen
+    return (inicio, fin) if fin > inicio else None
+
+
 class RepositorioProductor:
-    def __init__(self, conexion: AsyncConnection):
+    def __init__(self, conexion: AsyncConnection, margen_hueco_s: int | None = None):
+        # `margen_hueco_s=None` desactiva la detección de huecos (modo seco: no se anota nada si no se publica)
         self._conexion = conexion
+        self._margen_hueco_s = margen_hueco_s
 
     async def ultimo_hash(self) -> str | None:
         cursor = await self._conexion.execute("SELECT ultimo_hash_features FROM live.estado_ingesta WHERE id = 1")
@@ -47,6 +67,8 @@ class RepositorioProductor:
                 "VALUES (%s, %s, 'ok', %s, %s, %s, %s) RETURNING id",
                 (_instante(iniciada_ms), resp.duracion_ms, resp.http_status, resp.bytes, n_eventos, resp.intentos))
             consulta_id = (await cursor.fetchone())[0]
+            ahora = _instante(iniciada_ms + resp.duracion_ms)
+            await self._anotar_hueco(ahora)  # antes de actualizar estado_ingesta: aún está la consulta correcta anterior
             if contenido_gz is not None:
                 await self._conexion.execute(
                     "INSERT INTO live.respuesta_original (consulta_id, hash_features, contenido_gz, tamano_bytes) "
@@ -54,8 +76,25 @@ class RepositorioProductor:
             await self._conexion.execute(
                 "UPDATE live.estado_ingesta SET ultima_consulta_ok_at = %s, ultimo_hash_features = %s, "
                 "consultas_ok = consultas_ok + 1 WHERE id = 1",
-                (_instante(iniciada_ms + resp.duracion_ms), hash_features))
+                (ahora, hash_features))
         return consulta_id
+
+    async def _anotar_hueco(self, ahora: datetime) -> None:
+        """Si pasó más de 24 h − margen desde la consulta correcta anterior, anota el hueco (idempotente por (inicio, fin))."""
+        if self._margen_hueco_s is None:
+            return
+        cursor = await self._conexion.execute("SELECT ultima_consulta_ok_at FROM live.estado_ingesta WHERE id = 1")
+        fila = await cursor.fetchone()
+        if fila is None or fila[0] is None:  # primera consulta correcta de la historia: no hay con qué comparar
+            return
+        hueco = calcular_hueco(fila[0], ahora, self._margen_hueco_s)
+        if hueco is None:
+            return
+        cursor = await self._conexion.execute(
+            "INSERT INTO live.hueco (inicio, fin) VALUES (%s, %s) ON CONFLICT (inicio, fin) DO NOTHING", hueco)
+        if cursor.rowcount:
+            log.warning("HUECO de ingesta anotado: sin cobertura entre %s y %s (última consulta correcta: %s). "
+                        "Recuperar a demanda con: python -m observatorio.recuperacion.recuperar", hueco[0], hueco[1], fila[0])
 
     async def registrar_error(self, iniciada_ms: int, error: ErrorUsgs) -> None:
         """Consulta fallida: se registra el error sin tocar la última consulta correcta ni el último hash válido."""

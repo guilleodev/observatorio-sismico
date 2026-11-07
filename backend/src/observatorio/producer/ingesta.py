@@ -46,6 +46,11 @@ def _clave_version(feature) -> tuple[str, int]:
     return id_, updated
 
 
+def mensaje_kafka(feature, ingested_at: int, source: str = SOURCE_ADMITIDO) -> dict:
+    """Mensaje del contrato (ENUNCIADO 6). `source` distingue el feed (usgs-all-day) de la recuperación de huecos."""
+    return {"source": source, "ingested_at": ingested_at, "mode": MODO_LIVE, "event": feature}
+
+
 async def _publicar(repo, publicador, features, ingested_at: int) -> tuple[int, int]:
     claves = [(_clave_version(f), f) for f in features]
     maximos = await repo.maximos_publicados(sorted({clave[0] for clave, _ in claves}))
@@ -55,7 +60,7 @@ async def _publicar(repo, publicador, features, ingested_at: int) -> tuple[int, 
             if event_id in maximos and updated_ms <= maximos[event_id]:  # misma versión o anterior (FAQ 10)
                 omitidas += 1
                 continue
-            mensaje = {"source": SOURCE_ADMITIDO, "ingested_at": ingested_at, "mode": MODO_LIVE, "event": feature}
+            mensaje = mensaje_kafka(feature, ingested_at)
             particion, offset = await publicador(event_id.encode("utf-8"), json.dumps(mensaje, ensure_ascii=False).encode("utf-8"))
             await repo.marcar_publicada(event_id, updated_ms, particion, offset)  # solo tras la confirmación
             maximos[event_id] = updated_ms

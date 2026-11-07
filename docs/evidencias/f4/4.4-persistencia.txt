@@ -1,0 +1,49 @@
+# 4.4 T040 - persistencia sin borrar nada 2026-11-07T09:02:49Z
+Sin 'down', sin '-v', sin recrear contenedores. La recreación (down + up -d sin -v) es opcional y NO se ha probado: requiere autorización expresa.
+ids de contenedor antes: 206d130477df a325189461b8 8334b55b327c 046081f539aa 3876e8a25cf2 
+== invariantes [antes] 2026-11-07T09:02:51Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=437 versiones=421 cuarentena=16 | offset/final/lag=447/447/0
+geo: reparto live=interior=276, sin_pais=54 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+### 1. docker compose restart postgres
+ Container observatorio-postgres-1 Restarting 
+ Container observatorio-postgres-1 Started 
+5 servicios healthy
+== invariantes [tras restart postgres] 2026-11-07T09:03:09Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=437 versiones=421 cuarentena=16 | offset/final/lag=447/447/0
+geo: reparto live=interior=276, sin_pais=54 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+### 2. docker compose stop (todo el stack) + start
+ Container observatorio-consumer-1 Stopped 
+ Container observatorio-producer-1 Stopped 
+ Container observatorio-kafka-1 Stopping 
+ Container observatorio-postgres-1 Stopping 
+ Container observatorio-postgres-1 Stopped 
+ Container observatorio-kafka-1 Stopped 
+parado: api:exited consumer:exited kafka:exited postgres:exited producer:exited 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-kafka-1 Healthy 
+ Container observatorio-consumer-1 Starting 
+ Container observatorio-producer-1 Starting 
+ Container observatorio-consumer-1 Started 
+ Container observatorio-producer-1 Started 
+5 servicios healthy
+== invariantes [tras stop+start] 2026-11-07T09:04:23Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=437 versiones=421 cuarentena=16 | offset/final/lag=447/447/0
+geo: reparto live=interior=276, sin_pais=54 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+ids de contenedor despues: 206d130477df a325189461b8 8334b55b327c 046081f539aa 3876e8a25cf2  (los mismos: no se recreó ninguno)

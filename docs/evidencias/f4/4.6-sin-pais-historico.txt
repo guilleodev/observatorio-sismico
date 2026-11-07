@@ -1,0 +1,72 @@
+# 4.6 - análisis de los eventos históricos «sin país» y contraste de asignaciones 2026-11-07T09:55:06Z
+eventos históricos: 18302 | con país: 3952 (21.6 %) | sin país: 14350 (78.4 %)
+
+== 1. Comprobación exhaustiva e independiente de la cobertura (todos los eventos, shapely vectorizado) ==
+  OK    el país de los 18302 eventos coincide con el recálculo vectorizado (diferencias: 0)
+  OK    ningún evento «sin país» cae dentro de un polígono del catálogo (encontrados: 0)
+  eventos con varias coincidencias/frontera: 0
+
+== 2. Distancia de los eventos «sin país» al polígono más cercano ==
+  costa/escala (≤ 5 km)         201  (1.4 % de los sin país; 1.1 % del total)
+  costa afuera (5-50 km)       2064  (14.4 % de los sin país; 11.3 % del total)
+  mar abierto (> 50 km)       12085  (84.2 % de los sin país; 66.0 % del total)
+  distancia al polígono más cercano: mediana 144 km | p90 1525 km | máxima 4303 km
+
+== 3. Pistas de USGS en `place` (solo control; no sustituyen a las coordenadas) ==
+  sin país con distancia citada a una localidad de referencia: 11146 de 14350 (77.7 %)
+  citan una localidad a ≤ 10 km (el epicentro estaría casi en la localidad): 150
+  · de ellos a ≤ 25 km de un polígono (costa o escala del catálogo 1:110 M): 104
+  · de ellos a > 25 km de cualquier polígono (isla ausente del catálogo, o nombre de localidad en el mar): 46
+      us7000pbhd «8 km NE of Yigo Village, Guam» → polígono más cercano a 1851 km
+      us6000rlkx «5 km N of Dededo Village, Guam» → polígono más cercano a 1843 km
+      us6000reyt «3 km NNW of Agat Village, Guam» → polígono más cercano a 1819 km
+      us7000p9v8 «4 km NNW of Ribeirinha, Portugal» → polígono más cercano a 1531 km
+      us7000qrhb «6 km SW of Ie, Japan» → polígono más cercano a 563 km
+      us7000pms4 «8 km SSE of Berekua, Dominica» → polígono más cercano a 476 km
+      us6000rkn0 «4 km E of Oistins, Barbados» → polígono más cercano a 288 km
+      us6000pm24 «7 km SSW of Port-Vila, Vanuatu» → polígono más cercano a 155 km
+      us7000pzkb «5 km SSW of Port-Vila, Vanuatu» → polígono más cercano a 153 km
+      us7000pesp «10 km W of Amorgós, Greece» → polígono más cercano a 146 km
+  sin país con indicio de mar/región en `place` (región, dorsal, golfo, «east of…»): 3101
+  sufijos más frecuentes de los sin país: [('Russia', 3923), ('(sin coma)', 2711), ('Indonesia', 1119), ('Japan', 944), ('Philippines', 680), ('Papua New Guinea', 671), ('Greece', 487), ('Tonga', 465), ('Alaska', 330), ('Vanuatu', 329), ('Fiji', 220), ('Timor Leste', 204)]
+  país que sugiere `place` para los sin país (más frecuentes): [('RUS', 3923), ('IDN', 1119), ('JPN', 944), ('PHL', 680), ('PNG', 671), ('GRC', 487), ('USA', 360), ('VUT', 329), ('FJI', 220), ('CHL', 170)]
+  Lectura: los terremotos se concentran en zonas de subducción y dorsales, casi todas mar adentro: con un catálogo sin aguas territoriales, que un
+  78 % caiga fuera de todo polígono es coherente con la geología, no una anomalía. Distribución observada arriba; no se declara «correcto» sin esta evidencia.
+
+== 4. Contraste de los eventos CON país con el sufijo de `place` (control; SC-005) ==
+  con país: 3952 | con criterio en `place`: 3743 | sin criterio (sin coma o sufijo no reconocido): 209
+  COINCIDEN: 3437 de 3743 (91.8 %) | discrepancias: 306
+     204  epicentro a ≤ 50 km del país sugerido (frontera, costa o localidad de referencia en el país vecino)
+      95  localidad de referencia en el país vecino a la distancia que cita USGS (el epicentro está a menos km del polígono sugerido que los citados)
+       6  epicentro a > 50 km del país sugerido: revisar
+       1  territorio no contiguo o dependencia (p. ej. Alaska, Hawái, Puerto Rico) frente al nombre de USGS
+  discrepancias que quedan «a revisar»: 6
+      us6000qi2j «37 km NNW of Sarupathar, India» asignado MMR / sugerido IND a 70 km
+      us6000qj94 «29 km N of Sarupathar, India» asignado MMR / sugerido IND a 73 km
+      us6000rf3n «29 km SSE of Sarupathar, India» asignado MMR / sugerido IND a 125 km
+      us6000rvkv «38 km ESE of Sarupathar, India» asignado MMR / sugerido IND a 106 km
+      us7000rffd «37 km NNW of Thang, India» asignado PAK / sugerido IND a 67 km
+      us7000rqw2 «32 km SE of Sarupathar, India» asignado MMR / sugerido IND a 116 km
+  OK    ≥ 100 eventos con país comparables con `place` (3743)
+  nota: toda discrepancia tiene una causa asignada salvo las listadas «a revisar» (se reportan, no se ocultan).
+
+RESULTADO: OK
+
+== 5. Causa asignada a las 6 discrepancias que el clasificador automático dejó «a revisar» (revisadas a mano) ==
+  us6000qi2j, us6000qj94, us6000rf3n, us6000rvkv, us7000rqw2 («… of Sarupathar, India»): epicentros en lon 96,7-97,2 / lat 25,9-26,5, es decir, en el estado Kachin
+    (Birmania). El país asignado, MMR, es el correcto por las coordenadas (resultado «interior», estrictamente dentro del polígono). La localidad «Sarupathar» del
+    gazetteer de USGS está en Assam, a unos 380 km: el texto de `place` nombra una localidad homónima o mal ubicada. Causa: nombre de localidad ambiguo en `place`;
+    NO es un error de la asignación (por eso `place` solo sirve de control).
+  us7000rffd («37 km NNW of Thang, India»): lon 76,61 / lat 35,23, en el Karakórum (Gilgit-Baltistán), territorio en disputa. Natural Earth lo dibuja dentro de PAK y
+    USGS cita una localidad administrada por la India. Causa: territorio disputado; el catálogo se usa tal cual (sin reinterpretar fronteras, regla-geografica.md).
+  Resultado: 0 discrepancias sin causa asignada (SC-005): 204 frontera/localidad al otro lado, 95 localidad de referencia en el país vecino a la distancia citada,
+  1 territorio no contiguo, 6 revisadas a mano (5 localidad ambigua + 1 disputado).
+
+== Conclusión sobre el 78 % «sin país» ==
+  · Resultado geográficamente correcto en lo comprobable: 0 eventos «sin país» dentro de un polígono (comprobación exhaustiva independiente de los 18 302).
+  · 84,2 % de los «sin país» está a > 50 km de cualquier polígono (mediana 144 km): mar abierto / fosas de subducción (Kuriles-Kamchatka 3 923 eventos, Indonesia,
+    Japón, Filipinas, Tonga, Vanuatu, Fiyi…). El año 2025 incluye la secuencia de réplicas de Kamchatka de julio (2 684 eventos ese mes).
+  · Limitación real y medida del catálogo 1:110 M: 201 eventos a ≤ 5 km de un polígono (costa/escala) y 46 que `place` sitúa a ≤ 10 km de una localidad y
+    quedan a > 25 km de todo polígono (islas ausentes: Guam, Port-Vila, Amorgós, Barbados, Dominica, Azores…). Son ≈ 1,4 % de los «sin país»: no se corrigen con
+    «el país más cercano» (enunciado §4.3), se documentan como limitación de cobertura.
+  · El 78 % NO es un objetivo ni un indicador de calidad: depende del catálogo y de dónde ocurren los terremotos.

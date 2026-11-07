@@ -1,0 +1,9 @@
+# 4.4 - mutaciones temporales sobre cargador.py (cada una se revierte) 2026-11-07T08:53:55Z
+extremo final inclusivo (no descartar fuera de tramo) -> 2 failed, 16 passed in 9.30s
+no comparar updated con el existente -> 18 passed in 9.14s
+no conservar el mayor updated dentro de la respuesta -> 1 failed, 17 passed in 9.29s
+no subdividir al alcanzar el límite -> 3 failed, 15 passed in 9.27s
+no reutilizar tramos completos -> 3 failed, 15 passed in 9.39s
+cerrar el padre sin comprobar los hijos -> 1 failed, 17 passed in 9.28s
+guardar un archivo distinto del original (tras reforzar la prueba: el JSON del archivo debe ser íntegro) -> 1 failed, 17 passed in 9.32s
+no comparar updated con el existente -> 18 passed: mutante EQUIVALENTE; la cláusula WHERE EXCLUDED.updated_at > existente de SQL_EVENTO impide igualmente sustituir por una versión más antigua (doble protección deliberada)

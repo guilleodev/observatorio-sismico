@@ -1,0 +1,53 @@
+== 1. Recuentos por mes (por tiempo del evento, UTC) frente al recuento de USGS ==
+mes      esperado(count) obtenidos  eventos cuarent. duplic. fuera   eventos+cuarentena  diferencia con count
+2025-01             1413      1413     1413        0       0     0                 1413  +0
+2025-02             1394      1394     1394        0       0     0                 1394  +0
+2025-03             1178      1178     1178        0       0     0                 1178  +0
+2025-04             1316      1316     1316        0       0     0                 1316  +0
+2025-05             1228      1228     1228        0       0     0                 1228  +0
+2025-06             1156      1156     1156        0       0     0                 1156  +0
+2025-07             2684      2684     2684        0       0     0                 2684  +0
+2025-08             2222      2222     2222        0       0     0                 2222  +0
+2025-09             1604      1604     1604        0       0     0                 1604  +0
+2025-10             1509      1509     1509        0       0     0                 1509  +0
+2025-11             1321      1321     1321        0       0     0                 1321  +0
+2025-12             1277      1277     1277        0       0     0                 1277  +0
+TOTAL              18302     18302    18302        0       0     0                18302  +0
+  OK   12 meses cargados
+  OK   cada mes: eventos + cuarentena = count de USGS guardado al cargar (SC-006)
+  OK   cuadre: Σobtenidos − Σduplicados − Σfuera_de_tramo = |evento| + |cuarentena|
+  OK   0 eventos fuera de 2025 (UTC): 0
+
+Consultas: [('ok', 12, 24)] (resultado, tramos, peticiones HTTP)
+
+== 2. Integridad de los campos ==
+  eventos=18302 distintos=18302 | mag 4..8.8 (nulas: 0) | primer evento 2025-01-01 00:13:22 | último 2025-12-31 23:52:11 | profundidad nula: 0 | place nulo: 0
+  OK   event_id único (sin duplicados)
+  OK   coordenadas en rango, origen visible, solo earthquake, todos con consulta (fallos: 0,0,0,0)
+  OK   magnitud mínima 4 >= 4 (filtro de la consulta)
+  OK   country_id nulo <=> geo_resultado = 'sin_pais'
+  reparto geográfico: [('sin_pais', 14350), ('interior', 3952)] | países distintos: 87
+  cuarentena: []
+  top países: [('CHN', 354), ('CHL', 348), ('IDN', 306), ('ETH', 265), ('ARG', 236), ('PNG', 192), ('AFG', 191), ('PER', 158)]
+
+== 3. Trazabilidad: archivo -> consulta -> evento ==
+  archivos en la base: 12 | comprimidos 1.35 MB (sin comprimir 13.01 MB) | tamaño de la tabla historico.archivo: 1456 kB
+  OK   huella sha256 y tamaño recalculados coinciden con lo guardado; nº de features = obtenidos
+  OK   todo evento cargado está en alguno de los archivos originales
+  OK   el `raw` de cada evento es idéntico al feature del archivo original
+  OK   12/12 archivos exportados recalculan su sha256 y coinciden con la base (12 archivos)
+  exportados: ['usgs-fdsn_20250101T000000Z_20250201T000000Z_m4.geojson.gz', 'usgs-fdsn_20250201T000000Z_20250301T000000Z_m4.geojson.gz'] … (12 archivos, 1.35 MB)
+
+== 4. Asignación de país: recálculo independiente con el catálogo ==
+  OK   los 18302 eventos coinciden con la asignación recalculada (diferencias: 0); catálogo d2aec98bfd1f…
+  OK   muestra de 3000 eventos contra el recorrido secuencial (sin índice): desacuerdos 0
+
+== 5. Aislamiento ==
+  OK   0 eventos de historico en live.evento_actual (por id)
+  OK   0 eventos de historico en live.evento_version
+  OK   live solo contiene source usgs-all-day / mode live
+  OK   0 filas de live en historico (todas con origen histórico)
+  tablas por esquema: [('geo', 2), ('historico', 4), ('live', 7), ('sintetico', 1)]
+  sintetico md5: 5b9d041e8ff21ee9822d336b53ee8aff | filas: 18
+
+RESULTADO: OK - todas las comprobaciones pasan

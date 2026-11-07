@@ -57,7 +57,7 @@ del catálogo que asignó; `REFERENCES geo.catalogo(sha256)`). `country_id` pasa
 | `fuera_de_tramo` | integer | eventos con `time` ≥ fin descartados (extremo inclusivo) |
 | `peticiones_http` | integer | peticiones HTTP realizadas (0 al reutilizar archivos) |
 
-**`historico.archivo`** — original reutilizable. `consulta_id` PK→`consulta`, `contenido_gz bytea`, `sha256`, `tamano_bytes`, `creada_at`. Cada archivo se exporta además a `data/historico/` (ignorada por Git) con el mismo `sha256`.
+**`historico.archivo`** — original reutilizable (0..1 por consulta: un tramo con `esperado = 0` no tiene archivo, porque USGS no devuelve cuerpo y no se inventa uno). `consulta_id` PK→`consulta`, `contenido_gz bytea`, `sha256`, `tamano_bytes`, `creada_at`. Cada archivo se exporta además a `data/historico/` (ignorada por Git) con el mismo `sha256`.
 
 **`historico.evento`** — terremoto de 2025. Grano: un evento (instantánea).
 

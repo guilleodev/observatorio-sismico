@@ -1,0 +1,32 @@
+# 4.4 T038 - carga real de USGS 2025 (M>=4, earthquake) 2026-11-07T09:00:31Z
+## count mensual justo antes de la carga (referencia de SC-006)
+2025-01-01T00:00:00Z 2025-02-01T00:00:00Z 1413
+2025-02-01T00:00:00Z 2025-03-01T00:00:00Z 1394
+2025-03-01T00:00:00Z 2025-04-01T00:00:00Z 1178
+2025-04-01T00:00:00Z 2025-05-01T00:00:00Z 1316
+2025-05-01T00:00:00Z 2025-06-01T00:00:00Z 1228
+2025-06-01T00:00:00Z 2025-07-01T00:00:00Z 1156
+2025-07-01T00:00:00Z 2025-08-01T00:00:00Z 2684
+2025-08-01T00:00:00Z 2025-09-01T00:00:00Z 2222
+2025-09-01T00:00:00Z 2025-10-01T00:00:00Z 1604
+2025-10-01T00:00:00Z 2025-11-01T00:00:00Z 1509
+2025-11-01T00:00:00Z 2025-12-01T00:00:00Z 1321
+2025-12-01T00:00:00Z 2026-01-01T00:00:00Z 1277
+2025-01-01T00:00:00Z 2026-01-01T00:00:00Z 18302
+peticiones_http=13
+## carga
+2026-11-07 09:00:40,870 INFO tramo 2025-01-01..2025-02-01: esperado 1413, obtenidos 1413, nuevos 1413, cuarentena 0, duplicados 0, fuera 0 | descarga 0.9 s, proceso 0.1 s
+2026-11-07 09:00:42,123 INFO tramo 2025-02-01..2025-03-01: esperado 1394, obtenidos 1394, nuevos 1394, cuarentena 0, duplicados 0, fuera 0 | descarga 1.1 s, proceso 0.1 s
+2026-11-07 09:00:43,270 INFO tramo 2025-03-01..2025-04-01: esperado 1178, obtenidos 1178, nuevos 1178, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-07 09:00:44,419 INFO tramo 2025-04-01..2025-05-01: esperado 1316, obtenidos 1316, nuevos 1316, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-07 09:00:45,485 INFO tramo 2025-05-01..2025-06-01: esperado 1228, obtenidos 1228, nuevos 1228, cuarentena 0, duplicados 0, fuera 0 | descarga 0.9 s, proceso 0.1 s
+2026-11-07 09:00:46,593 INFO tramo 2025-06-01..2025-07-01: esperado 1156, obtenidos 1156, nuevos 1156, cuarentena 0, duplicados 0, fuera 0 | descarga 0.9 s, proceso 0.1 s
+2026-11-07 09:00:48,048 INFO tramo 2025-07-01..2025-08-01: esperado 2684, obtenidos 2684, nuevos 2684, cuarentena 0, duplicados 0, fuera 0 | descarga 1.2 s, proceso 0.2 s
+2026-11-07 09:00:49,444 INFO tramo 2025-08-01..2025-09-01: esperado 2222, obtenidos 2222, nuevos 2222, cuarentena 0, duplicados 0, fuera 0 | descarga 1.1 s, proceso 0.2 s
+2026-11-07 09:00:50,662 INFO tramo 2025-09-01..2025-10-01: esperado 1604, obtenidos 1604, nuevos 1604, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-07 09:00:51,825 INFO tramo 2025-10-01..2025-11-01: esperado 1509, obtenidos 1509, nuevos 1509, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-07 09:00:52,502 INFO tramo 2025-11-01..2025-12-01: esperado 1321, obtenidos 1321, nuevos 1321, cuarentena 0, duplicados 0, fuera 0 | descarga 0.5 s, proceso 0.1 s
+2026-11-07 09:00:53,637 INFO tramo 2025-12-01..2026-01-01: esperado 1277, obtenidos 1277, nuevos 1277, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+RESUMEN {"tramos_nuevos": 12, "tramos_reutilizados": 0, "tramos_subdivididos": 0, "tramos_con_error": 0, "errores": [], "obtenidos": 18302, "duplicados": 0, "fuera_de_tramo": 0, "eventos_nuevos": 18302, "cuarentena_nueva": 0, "peticiones_http": 24, "archivos_exportados": 12, "asignaciones": 18302, "asignacion_total_s": 0.165, "asignacion_max_ms": 0.679, "descarga_s": 11.413, "duracion_s": 13.86, "asignacion_media_us": 9.0}
+codigo_de_salida=0
+duracion_total_reloj_s=16 (incluye el arranque del contenedor)

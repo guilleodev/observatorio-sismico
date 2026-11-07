@@ -1,0 +1,12 @@
+# 4.5 T053 - suite completa 2026-11-07T09:40:50Z
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+401 passed, 1 warning in 33.20s
+nuevas: test_huecos.py (17), test_source_recuperacion.py (10), test_recuperacion.py (12), mutaciones en 4.5-mutaciones.txt; F3 sin modificar
+== invariantes [final 4.5] 2026-11-07T09:41:35Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=445 versiones=429 cuarentena=16 | offset/final/lag=455/455/0
+geo: reparto live=interior=279, sin_pais=55 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

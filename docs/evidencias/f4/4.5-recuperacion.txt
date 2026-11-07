@@ -1,0 +1,54 @@
+# 4.5 T050 - ensayo de recuperación de huecos (recursos temporales) 2026-11-07T09:28:07Z
+base temporal obs_rec_f4 | topic temporal terremotos.rec_f4 | grupo temporal ensayo-rec-f4 | catálogo FDSN simulado (reales: observatorio, terremotos.live, consumidor-live: NO se tocan)
+consumidor temporal arrancado
+
+## 1. Detección: interrupciones simuladas (margen 6 h)
+  OK    interrupción de 10 h (< 24 h − 6 h): 0 huecos anotados
+  OK    última ingesta correcta hace 30 h: 1 hueco pendiente 2026-11-05 21:28 .. 2026-11-06 15:28
+  OK    repetir la detección con el mismo intervalo no duplica el hueco
+  --listar: huecos pendientes: 1 |   #1 2026-11-05T21:28:07Z .. 2026-11-06T15:28:07Z (18.0 h) estado=pendiente
+
+## 2. Estado previo: versiones ya publicadas por el canal real (source usgs-all-day) y guardadas
+  OK    3 versiones previas consumidas (offset 3/3)
+  OK    evento_version: 3 versiones con source usgs-all-day
+
+## 3. Recuperación del hueco (catálogo simulado, canal real temporal)
+  --simular: hueco #1: encontrados=8 ya_guardados=1 a_publicar=7 sin_guardar_tras_espera=0 recuperado=False peticiones_http=2
+  OK    --simular no publica ni cambia el hueco
+  hueco #1: encontrados=8 ya_guardados=1 publicados=7 sin_guardar_tras_espera=0 recuperado=True peticiones_http=2
+  OK    código de salida 0 
+  OK    la consulta al catálogo no lleva eventtype ni minmagnitude
+  OK    lag 0 tras recuperar (offset 10/10)
+  OK    hueco marcado recuperado con 7 publicados (8 del catálogo − 1 ya guardado con el mismo updated): ('recuperado', 7)
+  evento_version por source: {'usgs-all-day': 3, 'usgs-fdsn-recuperacion': 5}
+  OK    lo recuperado queda identificado con source usgs-fdsn-recuperacion; lo previo conserva usgs-all-day
+  OK    los eventos desconocidos (incluida M<1 y sin magnitud) se recuperaron
+  OK    la versión ya guardada con el mismo updated se omitió
+  OK    evento 2: versión antigua + revisión recuperada (2 versiones)
+  OK    evento 2: el estado actual es la revisión
+  OK    fuera de orden: la versión anterior entra al historial (2 versiones) pero NO sobrescribe el estado actual más reciente
+  OK    país asignado por el consumidor (ESP / mar sin país / USA): ESP, None, USA
+  OK    no sísmico e inválido en cuarentena con motivo: {'prueba-rec-6': 'excluido', 'prueba-rec-7': 'invalido'}
+
+## 4. Repetición: la misma recuperación otra vez (--hueco 1) y sin argumentos
+  hueco #1: encontrados=8 ya_guardados=8 publicados=0 sin_guardar_tras_espera=0 recuperado=True peticiones_http=2
+  OK    repetida: 0 publicados y base idéntica (versiones, cuarentena, estado actual): (8, 2, '4ecf0867f092a97455f6469802276c4e') == (8, 2, '4ecf0867f092a97455f6469802276c4e')
+  OK    sin argumentos: «sin huecos pendientes»
+
+## 5. Invariantes de la base temporal
+  reconciliación=0 | offsets duplicados=0 | estado actual desfasado=0 | lag=0 (offset 10/10)
+  OK    reconciliación vacía, sin duplicados, sin desfases y lag 0
+  version_publicada=7 (solo las publicadas por la recuperación; las 3 previas se publicaron sin marcar) | versiones=8 | cuarentena=2
+
+RESULTADO: OK - hueco detectado, recuperado una vez, repetición sin cambios; reglas del consumidor aplicadas (versiones, país, cuarentena, orden)
+(grupo temporal: 'AIOKafkaAdminClient' object has no attribute 'delete_consumer_groups')
+recursos temporales eliminados: base obs_rec_f4, topic terremotos.rec_f4, grupo ensayo-rec-f4
+
+## Limpieza y comprobación de que lo real no se tocó 2026-11-07T09:28:22Z
+* Group 'ensayo-rec-f4' could not be deleted due to: org.apache.kafka.common.errors.GroupNotEmptyException: The group is not empty.
+topics en Kafka: __consumer_offsets terremotos.live 
+grupos en Kafka: ensayo-rec-f4 consumidor-live 
+bases de datos: postgres, observatorio
+live.hueco real: 0 filas
+reintento hasta que expira la sesión del consumidor temporal (ya muerto): Deletion of requested consumer groups ('ensayo-rec-f4') was successful.
+grupos en Kafka: consumidor-live 

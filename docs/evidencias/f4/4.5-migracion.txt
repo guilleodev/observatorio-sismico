@@ -1,0 +1,27 @@
+# 4.5 T043 - migración live.hueco (sql/003, parte 4.5) 2026-11-07T09:19:50Z
+## aplicación 1
+avisos «ya existe» (esperados la 2ª vez): 12
+## aplicación 2
+avisos «ya existe» (esperados la 2ª vez): 13
+                                              Table "live.hueco"
+       Column       |           Type           | Collation | Nullable |                Default                 
+--------------------+--------------------------+-----------+----------+----------------------------------------
+ id                 | bigint                   |           | not null | nextval('live.hueco_id_seq'::regclass)
+ inicio             | timestamp with time zone |           | not null | 
+ fin                | timestamp with time zone |           | not null | 
+ detectado_at       | timestamp with time zone |           | not null | now()
+ estado             | text                     |           | not null | 'pendiente'::text
+ recuperado_at      | timestamp with time zone |           |          | 
+ eventos_publicados | integer                  |           |          | 
+Indexes:
+    "hueco_pkey" PRIMARY KEY, btree (id)
+    "hueco_inicio_fin_key" UNIQUE CONSTRAINT, btree (inicio, fin)
+Check constraints:
+    "hueco_check" CHECK (fin > inicio)
+    "hueco_estado_check" CHECK (estado = ANY (ARRAY['pendiente'::text, 'recuperado'::text]))
+
+ huecos_existentes 
+-------------------
+                 0
+(1 row)
+

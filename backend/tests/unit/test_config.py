@@ -89,3 +89,46 @@ def test_config_geo_falla_si_no_hay_archivo_o_es_un_directorio(monkeypatch, tmp_
     monkeypatch.setenv("CATALOGO_PATH", str(ruta))
     with pytest.raises(ConfigError, match="CATALOGO_PATH"):
         ConfigGeo.desde_entorno()
+
+
+HISTORICO_VARIABLES = ("HISTORICO_ANIO", "HISTORICO_MAG_MIN", "HISTORICO_LIMITE", "HISTORICO_URL", "HISTORICO_TIMEOUT_S",
+                       "HISTORICO_MAX_REINTENTOS", "HISTORICO_EXPORT_DIR")
+
+
+def test_config_historico_por_defecto_es_la_del_enunciado(monkeypatch):
+    from pathlib import Path
+    from observatorio.config import ConfigHistorico
+
+    for nombre in HISTORICO_VARIABLES:
+        monkeypatch.delenv(nombre, raising=False)
+    c = ConfigHistorico.desde_entorno()
+    assert (c.anio, c.mag_min, c.limite) == (2025, 4.0, 20000)
+    assert c.url_base == "https://earthquake.usgs.gov/fdsnws/event/1/"
+    assert (c.timeout_s, c.max_reintentos, c.exportacion) == (60, 3, Path("/exportacion"))
+
+
+def test_config_historico_valores_validos(monkeypatch):
+    from observatorio.config import ConfigHistorico
+
+    monkeypatch.setenv("HISTORICO_ANIO", "2024")
+    monkeypatch.setenv("HISTORICO_MAG_MIN", "5.5")
+    monkeypatch.setenv("HISTORICO_LIMITE", "50")
+    monkeypatch.setenv("HISTORICO_URL", "http://localhost:9999/fdsn")  # sin barra final: se añade
+    c = ConfigHistorico.desde_entorno()
+    assert (c.anio, c.mag_min, c.limite, c.url_base) == (2024, 5.5, 50, "http://localhost:9999/fdsn/")
+
+
+@pytest.mark.parametrize("nombre,valor", [
+    ("HISTORICO_ANIO", "abc"), ("HISTORICO_ANIO", "1800"), ("HISTORICO_ANIO", "3000"),
+    ("HISTORICO_MAG_MIN", "x"), ("HISTORICO_MAG_MIN", "-1"), ("HISTORICO_MAG_MIN", "11"), ("HISTORICO_MAG_MIN", "nan"),
+    ("HISTORICO_LIMITE", "1"), ("HISTORICO_LIMITE", "20001"), ("HISTORICO_LIMITE", "mucho"),
+    ("HISTORICO_URL", "ftp://usgs"), ("HISTORICO_TIMEOUT_S", "0"), ("HISTORICO_MAX_REINTENTOS", "-1"),
+])
+def test_config_historico_valores_invalidos_dan_error_claro(monkeypatch, nombre, valor):
+    from observatorio.config import ConfigHistorico
+
+    for n in HISTORICO_VARIABLES:
+        monkeypatch.delenv(n, raising=False)
+    monkeypatch.setenv(nombre, valor)
+    with pytest.raises(ConfigError, match=nombre):
+        ConfigHistorico.desde_entorno()

@@ -1,0 +1,52 @@
+# 4.6 T057 - trazabilidad del histórico 2026-11-07T09:54:05Z
+== 1. Cadena evento -> consulta -> archivo -> original ==
+  OK    los 18302 eventos enlazan con una consulta completa (resultado ok)
+  OK    los 18302 eventos enlazan con un archivo original
+  OK    12 archivos: sha256 y tamaño recalculados desde el contenido comprimido coinciden con lo guardado (0 diferencias)
+  OK    el `raw` de cada evento es idéntico al feature de SU archivo original (diferencias: 0)
+  OK    cada consulta guarda la URL reproducible con starttime, endtime, minmagnitude=4 y eventtype=earthquake
+  fecha de extracción: 2026-11-07 09:00:40 .. 2026-11-07 09:00:53 UTC | ejemplo: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2025-01-01T00%3A00%3A00&endtime=2025-02-01T00%3A00%3A00&minmagnitude=4&eventtype=earthquake&orderby=time-asc
+  archivos exportados (si se montó /exportacion): 12
+
+== 2. Recuentos por mes: lo guardado al cargar frente a un `count` NUEVO de USGS ==
+mes      count al cargar eventos+cuar. count ahora  diferencia ahora-cargar
+2025-01             1413          1413        1413  +0
+  OK    2025-01: eventos + cuarentena (1413) = count guardado al cargar (1413)
+2025-02             1394          1394        1394  +0
+  OK    2025-02: eventos + cuarentena (1394) = count guardado al cargar (1394)
+2025-03             1178          1178        1178  +0
+  OK    2025-03: eventos + cuarentena (1178) = count guardado al cargar (1178)
+2025-04             1316          1316        1316  +0
+  OK    2025-04: eventos + cuarentena (1316) = count guardado al cargar (1316)
+2025-05             1228          1228        1228  +0
+  OK    2025-05: eventos + cuarentena (1228) = count guardado al cargar (1228)
+2025-06             1156          1156        1156  +0
+  OK    2025-06: eventos + cuarentena (1156) = count guardado al cargar (1156)
+2025-07             2684          2684        2684  +0
+  OK    2025-07: eventos + cuarentena (2684) = count guardado al cargar (2684)
+2025-08             2222          2222        2222  +0
+  OK    2025-08: eventos + cuarentena (2222) = count guardado al cargar (2222)
+2025-09             1604          1604        1604  +0
+  OK    2025-09: eventos + cuarentena (1604) = count guardado al cargar (1604)
+2025-10             1509          1509        1509  +0
+  OK    2025-10: eventos + cuarentena (1509) = count guardado al cargar (1509)
+2025-11             1321          1321        1321  +0
+  OK    2025-11: eventos + cuarentena (1321) = count guardado al cargar (1321)
+2025-12             1277          1277        1277  +0
+  OK    2025-12: eventos + cuarentena (1277) = count guardado al cargar (1277)
+  diferencia total de USGS desde la carga: +0 (ninguna: el catálogo no ha cambiado desde la carga)
+  OK    total anual: Σobtenidos (18302) − Σduplicados (0) − Σfuera_de_tramo (0) = eventos (18302) + cuarentena (0)
+
+== 3. Asignación geográfica: versión del catálogo y resultado ==
+  OK    ningún evento sin geo_resultado ni geo_catalogo
+  OK    todos los eventos asignados con el catálogo vigente d2aec98bfd1f… (18302 de 18302)
+  OK    esa versión está registrada en geo.catalogo
+  reparto: [('sin_pais', 14350), ('interior', 3952)]
+  origen: [('historico-usgs-fdsn', 18302)]
+
+== 4. Separación de datos ==
+  OK    0 eventos de historico en live.evento_actual
+  OK    live.evento_actual solo con mode=live y source del canal real
+  OK    ningún source histórico en live.evento_version
+
+RESULTADO: OK - cadena evento→consulta→archivo→original verificada

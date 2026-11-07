@@ -1,0 +1,36 @@
+# 4.4 T039 - repetición de la carga (SC-007) 2026-11-07T09:01:46Z
+## antes
+consultas=12 ok=12 peticiones_http_registradas=24 obtenidos=18302
+eventos=18302 md5_ids_y_updated=89cf689ce0a217eb259105d469affed3
+cuarentena=0
+archivos=12 md5_sha256=05384f90d5cfda2cea2160b621db0b3c
+SHA256SUMS md5: 6d84665df4b23adbeff4cb052d776542 | archivos exportados: 12
+## segunda ejecución (misma orden que T038)
+2026-11-07 09:01:48,138 INFO tramo 2025-01-01..2025-02-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,141 INFO tramo 2025-02-01..2025-03-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,144 INFO tramo 2025-03-01..2025-04-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,148 INFO tramo 2025-04-01..2025-05-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,151 INFO tramo 2025-05-01..2025-06-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,154 INFO tramo 2025-06-01..2025-07-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,158 INFO tramo 2025-07-01..2025-08-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,162 INFO tramo 2025-08-01..2025-09-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,165 INFO tramo 2025-09-01..2025-10-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,168 INFO tramo 2025-10-01..2025-11-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,171 INFO tramo 2025-11-01..2025-12-01 reutilizado (ok): 0 peticiones
+2026-11-07 09:01:48,174 INFO tramo 2025-12-01..2026-01-01 reutilizado (ok): 0 peticiones
+RESUMEN {"tramos_nuevos": 0, "tramos_reutilizados": 12, "tramos_subdivididos": 0, "tramos_con_error": 0, "errores": [], "obtenidos": 0, "duplicados": 0, "fuera_de_tramo": 0, "eventos_nuevos": 0, "cuarentena_nueva": 0, "peticiones_http": 0, "archivos_exportados": 0, "asignaciones": 0, "asignacion_total_s": 0.0, "asignacion_max_ms": 0.0, "descarga_s": 0.0, "duracion_s": 0.042, "asignacion_media_us": null}
+codigo_de_salida=0
+## después
+consultas=12 ok=12 peticiones_http_registradas=24 obtenidos=18302
+eventos=18302 md5_ids_y_updated=89cf689ce0a217eb259105d469affed3
+cuarentena=0
+archivos=12 md5_sha256=05384f90d5cfda2cea2160b621db0b3c
+SHA256SUMS md5: 6d84665df4b23adbeff4cb052d776542 | archivos exportados: 12
+
+## Tras la última corrección (el manifiesto SHA256SUMS solo lista el año y los filtros de la carga) y reconstruir la imagen: tercera ejecución 2026-11-07T09:08:58Z
+RESUMEN {"tramos_nuevos": 0, "tramos_reutilizados": 12, "tramos_subdivididos": 0, "tramos_con_error": 0, "errores": [], "obtenidos": 0, "duplicados": 0, "fuera_de_tramo": 0, "eventos_nuevos": 0, "cuarentena_nueva": 0, "peticiones_http": 0, "archivos_exportados": 0, "asignaciones": 0, "asignacion_total_s": 0.0, "asignacion_max_ms
+md5(SHA256SUMS) = 6d84665df4b23adbeff4cb052d776542 (antes: 6d84665df4b23adbeff4cb052d776542)
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542

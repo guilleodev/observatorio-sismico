@@ -1,0 +1,31 @@
+# 4.6 T063 - aislamiento final 2026-11-07T10:03:43Z
+## Datos: live / historico / sintetico
+  OK    live.evento_actual con mode distinto de live (0)
+  OK    live.evento_version con mode distinto de live (0)
+  OK    live.evento_actual con source fuera del contrato (0)
+  OK    live.evento_version con source fuera del contrato (0)
+  OK    ids de historico en live.evento_actual (0)
+  OK    ids de historico en live.evento_version (0)
+  OK    filas de historico con origen distinto del histórico (0)
+  OK    filas históricas o sintéticas en live (0)
+  OK    claves foráneas entre live, historico y sintetico (0)
+  OK    sintetico.evento_actual intacto (filas y md5) (18 5b9d041e8ff21ee9822d336b53ee8aff)
+  OK    modos presentes en /api/eventos ("mode":"live" )
+  OK    eventos de /api/eventos que están en historico (0)
+## Código
+  OK    archivos de backend/src que mencionan synthetic o sintetico (0)
+  OK    API, consumidor y productor que leen o escriben el esquema histórico (0)
+## Servicios y puertos
+  OK    servicios de compose.yaml (FR-025) (api consumer kafka postgres producer )
+  OK    puertos publicados en el equipo (solo la API) (1)
+  OK    puerto publicado y dirección (solo 127.0.0.1) (api=127.0.0.1:8000->8000/tcp)
+  OK    servicios healthy (5)
+  OK    volúmenes (sin borrar ni añadir) (observatorio_kafkadata observatorio_pgdata )
+## Archivos que no deben cambiar
+  OK    cambios en docs/referencias, specs/001, specs/002 y frontend (0)
+  OK    huella del catálogo de países entregado (d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c)
+  OK    .env real versionado (0)
+  OK    data/historico ignorado por Git (1)
+  OK    archivos de data/ versionados (0)
+
+RESULTADO: OK - aislamiento verificado

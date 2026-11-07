@@ -139,29 +139,29 @@ Cada tarea tiene un único paso principal. Los pasos son secuenciales; el 4.4 y 
 
 **Propósito**: histórico descargado una vez, reproducible, trazable y aislado.
 
-- [ ] T028 [P] [D3] Ampliar `config.py` con `ConfigHistorico` (`HISTORICO_ANIO`=2025, `HISTORICO_MAG_MIN`=4, `HISTORICO_LIMITE`=20000 configurable, URL base del catálogo FDSN) con errores claros y su
+- [x] T028 [P] [D3] Ampliar `config.py` con `ConfigHistorico` (`HISTORICO_ANIO`=2025, `HISTORICO_MAG_MIN`=4, `HISTORICO_LIMITE`=20000 configurable, URL base del catálogo FDSN) con errores claros y su
   prueba en `backend/tests/unit/test_config.py`; reflejarlas en `.env.example`
-- [ ] T029 [P] [US3] [D2] Ampliar `sql/003_esquema_f4.sql` (parte `historico`), idempotente, **exactamente según `data-model.md`**: `historico.consulta` (`UNIQUE (inicio, fin, filtros)`,
+- [x] T029 [P] [US3] [D2] Ampliar `sql/003_esquema_f4.sql` (parte `historico`), idempotente, **exactamente según `data-model.md`**: `historico.consulta` (`UNIQUE (inicio, fin, filtros)`,
   `resultado` ∈ `ok`/`error`/`subdividido`), `historico.archivo` (`consulta_id` PK y FK, `contenido_gz bytea NOT NULL`, `sha256`), `historico.evento` (`event_id` PK, mismos rangos de
   coordenadas que `live`, `country_id` FK, `raw jsonb NOT NULL`), `historico.cuarentena` (`huella text NOT NULL UNIQUE`); aplicar a mano dos veces; guardar en `docs/evidencias/f4/4.4-migracion.txt`
-- [ ] T030 [P] [US3] Refactor sin cambio de comportamiento: extraer de `backend/src/observatorio/consumer/mensaje.py` la validación de un *Feature* para reutilizarla en el histórico; las pruebas de F3
+- [x] T030 [P] [US3] Refactor sin cambio de comportamiento: extraer de `backend/src/observatorio/consumer/mensaje.py` la validación de un *Feature* para reutilizarla en el histórico; las pruebas de F3
   (`test_mensaje_calidad.py`, `test_cuarentena.py`, `test_errores_permanentes.py`) pasan **sin modificarlas**
-- [ ] T031 [P] [US3] [D3] Pruebas (primero fallan) del cliente en `backend/tests/unit/test_fdsn.py` con servidor HTTP local simulado: `count` y `query`, 429 con `Retry-After`, 5xx, tiempo agotado, JSON
+- [x] T031 [P] [US3] [D3] Pruebas (primero fallan) del cliente en `backend/tests/unit/test_fdsn.py` con servidor HTTP local simulado: `count` y `query`, 429 con `Retry-After`, 5xx, tiempo agotado, JSON
   inválido, y recuento igual al límite que fuerza la subdivisión Añadir: tramo con 0 resultados (correcto, `obtenidos = 0`, sin reintentos) y tramo que ya no se puede subdividir (cota mínima, se registra el error sin recursión infinita).
-- [ ] T032 [US3] [D3] Crear `backend/src/observatorio/historico/__init__.py` y `fdsn.py` (cliente con `urllib`, reintentos como en F3, parámetros reproducibles en la URL) El cliente cuenta las peticiones HTTP realizadas (`peticiones_http`) y ofrece un modo de solo recuento (`count`).
-- [ ] T033 [P] [US3] [D3] Pruebas (primero fallan) del cargador en `backend/tests/unit/test_cargador.py`: 12 tramos mensuales UTC de 2025, subdivisión recursiva con límite pequeño, deduplicación de un extremo
+- [x] T032 [US3] [D3] Crear `backend/src/observatorio/historico/__init__.py` y `fdsn.py` (cliente con `urllib`, reintentos como en F3, parámetros reproducibles en la URL) El cliente cuenta las peticiones HTTP realizadas (`peticiones_http`) y ofrece un modo de solo recuento (`count`).
+- [x] T033 [P] [US3] [D3] Pruebas (primero fallan) del cargador en `backend/tests/unit/test_cargador.py`: 12 tramos mensuales UTC de 2025, subdivisión recursiva con límite pequeño, deduplicación de un extremo
   compartido (conserva el mayor `updated`), cuadre `Σ obtenidos − Σ duplicados = eventos + cuarentena`, reutilización de archivos (0 consultas), reanudación tras un tramo incompleto, inválidos a cuarentena Añadir: evento con `time` ≥ fin del tramo (extremo inclusivo, p. ej. 2026-01-01T00:00:00Z) descartado y contado como `fuera_de_tramo`, y tramo padre `subdividido` solo tras completar los hijos.
-- [ ] T034 [US3] [D3] Crear `backend/src/observatorio/historico/repositorio.py`, `cargador.py` y `main.py`: una transacción por tramo (consulta + archivo comprimido con `sha256` + eventos con país),
+- [x] T034 [US3] [D3] Crear `backend/src/observatorio/historico/repositorio.py`, `cargador.py` y `main.py` (el punto de entrada es el propio módulo `cargar.py`, que hace de `main.py`): una transacción por tramo (consulta + archivo comprimido con `sha256` + eventos con país),
   clave del tramo para reanudar, orden `python -m observatorio.historico.cargar`; ejecutada con `docker compose run --rm --no-deps producer ...`, sin Kafka ni servicio nuevo Antes de ejecutar, `docker compose build` (sin recrear contenedores en marcha). Pasa el catálogo y la carpeta de exportación con `-v` (`/datos/paises.geojson:ro` y `/exportacion`); cada archivo se exporta además a `data/historico/` con su `sha256` (R-007).
-- [ ] T035 [US3] Ejecutar la suite completa en contenedor temporal; guardar en `docs/evidencias/f4/4.4-pruebas.txt` Precedida de `docker compose build`.
-- [ ] T036 [US3] Ensayo en base temporal contra el servidor simulado: matar la carga a mitad y reanudarla (sin duplicados ni tramos perdidos); guardar en `docs/evidencias/f4/4.4-interrupcion.txt`
-- [ ] T037 [US3] Con USGS real, con el cliente de T032 en modo solo recuento (**solo `count`**, sin descargar datos): recuento por mes y anual frente a lo esperado, y comportamiento de `endtime` en el límite; guardar en `docs/evidencias/f4/4.4-recuentos-usgs.txt`
-- [ ] T038 [US3] Repetir el `count` mensual justo antes y ejecutar la **carga real** de 2025 una vez; guardar log, recuentos por mes frente a `count` (SC-006), total, duplicados, cuarentena, tamaño de los archivos y tiempo en `docs/evidencias/f4/4.4-carga-real.txt` Comparar por mes de `event_time`: eventos + cuarentena del mes = `count` del mes; registrar y explicar cualquier diferencia por revisiones posteriores de USGS.
-- [ ] T039 [US3] Repetir la carga: 0 consultas a USGS y recuentos idénticos (SC-007); guardar en `docs/evidencias/f4/4.4-repeticion.txt` La prueba es `peticiones_http = 0` en el resumen de la ejecución.
-- [ ] T040 [US3] Persistencia sin borrar nada: `docker compose restart postgres`, `docker compose stop` + `start` de todo el stack y, **opcional y solo con tu autorización expresa** (excepción a la regla de no recrear; lección de F3), `docker compose down` + `up -d` **sin `-v`** para probar la recreación (precondiciones: lag 0 y reconciliación vacía; si no se autoriza, queda como no probada y se justifica con la persistencia de volúmenes ya verificada); comprobar histórico y archivos íntegros y los cinco
+- [x] T035 [US3] Ejecutar la suite completa en contenedor temporal; guardar en `docs/evidencias/f4/4.4-pruebas.txt` Precedida de `docker compose build`.
+- [x] T036 [US3] Ensayo en base temporal contra el servidor simulado: matar la carga a mitad y reanudarla (sin duplicados ni tramos perdidos); guardar en `docs/evidencias/f4/4.4-interrupcion.txt`
+- [x] T037 [US3] Con USGS real, con el cliente de T032 en modo solo recuento (**solo `count`**, sin descargar datos): recuento por mes y anual frente a lo esperado, y comportamiento de `endtime` en el límite; guardar en `docs/evidencias/f4/4.4-recuentos-usgs.txt`
+- [x] T038 [US3] Repetir el `count` mensual justo antes y ejecutar la **carga real** de 2025 una vez; guardar log, recuentos por mes frente a `count` (SC-006), total, duplicados, cuarentena, tamaño de los archivos y tiempo en `docs/evidencias/f4/4.4-carga-real.txt` Comparar por mes de `event_time`: eventos + cuarentena del mes = `count` del mes; registrar y explicar cualquier diferencia por revisiones posteriores de USGS.
+- [x] T039 [US3] Repetir la carga: 0 consultas a USGS y recuentos idénticos (SC-007); guardar en `docs/evidencias/f4/4.4-repeticion.txt` La prueba es `peticiones_http = 0` en el resumen de la ejecución.
+- [x] T040 [US3] Persistencia sin borrar nada: `docker compose restart postgres`, `docker compose stop` + `start` de todo el stack y, **opcional y solo con tu autorización expresa** (excepción a la regla de no recrear; lección de F3), `docker compose down` + `up -d` **sin `-v`** para probar la recreación (precondiciones: lag 0 y reconciliación vacía; si no se autoriza, queda como no probada y se justifica con la persistencia de volúmenes ya verificada); comprobar histórico y archivos íntegros y los cinco — La recreación opcional (`down` + `up -d` sin `-v`) NO se probó: requiere autorización expresa y no se pidió; queda justificada con la persistencia de volúmenes ya verificada (restart y stop/start sin pérdida).
   servicios `healthy`; guardar en `docs/evidencias/f4/4.4-persistencia.txt` Recalcular el `sha256` de cada fila de `historico.archivo` y de los archivos exportados y compararlo con el anterior.
-- [ ] T041 [US3] Aislamiento: 0 filas de `historico` en `live` y en `/api/eventos`, 0 filas de `live` en `historico`, `sintetico` intacto; guardar en `docs/evidencias/f4/4.4-aislamiento.txt` (SC-008)
-- [ ] T042 Resumir el paso 4.4 y proponer pregunta de defensa
+- [x] T041 [US3] Aislamiento: 0 filas de `historico` en `live` y en `/api/eventos`, 0 filas de `live` en `historico`, `sintetico` intacto; guardar en `docs/evidencias/f4/4.4-aislamiento.txt` (SC-008)
+- [x] T042 Resumir el paso 4.4 y proponer pregunta de defensa
 
 **Punto de control del paso 4.4.** Explicar tramos, deduplicación, archivos y reanudación; pregunta de defensa; aprobar el paso 4.5 (D4).
 
@@ -171,22 +171,22 @@ Cada tarea tiene un único paso principal. Los pasos son secuenciales; el 4.4 y 
 
 **Propósito**: huecos detectados automáticamente y recuperables a demanda por el canal real.
 
-- [ ] T043 [P] [US4] [D4] Ampliar `sql/003_esquema_f4.sql` con `live.hueco` (`id bigserial` PK, `inicio`, `fin` con `CHECK (fin > inicio)`, `detectado_at`, `estado` ∈ `pendiente`/`recuperado`,
+- [x] T043 [P] [US4] [D4] Ampliar `sql/003_esquema_f4.sql` con `live.hueco` (`id bigserial` PK, `inicio`, `fin` con `CHECK (fin > inicio)`, `detectado_at`, `estado` ∈ `pendiente`/`recuperado`,
   `recuperado_at`, `eventos_publicados`), idempotente; aplicar a mano dos veces; guardar en `docs/evidencias/f4/4.5-migracion.txt`
-- [ ] T044 [P] [US4] Pruebas (primero fallan) de detección en `backend/tests/unit/test_huecos.py` (PostgreSQL revertido): > 24 h anota `inicio = anterior − 1 h` y `fin = ahora − 24 h`; ≤ 24 h no anota; repetir no
+- [x] T044 [P] [US4] Pruebas (primero fallan) de detección en `backend/tests/unit/test_huecos.py` (PostgreSQL revertido): > 24 h anota `inicio = anterior − 1 h` y `fin = ahora − 24 h`; ≤ 24 h no anota; repetir no
   duplica; sin consulta previa no hay hueco Añadir: intervalo exactamente igual al umbral (`24 h − margen`), margen 0 (`CHECK (fin > inicio)`), segundo intento con el mismo `(inicio, fin)` (`UNIQUE`) y ningún hueco en modo seco.
-- [ ] T045 [US4] Modificar `backend/src/observatorio/producer/repositorio.py` e `ingesta.py`: detectar el hueco al registrar una consulta correcta, antes de actualizar `estado_ingesta`; el margen (6 h por defecto, aplicado por ambos lados) es la variable `HUECO_MARGEN_S` de `ConfigIngesta`, documentada en `.env.example`; el hueco se anota en la misma transacción de `registrar_ok`, con advertencia en el registro y sin anotar en modo seco
-- [ ] T046 [P] [US4] [D4] Pruebas (primero fallan): el consumidor admite `usgs-fdsn-recuperacion` y descarta cualquier otro `source`, conservándolo en `evento_version`/`evento_actual` (ampliar `backend/tests/unit/test_mensaje_calidad.py`)
-- [ ] T047 [US4] [D4] Modificar `backend/src/observatorio/config.py` y `consumer/mensaje.py` para admitir ambos `source` (`contracts/mensaje-kafka.md`) sin cambiar el resto de reglas
-- [ ] T048 [P] [US4] [D4] Pruebas (primero fallan) en `backend/tests/unit/test_recuperacion.py` con catálogo simulado: consulta del hueco sin filtro de magnitud, subdivisión, omisión de lo ya publicado con el mismo
+- [x] T045 [US4] Modificar `backend/src/observatorio/producer/repositorio.py` e `ingesta.py`: detectar el hueco al registrar una consulta correcta, antes de actualizar `estado_ingesta`; el margen (6 h por defecto, aplicado por ambos lados) es la variable `HUECO_MARGEN_S` de `ConfigIngesta`, documentada en `.env.example`; el hueco se anota en la misma transacción de `registrar_ok`, con advertencia en el registro y sin anotar en modo seco
+- [x] T046 [P] [US4] [D4] (en `test_source_recuperacion.py`, para no modificar las pruebas de F3) Pruebas (primero fallan): el consumidor admite `usgs-fdsn-recuperacion` y descarta cualquier otro `source`, conservándolo en `evento_version`/`evento_actual` (ampliar `backend/tests/unit/test_mensaje_calidad.py`)
+- [x] T047 [US4] [D4] Modificar `backend/src/observatorio/config.py` y `consumer/mensaje.py` para admitir ambos `source` (`contracts/mensaje-kafka.md`) sin cambiar el resto de reglas
+- [x] T048 [P] [US4] [D4] Pruebas (primero fallan) en `backend/tests/unit/test_recuperacion.py` con catálogo simulado: consulta del hueco sin filtro de magnitud, subdivisión, omisión de lo ya publicado con el mismo
   `updated`, publicación de lo desconocido o revisado, hueco marcado `recuperado`, repetición sin cambios, interrupción a mitad La omisión se decide contra lo **guardado** (`evento_version`/`cuarentena`), no contra `version_publicada`: se reenvía lo publicado que nunca se guardó; la consulta al catálogo no lleva `eventtype` ni `minmagnitude`.
-- [ ] T049 [US4] [D4] Crear `backend/src/observatorio/recuperacion/__init__.py` y `recuperar.py`: orden a demanda `python -m observatorio.recuperacion.recuperar`, reutiliza la publicación del productor y el cliente del
+- [x] T049 [US4] [D4] Crear `backend/src/observatorio/recuperacion/__init__.py` y `recuperar.py`: orden a demanda `python -m observatorio.recuperacion.recuperar`, reutiliza la publicación del productor y el cliente del
   paso 4.4; ejecutable con `docker compose run --rm --no-deps producer ...` Incluye `--listar` (huecos pendientes). Precedida de `docker compose build`.
-- [ ] T050 [US4] Ensayo extremo a extremo en recursos temporales (base, topic, grupo y consumidor aparte, como en F3): simular una última ingesta correcta de más de 24 h, comprobar el hueco, recuperar, repetir;
+- [x] T050 [US4] Ensayo extremo a extremo en recursos temporales (base, topic, grupo y consumidor aparte, como en F3): simular una última ingesta correcta de más de 24 h, comprobar el hueco, recuperar, repetir;
   eventos una vez y con su `source`, otro hueco < 24 h sin recuperación; guardar en `docs/evidencias/f4/4.5-recuperacion.txt` (SC-009) El catálogo es simulado; la recuperación contra USGS real solo se ejecutará ante un hueco real.
-- [ ] T051 [US4] Desplegar `producer` y `consumer` (precondiciones del despliegue; solo esos contenedores); observar ≥ 10 ciclos: 0 huecos anotados en funcionamiento normal, lag 0, reconciliación vacía; guardar en `docs/evidencias/f4/4.5-despliegue.txt`
-- [ ] T052 [P] [US4] Documentar en `docs/evidencias/f4/procedimiento-hueco.md` el procedimiento real (detectar, recuperar, verificar) con los comandos probados, y los límites (hueco > 24 h solo hasta lo que conserve el catálogo; sin reconciliar eliminaciones, FR-022 de F3) Documentar también los límites: consumidor parado más de 24 h (los mensajes se pierden con la retención y se recuperan comprobando lo guardado) y Kafka caído con USGS accesible (el hueco no se detecta).
-- [ ] T053 Resumir el paso 4.5 y proponer pregunta de defensa
+- [x] T051 [US4] Desplegar `producer` y `consumer` (precondiciones del despliegue; solo esos contenedores); observar ≥ 10 ciclos: 0 huecos anotados en funcionamiento normal, lag 0, reconciliación vacía; guardar en `docs/evidencias/f4/4.5-despliegue.txt`
+- [x] T052 [P] [US4] Documentar en `docs/evidencias/f4/procedimiento-hueco.md` el procedimiento real (detectar, recuperar, verificar) con los comandos probados, y los límites (hueco > 24 h solo hasta lo que conserve el catálogo; sin reconciliar eliminaciones, FR-022 de F3) Documentar también los límites: consumidor parado más de 24 h (los mensajes se pierden con la retención y se recuperan comprobando lo guardado) y Kafka caído con USGS accesible (el hueco no se detecta).
+- [x] T053 Resumir el paso 4.5 y proponer pregunta de defensa
 
 **Punto de control del paso 4.5.** Explicar detección frente a recuperación y por qué se recupera por el canal real; pregunta de defensa; aprobar el paso 4.6.
 
@@ -196,16 +196,16 @@ Cada tarea tiene un único paso principal. Los pasos son secuenciales; el 4.4 y 
 
 **Propósito**: comparar ventanas equivalentes con números comprobados y cerrar la calidad, el rendimiento y la trazabilidad.
 
-- [ ] T054 [P] [US5] Pruebas (primero fallan) en `backend/tests/unit/test_comparacion.py` (en una **base temporal** con el esquema aplicado y sin datos reales, para que los ficticios no se mezclen con los 18 302 reales): media = total / 365 con días de cero eventos, ámbito de un
+- [x] T054 [P] [US5] (el ayudante `scripts/f4/comparacion.py` calcula la variación; no es un módulo de producción) Pruebas (primero fallan) en `backend/tests/unit/test_comparacion.py` (en una **base temporal** con el esquema aplicado y sin datos reales, para que los ficticios no se mezclen con los 18 302 reales): media = total / 365 con días de cero eventos, ámbito de un
   país y «sin país», magnitud nula aparte, media cero → «no definida», umbral < 4 elevado a 4 en ambos periodos, ventana horaria (total / 8 760) Incluir: ventana con intersección de un hueco pendiente, `periodo_reciente_incompleto`, mediana diaria, días derivados del intervalo (no fijos en 365) y sesión con zona horaria distinta de UTC.
-- [ ] T055 [US5] Crear `sql/consultas/comparacion.sql` con las consultas de referencia de [contracts/consultas-comparacion.md](contracts/consultas-comparacion.md) (sin módulo de producción ni endpoints: son de F5; la prueba T054 lee este archivo) y el cálculo de la variación en la prueba; el resultado incluye `periodo_reciente_incompleto = true` (FR-021) y la variación «no definida» cuando la media es 0
-- [ ] T056 [US5] Ejecutar con datos reales (global, el país con más eventos y «sin país») y contrastar con un recuento independiente calculado en Python directamente sobre los archivos de `historico.archivo`;
+- [x] T055 [US5] Crear `sql/consultas/comparacion.sql` con las consultas de referencia de [contracts/consultas-comparacion.md](contracts/consultas-comparacion.md) (sin módulo de producción ni endpoints: son de F5; la prueba T054 lee este archivo) y el cálculo de la variación en la prueba; el resultado incluye `periodo_reciente_incompleto = true` (FR-021) y la variación «no definida» cuando la media es 0
+- [x] T056 [US5] Ejecutar con datos reales (global, el país con más eventos y «sin país») y contrastar con un recuento independiente calculado en Python directamente sobre los archivos de `historico.archivo`;
   guardar en `docs/evidencias/f4/4.6-comparaciones.txt` (SC-010), con la advertencia de periodo reciente incompleto y los sesgos de R-010 Precondición: `geo_resultado IS NULL` = 0 filas; «sin país» se mide con `geo_resultado = 'sin_pais'`.
-- [ ] T057 [US5] Cuadres de trazabilidad (R-011): evento → consulta → archivo con `sha256` recalculado, recuentos por mes frente a `count`, total anual, `geo_catalogo` vigente, ningún evento sin `geo_resultado`; guardar en `docs/evidencias/f4/4.6-trazabilidad.txt`
-- [ ] T058 [US5] Calidad del histórico con las seis dimensiones usadas en F3 (completitud, unicidad, validez, consistencia, actualidad, exactitud) y proporción de «sin país» histórica; guardar en `docs/evidencias/f4/4.6-calidad.txt`
-- [ ] T059 [US5] Rendimiento e índices: tiempo medio por evento de la asignación, de la asignación retroactiva y de la carga completa **desde archivos locales** (en una base temporal, sin red) y `EXPLAIN ANALYZE` con y
+- [x] T057 [US5] Cuadres de trazabilidad (R-011): evento → consulta → archivo con `sha256` recalculado, recuentos por mes frente a `count`, total anual, `geo_catalogo` vigente, ningún evento sin `geo_resultado`; guardar en `docs/evidencias/f4/4.6-trazabilidad.txt`
+- [x] T058 [US5] Calidad del histórico con las seis dimensiones usadas en F3 (completitud, unicidad, validez, consistencia, actualidad, exactitud) y proporción de «sin país» histórica; guardar en `docs/evidencias/f4/4.6-calidad.txt`
+- [x] T059 [US5] Rendimiento e índices: tiempo medio por evento de la asignación, de la asignación retroactiva y de la carga completa **desde archivos locales** (en una base temporal, sin red) y `EXPLAIN ANALYZE` con y
   sin los índices de `historico.evento`; proponer los umbrales de SC-011 a partir de lo medido (el criterio queda «medido, umbral pendiente» hasta que los confirmes); retirar el índice que no aporte con `DROP INDEX IF EXISTS` en `sql/003_esquema_f4.sql`; guardar en `docs/evidencias/f4/4.6-rendimiento.txt` (SC-011)
-- [ ] T060 [US5] Suite completa en contenedor temporal más las comprobaciones de F3 (reconciliación vacía, lag 0, 0 duplicados); guardar en `docs/evidencias/f4/4.6-pruebas.txt` (SC-012) Comparar los recuentos de `live.*`, `geo.*` e `historico.*` y `docker volume ls` con los de T001, explicando la actividad legítima del consumidor (SC-012).
+- [x] T060 [US5] Suite completa en contenedor temporal más las comprobaciones de F3 (reconciliación vacía, lag 0, 0 duplicados); guardar en `docs/evidencias/f4/4.6-pruebas.txt` (SC-012) Comparar los recuentos de `live.*`, `geo.*` e `historico.*` y `docker volume ls` con los de T001, explicando la actividad legítima del consumidor (SC-012).
 
 **Punto de control del paso 4.6.** Explicar la comparación, la media con ceros y los sesgos; pregunta de defensa.
 
@@ -213,13 +213,13 @@ Cada tarea tiene un único paso principal. Los pasos son secuenciales; el 4.4 y 
 
 ## Bloque 7: Cierre y pulido — hito «Geografía e histórico»
 
-- [ ] T061 Registrar en `docs/evidencias/f4/resultados.md` el resultado **observado** de SC-001 a SC-012, con los incumplidos y las limitaciones
-- [ ] T062 [P] Actualizar `README.md` (catálogo, carga histórica reproducible, recuperación de huecos, variables nuevas, migración manual de `003`) y marcar los pasos 4.1 a 4.6 en `docs/HOJA-DE-RUTA.md` solo si las pruebas son satisfactorias
-- [ ] T063 Comprobar el aislamiento final: 0 filas de modo distinto de `live` en `live.*`, ninguna mención de `synthetic`/`sintetico` en `backend/src`, Kafka y PostgreSQL sin puertos publicados, `sintetico` intacto (18 filas, misma huella),
+- [x] T061 Registrar en `docs/evidencias/f4/resultados.md` el resultado **observado** de SC-001 a SC-012, con los incumplidos y las limitaciones
+- [x] T062 [P] Actualizar `README.md` (catálogo, carga histórica reproducible, recuperación de huecos, variables nuevas, migración manual de `003`) y marcar los pasos 4.1 a 4.6 en `docs/HOJA-DE-RUTA.md` solo si las pruebas son satisfactorias
+- [x] T063 Comprobar el aislamiento final: 0 filas de modo distinto de `live` en `live.*`, ninguna mención de `synthetic`/`sintetico` en `backend/src`, Kafka y PostgreSQL sin puertos publicados, `sintetico` intacto (18 filas, misma huella),
   `docs/referencias/`, `specs/001` y `specs/002` sin cambios, catálogo de países sin modificar; guardar en `docs/evidencias/f4/4.6-aislamiento.txt` Comprobar que `docker compose config --services` lista exactamente 5 servicios (FR-025).
-- [ ] T064 Revisión final: **Architect** y **QA Engineer** (independientes); corregir solo hallazgos dentro del alcance y repetir las pruebas afectadas
-- [ ] T065 `git status`, `git diff --check`, comprobación contra la constitución, contraste con `ENUNCIADO.md` y `CONTRATO-API.md`; preparar la explicación por bloques y tres preguntas de defensa con respuestas esperadas
-- [ ] T066 Dejar anotado en `resultados.md` lo pendiente de otras fases (SC-010 de F3 en F6; endpoints, filtros y panel en F5)
+- [x] T064 Revisión final: **Architect** y **QA Engineer** (independientes); corregir solo hallazgos dentro del alcance y repetir las pruebas afectadas
+- [x] T065 `git status`, `git diff --check`, comprobación contra la constitución, contraste con `ENUNCIADO.md` y `CONTRATO-API.md`; preparar la explicación por bloques y tres preguntas de defensa con respuestas esperadas
+- [x] T066 Dejar anotado en `resultados.md` lo pendiente de otras fases (SC-010 de F3 en F6; endpoints, filtros y panel en F5)
 
 **Punto de control del hito «Geografía e histórico» (cierre de F4)**: **detenerse**; revisión humana y commit manual **`[F4]`**.
 

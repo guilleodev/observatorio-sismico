@@ -1,0 +1,66 @@
+# 4.6 T056 - comparaciones con datos reales (SC-010) 2026-11-07T09:59:26Z (consulta de serie reescrita; mismos resultados)
+== Precondición ==
+  OK    live.evento_actual con geo_resultado IS NULL = 0 (debe ser 0)
+
+== Recuento independiente del histórico (archivos originales + polígonos, sin tocar historico.evento) ==
+terremotos de 2025 con magnitud >= 4 en los archivos: 18302
+país con más eventos: CHN
+
+== Histórico: SQL frente a recuento independiente (media diaria = total / 365, con días de cero) ==
+ámbito         total SQL total indep.  media/día mediana/día días con 0
+global             18302        18302     50.142        43.0          0
+  OK    global: total SQL = recuento independiente (18302)
+  OK    global: media diaria = 18302 / 365 = 50.1425
+  OK    global: mediana diaria SQL = mediana independiente (43)
+  OK    global: media horaria = 18302 / 8760
+país CHN             354          354      0.970         1.0        179
+  OK    país CHN: total SQL = recuento independiente (354)
+  OK    país CHN: media diaria = 354 / 365 = 0.9699
+  OK    país CHN: mediana diaria SQL = mediana independiente (1)
+  OK    país CHN: media horaria = 354 / 8760
+sin_pais           14350        14350     39.315        32.0          0
+  OK    sin_pais: total SQL = recuento independiente (14350)
+  OK    sin_pais: media diaria = 14350 / 365 = 39.3151
+  OK    sin_pais: mediana diaria SQL = mediana independiente (32)
+  OK    sin_pais: media horaria = 14350 / 8760
+país CHL             348          348      0.953         1.0        143
+  OK    país CHL: total SQL = recuento independiente (348)
+  OK    país CHL: media diaria = 348 / 365 = 0.9534
+  OK    país CHL: mediana diaria SQL = mediana independiente (1)
+  OK    país CHL: media horaria = 348 / 8760
+
+== Comparación con la actividad reciente (live.evento_actual, sin retirados) ==
+cobertura en vivo: desde 2026-11-05 16:54 UTC; evento más reciente 2026-11-07 09:44; última lectura del feed 2026-11-07 09:59 UTC
+ventana                   ámbito       reciente indep. media/día   variación  incompleta
+día UTC completo anterior global             15     15    50.142     -70.1 %  no
+  OK    día UTC completo anterior / global: reciente SQL = recuento independiente (15)
+día UTC completo anterior país CHN            0      0     0.970    -100.0 %  no
+  OK    día UTC completo anterior / país CHN: reciente SQL = recuento independiente (0)
+día UTC completo anterior sin_pais           13     13    39.315     -66.9 %  no
+  OK    día UTC completo anterior / sin_pais: reciente SQL = recuento independiente (13)
+últimos 7 días            global             24     24    50.142     -52.1 %  SÍ
+  OK    últimos 7 días / global: reciente SQL = recuento independiente (24)
+                                      · la ventana empieza antes de la cobertura en vivo (2026-11-05 16:54 UTC)
+                                      · la ventana termina después de la última lectura correcta del feed (2026-11-07 09:59 UTC)
+últimos 7 días            país CHN            1      1     0.970      +3.1 %  SÍ
+  OK    últimos 7 días / país CHN: reciente SQL = recuento independiente (1)
+                                      · la ventana empieza antes de la cobertura en vivo (2026-11-05 16:54 UTC)
+                                      · la ventana termina después de la última lectura correcta del feed (2026-11-07 09:59 UTC)
+últimos 7 días            sin_pais           19     19    39.315     -51.7 %  SÍ
+  OK    últimos 7 días / sin_pais: reciente SQL = recuento independiente (19)
+                                      · la ventana empieza antes de la cobertura en vivo (2026-11-05 16:54 UTC)
+                                      · la ventana termina después de la última lectura correcta del feed (2026-11-07 09:59 UTC)
+
+== Magnitud nula y umbral < 4 ==
+  OK    un umbral pedido de 2,0 se eleva a 4,0 en ambos periodos y se indica
+  eventos recientes con magnitud nula en esa ventana: 0 (no se incluyen en ningún umbral)
+
+SESGOS (R-010): el histórico es la instantánea REVISADA del catálogo y el reciente son datos preliminares que pueden revisarse;
+la media anual está inflada por secuencias de réplicas (julio de 2025: 2 684 eventos frente a ~1 300 en otros meses), por eso se da también la mediana;
+con medias casi nulas (países pequeños, ventana horaria) la variación porcentual es inestable; la cobertura en vivo es de ~1-2 días, así que
+las ventanas largas son incompletas; y el reparto por país depende de la escala 1:110 M del catálogo (78 % de los eventos históricos sin país).
+
+RESULTADO: OK
+== Contraste de la actividad reciente con el propio catálogo de USGS (solo count, 2026-11-07T09:53:53Z) ==
+USGS count M>=4 earthquake 2026-11-06T00:00:00..2026-11-07T00:00:00: {"count":15,"maxAllowed":20000}  | live.evento_actual (comparación de arriba): 15 -> coinciden
+Lectura: el -70 % del día reciente NO es un fallo de ingesta: USGS cuenta también 15 para ese día (día tranquilo frente a la media de 50,1 de 2025). El contraste muestra además la variabilidad diaria: la variación de un solo día es muy inestable.

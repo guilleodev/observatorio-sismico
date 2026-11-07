@@ -1,0 +1,42 @@
+# 4.5 T051 - despliegue de producer y consumer 2026-11-07T09:28:53Z
+ids de contenedor antes: api=206d130477df consumer=a325189461b8 kafka=8334b55b327c postgres=046081f539aa producer=3876e8a25cf2 
+## precondiciones
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=444 versiones=428 cuarentena=16 | offset/final/lag=454/454/0
+geo: reparto live=interior=278, sin_pais=55 | incoherentes=0
+## build
+ Image observatorio-backend Built 
+## recrear consumer y luego producer (solo esos dos)
+ Container observatorio-consumer-1 Recreate 
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-consumer-1 Starting 
+ Container observatorio-consumer-1 Started 
+ Container observatorio-producer-1 Recreate 
+ Container observatorio-producer-1 Recreated 
+ Container observatorio-producer-1 Starting 
+ Container observatorio-producer-1 Started 
+5 servicios healthy
+ids de contenedor despues: api=206d130477df consumer=1bd149cce180 kafka=8334b55b327c postgres=046081f539aa producer=8e645f8153e2 
+margen de huecos en el productor: 21600
+## observación: >= 10 ciclos del productor desde 2026-11-07T09:29:32Z
+ciclos observados: 11
+producer-1  | 2026-11-07 09:30:24,024 producer.ingesta INFO Consulta ok: 178 eventos, 127176 bytes, 88 ms, 1 intento(s), copia guardada; publicadas=0
+producer-1  | 2026-11-07 09:31:24,072 producer.ingesta INFO Consulta ok: 178 eventos, 127176 bytes, 86 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:32:24,154 producer.ingesta INFO Consulta ok: 178 eventos, 127176 bytes, 111 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:33:24,165 producer.ingesta INFO Consulta ok: 178 eventos, 127176 bytes, 91 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:34:24,165 producer.ingesta INFO Consulta ok: 178 eventos, 127176 bytes, 100 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:35:24,214 producer.ingesta INFO Consulta ok: 179 eventos, 127872 bytes, 94 ms, 1 intento(s), copia guardada; publicadas=1
+producer-1  | 2026-11-07 09:36:24,231 producer.ingesta INFO Consulta ok: 179 eventos, 127872 bytes, 98 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:37:24,280 producer.ingesta INFO Consulta ok: 178 eventos, 127167 bytes, 98 ms, 1 intento(s), copia guardada; publicadas=0
+producer-1  | 2026-11-07 09:38:24,320 producer.ingesta INFO Consulta ok: 178 eventos, 127167 bytes, 84 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:39:24,322 producer.ingesta INFO Consulta ok: 178 eventos, 127167 bytes, 89 ms, 1 intento(s); publicadas=0
+producer-1  | 2026-11-07 09:40:24,520 producer.ingesta INFO Consulta ok: 178 eventos, 127167 bytes, 231 ms, 1 intento(s); publicadas=0
+huecos anotados en funcionamiento normal: 0
+errores del consumidor desde el despliegue: 0
+== invariantes [tras el despliegue] 2026-11-07T09:40:28Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=445 versiones=429 cuarentena=16 | offset/final/lag=455/455/0
+geo: reparto live=interior=279, sin_pais=55 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 

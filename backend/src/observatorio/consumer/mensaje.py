@@ -11,7 +11,7 @@ import json
 import math
 from dataclasses import dataclass
 
-from observatorio.config import SOURCE_ADMITIDO
+from observatorio.config import SOURCES_ADMITIDOS
 from observatorio.modos import MODO_REPLAY, MODOS_CONTRACTUALES
 
 TIPO_TERREMOTO = "earthquake"
@@ -46,6 +46,31 @@ class Clasificacion:
     event_id: str | None = None  # si se pudo leer (referencia para la cuarentena y la retirada)
     updated_ms: int | None = None
     base_huella: bytes = b""  # identidad de la versión para la huella de cuarentena (R-007)
+
+
+@dataclass(frozen=True)
+class FeatureValido:
+    """Campos de un terremoto de USGS ya validados (compartidos por el tiempo real y el histórico)."""
+
+    event_id: str
+    event_time_ms: int
+    updated_ms: int
+    mag: float | None
+    mag_type: str | None
+    depth_km: float | None
+    longitude: float
+    latitude: float
+    place: str | None
+
+
+@dataclass(frozen=True)
+class ClasificacionFeature:
+    estado: str  # "valido" | "excluido" | "invalido"
+    feature: FeatureValido | None = None  # solo si es válido
+    motivo: str | None = None
+    event_id: str | None = None
+    updated_ms: int | None = None
+    base_huella: bytes = b""
 
 
 def _canonico(valor) -> bytes:
@@ -95,7 +120,7 @@ def _texto(valor, nombre: str) -> str | None:
     return valor
 
 
-def _validar(msg: dict, evento: dict, propiedades: dict, event_id: str) -> EventoRecibido:
+def _validar_feature(evento: dict, propiedades: dict, event_id: str) -> FeatureValido:
     if not _texto_almacenable(evento):
         raise MensajeInvalido("el evento contiene caracteres que la base no puede almacenar (NUL o sustituto Unicode suelto)")
     geometria = evento.get("geometry")
@@ -108,7 +133,7 @@ def _validar(msg: dict, evento: dict, propiedades: dict, event_id: str) -> Event
     latitud = _numero(coordenadas[1], "latitud", True)
     if not -180 <= longitud <= 180 or not -90 <= latitud <= 90:
         raise MensajeInvalido("coordenadas fuera de rango")
-    return EventoRecibido(
+    return FeatureValido(
         event_id=event_id,
         event_time_ms=_entero(propiedades.get("time"), "time"),
         updated_ms=_entero(propiedades.get("updated"), "updated"),
@@ -118,11 +143,32 @@ def _validar(msg: dict, evento: dict, propiedades: dict, event_id: str) -> Event
         longitude=longitud,
         latitude=latitud,
         place=_texto(propiedades.get("place"), "place"),
-        source=msg["source"],
-        mode=msg["mode"],
-        ingested_at_ms=_entero(msg.get("ingested_at"), "ingested_at"),
-        raw=evento,
     )
+
+
+def clasificar_feature(evento: dict) -> ClasificacionFeature:
+    """Clasifica un *Feature* de USGS (objeto GeoJSON): válido, excluido (no sísmico) o inválido. Lo reutiliza el histórico (F4)."""
+    event_id = evento.get("id")
+    if not isinstance(event_id, str) or not event_id:
+        return ClasificacionFeature("invalido", motivo=f"id de evento ausente o no textual: {event_id!r}", base_huella=_canonico(evento))
+
+    propiedades = evento.get("properties")
+    updated = propiedades.get("updated") if isinstance(propiedades, dict) else None
+    updated_ms = updated if isinstance(updated, int) and not isinstance(updated, bool) and abs(updated) <= MAX_MS else None
+    base = f"{event_id}|{updated_ms}".encode() if updated_ms is not None else _canonico(evento)
+    referencias = {"event_id": event_id, "updated_ms": updated_ms, "base_huella": base}
+
+    if not isinstance(propiedades, dict):
+        return ClasificacionFeature("invalido", motivo="las propiedades del evento faltan", **referencias)
+    tipo = propiedades.get("type")
+    if tipo is None:
+        return ClasificacionFeature("invalido", motivo="el tipo de evento (properties.type) falta", **referencias)
+    if tipo != TIPO_TERREMOTO:  # se mira antes que el resto: a un no sísmico no le exigimos coordenadas válidas
+        return ClasificacionFeature("excluido", motivo=f"tipo de evento no sísmico: {tipo!r}", **referencias)
+    try:
+        return ClasificacionFeature("valido", feature=_validar_feature(evento, propiedades, event_id), **referencias)
+    except MensajeInvalido as exc:
+        return ClasificacionFeature("invalido", motivo=str(exc), **referencias)
 
 
 def clasificar_mensaje(valor: bytes | None) -> Clasificacion:
@@ -139,33 +185,26 @@ def clasificar_mensaje(valor: bytes | None) -> Clasificacion:
         return Clasificacion("descartado", motivo=f"mode no contractual (solo {', '.join(MODOS_CONTRACTUALES)}): {modo!r}")
     if modo == MODO_REPLAY:  # la reproducción (F6) usa su propio topic y esquema; no se mezcla con live
         return Clasificacion("descartado", motivo="mode replay: este consumidor solo procesa live")
-    if msg.get("source") != SOURCE_ADMITIDO:
-        return Clasificacion("descartado", motivo=f"source no admitido: {msg.get('source')!r} (solo {SOURCE_ADMITIDO})")
+    if msg.get("source") not in SOURCES_ADMITIDOS:
+        return Clasificacion("descartado", motivo=f"source no admitido: {msg.get('source')!r} (solo {', '.join(SOURCES_ADMITIDOS)})")
 
     evento = msg.get("event")
     if not isinstance(evento, dict):
         return Clasificacion("invalido", motivo="falta el objeto 'event'", base_huella=contenido)
-    event_id = evento.get("id")
-    if not isinstance(event_id, str) or not event_id:
-        return Clasificacion("invalido", motivo=f"id de evento ausente o no textual: {event_id!r}", base_huella=_canonico(evento))
-
-    propiedades = evento.get("properties")
-    updated = propiedades.get("updated") if isinstance(propiedades, dict) else None
-    updated_ms = updated if isinstance(updated, int) and not isinstance(updated, bool) and abs(updated) <= MAX_MS else None
-    base = f"{event_id}|{updated_ms}".encode() if updated_ms is not None else _canonico(evento)
-    referencias = {"event_id": event_id, "updated_ms": updated_ms, "base_huella": base}
-
-    if not isinstance(propiedades, dict):
-        return Clasificacion("invalido", motivo="las propiedades del evento faltan", **referencias)
-    tipo = propiedades.get("type")
-    if tipo is None:
-        return Clasificacion("invalido", motivo="el tipo de evento (properties.type) falta", **referencias)
-    if tipo != TIPO_TERREMOTO:  # se mira antes que el resto: a un no sísmico no le exigimos coordenadas válidas
-        return Clasificacion("excluido", motivo=f"tipo de evento no sísmico: {tipo!r}", **referencias)
-    try:
-        return Clasificacion("valido", evento=_validar(msg, evento, propiedades, event_id), **referencias)
+    cf = clasificar_feature(evento)
+    referencias = {"event_id": cf.event_id, "updated_ms": cf.updated_ms, "base_huella": cf.base_huella}
+    if cf.estado != "valido":
+        return Clasificacion(cf.estado, motivo=cf.motivo, **referencias)
+    try:  # el instante de ingesta es del mensaje, no del Feature: se valida después de él, como antes del refactor
+        ingested = _entero(msg.get("ingested_at"), "ingested_at")
     except MensajeInvalido as exc:
         return Clasificacion("invalido", motivo=str(exc), **referencias)
+    f = cf.feature
+    recibido = EventoRecibido(
+        event_id=f.event_id, event_time_ms=f.event_time_ms, updated_ms=f.updated_ms, mag=f.mag, mag_type=f.mag_type,
+        depth_km=f.depth_km, longitude=f.longitude, latitude=f.latitude, place=f.place,
+        source=msg["source"], mode=msg["mode"], ingested_at_ms=ingested, raw=evento)
+    return Clasificacion("valido", evento=recibido, **referencias)
 
 
 def interpretar_mensaje(valor: bytes) -> EventoRecibido:

@@ -1,0 +1,10 @@
+# 4.4 T035 - suite completa en contenedor temporal (precedida de docker compose build) 2026-11-07T09:08:10Z
+ Image observatorio-backend Built 
+contenedores sin cambios (ids): 206d130477df a325189461b8 8334b55b327c 046081f539aa 3876e8a25cf2 
+antes:   geo.pais=177 geo.catalogo=1 | historico: consultas=12 eventos=18302 cuarentena=0 archivos=12 | prueba-% en historico=0 | prueba-% en live=0 | consultas>=2031=0
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+362 passed, 1 warning in 27.29s
+despues: geo.pais=177 geo.catalogo=1 | historico: consultas=12 eventos=18302 cuarentena=0 archivos=12 | prueba-% en historico=0 | prueba-% en live=0 | consultas>=2031=0
+## nuevas en 4.4: test_fdsn.py (13), test_cargador.py (18), test_config.py (+15: ConfigHistorico); total 316 + 46 = 362; F3 sin modificar:
+  test_mensaje_calidad.py, test_cuarentena.py y test_errores_permanentes.py sin modificar (git status limpio para ellos)

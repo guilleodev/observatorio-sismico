@@ -1,0 +1,110 @@
+# 4.4 T036 - ensayo de interrupción 2026-11-07T08:57:41Z
+base temporal: obs_ensayo_f4 (la base real observatorio no se toca) | servidor FDSN simulado | 240 eventos sintéticos de 2031
+esquema aplicado y catálogo cargado en la base temporal: ResultadoVolcado(paises_nuevos=177, paises_actualizados=0, paises_sin_cambios=0, catalogo_nuevo=True, obsoletos=())
+
+## Ciclos: lanzar la carga, matarla (SIGKILL) tras N consultas `query`, comprobar el estado y reanudar
+  tras 2 consultas: carga MATADA | tramos ok=1/12 | eventos=20 | eventos de tramos no completos=0 | tramos ok sin archivo=0
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 38710)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 451, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 439, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 103, in do_GET
+    self._responder(200, cuerpo)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 80, in _responder
+    self.wfile.write(cuerpo)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+  tras 5 consultas: carga MATADA | tramos ok=3/12 | eventos=60 | eventos de tramos no completos=0 | tramos ok sin archivo=0
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53476)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 451, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 439, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 103, in do_GET
+    self._responder(200, cuerpo)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 80, in _responder
+    self.wfile.write(cuerpo)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+  tras 9 consultas: carga MATADA | tramos ok=6/12 | eventos=120 | eventos de tramos no completos=0 | tramos ok sin archivo=0
+
+## Reanudación final (sin matar)
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53540)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 451, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/http/server.py", line 439, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 103, in do_GET
+    self._responder(200, cuerpo)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/app/tests/fixtures/fdsn_simulado.py", line 80, in _responder
+    self.wfile.write(cuerpo)
+    ~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/usr/local/lib/python3.13/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+  código de salida: 0
+  RESUMEN {"tramos_nuevos": 6, "tramos_reutilizados": 6, "tramos_subdivididos": 0, "tramos_con_error": 0, "errores": [], "obtenidos": 120, "duplicados": 0, "fuera_de_tramo": 0, "eventos_nuevos": 120, "cuarentena_nueva": 0, "peticiones_http": 12, "archivos_exportados": 6, "asignaciones": 120, "asignacion_total_s": 0.002, "asignacion_max_ms": 0.148, "descarga_s": 2.407, "duracion_s": 2.457, "asignacio
+  consultas `query` de la reanudación: 6 (solo los tramos que faltaban)
+  eventos cargados=240 esperados=240 | distintos=240 | tramos=[('ok', 12)] | cuadre Σobtenidos-Σduplic-Σfuera=240 = eventos+cuarentena=240
+  países asignados: 180 con país, 60 sin país (zona en el mar)
+  archivos exportados: 12 + SHA256SUMS=sí
+
+## Una ejecución más: debe reutilizarlo todo
+  peticiones al servidor: 0 | peticiones_http del resumen: 0 | reutilizados: 12 | eventos nuevos: 0
+
+RESULTADO: OK - interrumpida y reanudada sin duplicados, sin tramos perdidos y sin consultas repetidas
+base temporal obs_ensayo_f4 eliminada
+(El ruido «BrokenPipeError» de arriba lo imprime el servidor simulado cuando el cliente muerto por SIGKILL deja de leer: es esperado.)

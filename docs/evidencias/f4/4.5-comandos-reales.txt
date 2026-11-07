@@ -1,0 +1,7 @@
+# 4.5 - comandos del procedimiento probados en el sistema real (solo lectura: sin huecos) 2026-11-07T09:40:47Z
+$ python -m observatorio.recuperacion.recuperar --listar
+huecos pendientes: 0
+$ python -m observatorio.recuperacion.recuperar --simular
+sin huecos pendientes: nada que recuperar
+$ python -m observatorio.recuperacion.recuperar 
+sin huecos pendientes: nada que recuperar

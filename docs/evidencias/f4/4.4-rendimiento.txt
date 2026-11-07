@@ -1,0 +1,26 @@
+# 4.4 SC-011 - carga completa desde archivos locales 2026-11-07T09:05:45Z
+12 archivos originales exportados (1.35 MB comprimidos) -> 18302 features
+  repetición 1: 2.29 s en total (proceso completo, incl. arranque de Python y del índice espacial) | código de salida 0 | eventos nuevos 18302 | consultas al servidor local 24 | asignación media 8.6 µs, máxima 2.231 ms (18302 asignaciones)
+  repetición 2: 2.27 s en total (proceso completo, incl. arranque de Python y del índice espacial) | código de salida 0 | eventos nuevos 18302 | consultas al servidor local 24 | asignación media 8.5 µs, máxima 0.557 ms (18302 asignaciones)
+  repetición 3: 2.32 s en total (proceso completo, incl. arranque de Python y del índice espacial) | código de salida 0 | eventos nuevos 18302 | consultas al servidor local 24 | asignación media 8.4 µs, máxima 0.198 ms (18302 asignaciones)
+
+mediana de 3 repeticiones: 2.29 s | mínimo 2.27 s | máximo 2.32 s
+huella (recuento + md5 de ids, updated, país y resultado) de la base real:      18302 b2ff6ce5e3fe56d153fd69630620a43a
+huella de la reconstrucción desde los archivos originales (base temporal):      18302 b2ff6ce5e3fe56d153fd69630620a43a
+RESULTADO: OK - reconstruir el histórico desde los archivos originales da exactamente el mismo contenido que la base real
+base temporal obs_medida_f4 eliminada
+
+== Verificación de los umbrales de SC-011 confirmados por la persona estudiante (2026-11-07) ==
+Umbral 1: < 100 ms por asignación de país.
+  Medido en la CARGA REAL de 2025 (18 302 asignaciones, 4.4-carga-real.txt): media 9,0 µs, máximo 0,679 ms.
+  Medido en las 3 reconstrucciones desde archivos locales (54 906 asignaciones): medias 8,4-8,6 µs, máximos 0,198-2,231 ms (el máximo de 2,2 ms
+  fue la primera repetición, con el índice aún en frío).
+  Medido en 4.3 (4.3-rendimiento.txt): eventos reales de live ~10 µs por llamada.
+  VERIFICADO: el máximo observado (2,231 ms) es unas 45 veces inferior al umbral. Alcance: tiempo de `Asignador.asignar()`; el coste dentro del
+  guardado (con la base) se midió en 4.3 (~75 µs más por evento, incluidas claves foráneas).
+Umbral 2: < 10 minutos para la carga histórica.
+  Carga real con descarga desde USGS (13,9 s dentro del programa, 16 s de reloj con el arranque del contenedor; descarga 11,4 s de los 13,9 s).
+  Carga completa desde archivos locales (sin red): mediana 2,29 s (2,27-2,32 s; proceso entero con arranque de Python e índice espacial).
+  VERIFICADO: 16 s frente a 600 s (37 veces menos) con descarga; 2,3 s sin ella.
+Condiciones: contenedor Docker en Windows 11 / Docker Desktop, PostgreSQL local en la misma red, conexión doméstica; las cifras dependen de la máquina y
+de la carga del momento (son observaciones de esta ejecución, no garantías). USGS respondió sin 429 ni reintentos (intentos=1 en las 12 consultas).

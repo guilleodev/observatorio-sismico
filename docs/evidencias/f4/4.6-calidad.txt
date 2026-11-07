@@ -1,0 +1,38 @@
+# 4.6 T058 - calidad del histórico (seis dimensiones) 2026-11-07T09:56:39Z
+histórico: 18302 eventos | cuarentena: 0
+
+== 1. Completitud (% con valor) ==
+  magnitud 100.0 % | tipo de magnitud 100.0 % | profundidad 100.0 % | place 100.0 % | país asignado 21.6 % | felt (opcional) 10.5 % | red (opcional) 100.0 %
+  OK    magnitud, profundidad y place completos (los obligatorios de la consulta M>=4)
+  país asignado 21.6 %: el resto es «Sin país asignado» por diseño (no es un dato que falte): 78.4 % sin país
+
+== 2. Unicidad ==
+  OK    event_id único: 18302 filas, 18302 distintos
+  OK    huellas de cuarentena únicas
+  duplicados y repeticiones absorbidos al cargar: (0, 0) (duplicados, fuera de tramo)
+
+== 3. Validez ==
+  OK    coordenadas en rango, tipo earthquake, 4 ≤ mag ≤ 10, −10 ≤ profundidad ≤ 800 km, 2025 UTC, geometría de 3 valores (fallos: (0, 0, 0, 0, 0, 0))
+  magnitud (Decimal('4'), Decimal('8.8')) | profundidad (km) (Decimal('0.5'), Decimal('669.556'))
+
+== 4. Consistencia ==
+  OK    country_id nulo ⇔ geo_resultado = 'sin_pais'
+  OK    una sola versión del catálogo en todo el histórico
+  OK    las columnas coinciden con el original (`raw`) —magnitud y profundidad con tolerancia 1e-9—, coordenadas, tiempo, actualización e id (diferencias: 0)
+  nota de exactitud numérica: 2 eventos tienen magnitud o profundidad que difieren del original en la cifra 16 (máx. 2.0e-14): la columna `numeric` guarda 15 cifras significativas del double de USGS; el valor exacto se conserva en `raw`. No es una pérdida de información relevante (mismo comportamiento que live, F3).
+  OK    cada evento está dentro del tramo de su consulta
+
+== 5. Actualidad ==
+  extracción: 2026-11-07 09:00 .. 2026-11-07 09:00 UTC (instantánea del catálogo revisado; no se actualiza sola)
+  eventos revisados por USGS > 30 días después de ocurrir: 18302 (100.0 %); > 365 días: 120 | mediana de (updated − time): 77.0 días
+  nota: `updated` refleja la última revisión de USGS en la extracción; el histórico no incluye revisiones posteriores a la fecha de extracción.
+
+== 6. Exactitud: 40 eventos al azar frente a la consulta por id a USGS ==
+  idénticos en magnitud, tiempo y coordenadas: 40/40 | difieren: 0 | no consultables: 0
+  OK    ninguno de los eventos muestreados difiere del catálogo actual de USGS
+  asignación de país: recalculada para los 18302 eventos con un método independiente en 4.6-sin-pais-historico.txt (0 diferencias)
+
+== Proporción «sin país» ==
+  14350 de 18302 (78.4 %): causa analizada en 4.6-sin-pais-historico.txt (mar abierto 84 % de ellos; limitación 1:110 M ≈ 1,4 %)
+
+RESULTADO: OK

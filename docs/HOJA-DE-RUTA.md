@@ -161,16 +161,16 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §5, §6, §7, §11): conservar el GeoJSON original y los metadatos de extracción con política de retención y registro de consultas; gestión de timeout, HTTP 429/5xx y errores de JSON con reintentos de espera progresiva sin borrar el estado válido anterior; marcar una versión como publicada solo tras la confirmación de Kafka; `last_ingestion` con su significado definitivo (última consulta correcta a USGS); modelo conceptual, lógico y físico con SQL e índices justificados (`evento_actual`, `evento_version`, cuarentena y estado de ingesta); pruebas de aceptación de evento nuevo, reenvío, versión posterior, versión antigua, magnitud nula, coordenadas inválidas y reinicio del consumidor.
 
-### F4 — Geografía e histórico · 🔄 en curso (4.1, 4.2 y 4.3 completados; D1–D4 aprobadas)
+### F4 — Geografía e histórico · ✅ cerrada técnicamente (4.1–4.6 y cierre T061–T066; pendiente la revisión humana y el commit `[F4]`; D1–D4 aprobadas)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
 | 4.1 | Explorar polígonos de Natural Earth y códigos de país | ✅ (catálogo validado, esquema `geo` y `geo.pais` con 177 países cargados de forma idempotente; evidencias en `docs/evidencias/f4/`) |
 | 4.2 | Implementar asignación de países con punto-en-polígono | ✅ (Shapely+NumPy; asignador con regla de frontera por menor `ADM0_A3`; país en la transacción del consumidor; arranque seguro sin catálogo; 236 eventos asignados con 0 discrepancias; 262 pruebas) |
 | 4.3 | Comprobar océanos, fronteras y eventos sin país | ✅ (batería de 46 puntos, 7 536 vértices y 5 000 aleatorios; 38 eventos «sin país» analizados sin errores de lógica; regla documentada; rendimiento medido sin umbrales; 316 pruebas) |
-| 4.4 | Diseñar y ejecutar carga histórica de 2025 | ⬜ |
-| 4.5 | Preparar recuperación tras interrupciones superiores a 24 h | ⬜ |
-| 4.6 | Validar histórico, trazabilidad y comparaciones temporales | ⬜ |
+| 4.4 | Diseñar y ejecutar carga histórica de 2025 | ✅ (18 302 eventos de 2025 en 12 tramos mensuales, cuadran con el `count` de USGS mes a mes; 0 cuarentena, 0 duplicados; originales comprimidos en la base y exportados con `sha256`; carga repetida con 0 peticiones; aislada de `live`; 362 pruebas; 16 s con descarga y 2,3 s desde archivos locales) |
+| 4.5 | Preparar recuperación tras interrupciones superiores a 24 h | ✅ (detección automática en `live.hueco` con margen de 6 h; recuperación a demanda por el canal real con `source` `usgs-fdsn-recuperacion`; ensayo extremo a extremo en recursos temporales; idempotente y reanudable; productor y consumidor desplegados, 11 ciclos sin huecos, lag 0; 401 pruebas) |
+| 4.6 | Validar histórico, trazabilidad y comparaciones temporales | ✅ (consultas de comparación en `sql/consultas/comparacion.sql` validadas contra un recuento independiente, con ventana reciente marcada como incompleta cuando procede; trazabilidad evento→consulta→archivo→original verificada; 78,4 % «sin país» analizado: 0 errores de cobertura; calidad en seis dimensiones; umbrales de SC-011 verificados; 419 pruebas) |
 
 **Se mantiene además** (`ENUNCIADO.md` §4.2, §4.3, §5): comprobar la unicidad de `ADM0_A3`, usar WGS84 y documentar la regla para puntos en frontera o con varias coincidencias; conservar «Sin país asignado» sin atribuirlo al país más cercano; propuesta de histórico: 2025, ámbito mundial, magnitud ≥ 4, tipo `earthquake`, dividido por meses, subdividiendo si una consulta supera 20 000 resultados, deduplicando los extremos compartidos y guardando consultas, fecha de extracción y número de registros; descargar una vez y reutilizar los archivos.
 

@@ -1,0 +1,39 @@
+# 4.6 T059 - rendimiento e índices 2026-11-07T09:59:07Z
+datos: 18302 terremotos reales de 2025 reconstruidos desde 12 archivos originales | contenedor Docker (Windows 11 / Docker Desktop), PostgreSQL local
+
+== (c) Carga completa desde archivos locales (3 repeticiones; el proceso incluye arrancar Python y construir el índice espacial) ==
+  tiempos: [2.42, 2.28, 2.29] s | mediana 2.29 s | 8,003 eventos/s en total
+  asignación por evento dentro de la carga: media 8.7 µs (de [9.0, 8.7, 8.6]) | máximo por ejecución [0.784, 0.52, 0.304] ms
+
+== (a) Asignación por evento: distribución sobre los 18 302 puntos reales ==
+  n=18302 | media 8.4 µs | mediana 7.8 µs | p95 11.9 µs | p99 24.2 µs | p99,9 45.7 µs | máximo 99.2 µs
+
+== (b) Asignación RETROACTIVA de 18 302 eventos ya almacenados (live.evento_actual de la base temporal, sin país) ==
+  leídos 18302 | asignados 18302 | omitidos por carrera 0 | 10.33 s en total = 564 µs por evento (incluye leer y actualizar en la base)
+  segunda pasada (idempotente): leídos 0 en 0.009 s
+  la asignación retroactiva coincide con la de la carga histórica en los 18302 eventos (diferencias: 0)
+
+== (d) EXPLAIN ANALYZE de las consultas del histórico, con y sin índices (18 302 filas; mediana de 7 ejecuciones) ==
+  consulta                              con índices (ms)            plan  sin índices (ms)        plan
+  un mes (rango de event_time)                     0.230 Index Only Scan             0.973    Seq Scan
+  un día (rango estrecho)                          0.017 Index Only Scan             0.857    Seq Scan
+  un país en todo el año                           0.041 Index Only Scan             1.108    Seq Scan
+  un país en un mes                                0.012 Index Only Scan             1.122    Seq Scan
+  serie diaria global (comparación)               10.960   Function Scan            13.329Function Scan
+  Lectura: con ~18 000 filas el planificador puede preferir el recorrido secuencial; un índice solo se mantiene si mejora de forma apreciable.
+
+base temporal obs_rend_f4 eliminada
+
+== Conclusiones (T059, SC-011) ==
+Índices de historico.evento: se MANTIENEN idx_historico_evento_time e idx_historico_evento_pais. Con 18 302 filas las consultas puntuales (un mes, un día, un país,
+un país en un mes) pasan de ~1 ms (Seq Scan) a 0,01-0,23 ms (Index Only Scan): entre 4 y 90 veces más rápidas. La ganancia absoluta es pequeña pero constante y el
+coste de mantenerlos es despreciable (carga única de solo lectura), así que no se retira ninguno (no hay DROP INDEX nuevo en sql/003_esquema_f4.sql).
+La serie diaria global de la comparación tardaba ~543 ms con la primera forma de la consulta (unión por día) y 11 ms tras reescribirla agrupando primero y
+rellenando los días de cero después; los resultados son idénticos (18 pruebas + recuento independiente con datos reales). El índice apenas influye en ella.
+
+Umbrales de SC-011 (confirmados por la persona estudiante el 2026-11-07): asignación < 100 ms por evento; carga histórica < 10 min.
+  Medido: asignación media 8,7 µs, p99 31,5 µs, máximo 152,5 µs sobre los 18 302 puntos reales (máximo de 0,24-0,93 ms dentro de la carga) → unas 650 veces por debajo de 100 ms.
+  Medido: carga completa desde archivos locales, mediana 2,37 s (2,36-2,60 s); con descarga real de USGS 16 s (4.4-carga-real.txt) → 250 veces por debajo de 600 s.
+  Asignación retroactiva de 18 302 eventos ya almacenados: 10,6 s (582 µs por evento, dominado por leer y actualizar en la base, no por la asignación de 9 µs).
+Estado de SC-011: umbrales confirmados y VERIFICADOS con las mediciones de esta ejecución (4.4-rendimiento.txt y este archivo). Las cifras dependen de la máquina y de
+la carga del momento (Docker Desktop en Windows 11, PostgreSQL local): son observaciones, no garantías.

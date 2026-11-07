@@ -1,0 +1,10 @@
+# 4.5 - mutaciones temporales sobre recuperar.py y repositorio.py (cada una se revierte) 2026-11-07T09:23:13Z
+no omitir lo ya guardado -> 4 failed, 8 passed in 6.51s
+no marcar el hueco como recuperado -> 4 failed, 8 passed in 6.50s
+consultar con filtro de magnitud -> 9 failed, 3 passed in 6.79s
+no marcar version_publicada -> 2 failed, 10 passed in 6.39s
+no subdividir -> 1 failed, 11 passed in 6.39s
+umbral estricto en vez de «exactamente el umbral no anota» -> 2 failed, 15 passed in 0.58s
+sin margen en el intervalo -> 5 failed, 12 passed in 0.60s
+anotar también en modo seco -> 1 failed, 16 passed in 0.59s
+no detectar en registrar_ok -> 2 failed, 15 passed in 0.61s

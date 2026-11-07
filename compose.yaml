@@ -74,6 +74,8 @@ services:
       # true = publicación real en Kafka (activada en la tarea T026, con el consumidor definitivo desplegado);
       # false = modo seco: consulta y registra sin publicar ni marcar versiones
       INGESTA_PUBLICAR: ${INGESTA_PUBLICAR:-false}
+      # Margen (s) de la detección de huecos de ingesta > 24 h (F4): se aplica por ambos lados del intervalo
+      HUECO_MARGEN_S: ${HUECO_MARGEN_S:-21600}
     depends_on:
       kafka:
         condition: service_healthy

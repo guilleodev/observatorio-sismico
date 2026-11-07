@@ -1,0 +1,94 @@
+# 4.4 T029 - migración historico (sql/003, parte 4.4) 2026-11-07T08:47:27Z
+## aplicación 1
+CREATE SCHEMA
+NOTICE:  schema "geo" already exists, skipping
+NOTICE:  relation "catalogo" already exists, skipping
+CREATE TABLE
+CREATE TABLE
+NOTICE:  relation "pais" already exists, skipping
+NOTICE:  column "geo_resultado" of relation "evento_actual" already exists, skipping
+ALTER TABLE
+NOTICE:  column "geo_catalogo" of relation "evento_actual" already exists, skipping
+ALTER TABLE
+DO
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+## aplicación 2
+NOTICE:  schema "geo" already exists, skipping
+CREATE SCHEMA
+NOTICE:  relation "catalogo" already exists, skipping
+CREATE TABLE
+CREATE TABLE
+NOTICE:  relation "pais" already exists, skipping
+NOTICE:  column "geo_resultado" of relation "evento_actual" already exists, skipping
+ALTER TABLE
+NOTICE:  column "geo_catalogo" of relation "evento_actual" already exists, skipping
+ALTER TABLE
+DO
+CREATE SCHEMA
+NOTICE:  schema "historico" already exists, skipping
+NOTICE:  relation "consulta" already exists, skipping
+CREATE TABLE
+NOTICE:  relation "archivo" already exists, skipping
+CREATE TABLE
+NOTICE:  relation "evento" already exists, skipping
+CREATE TABLE
+NOTICE:  relation "idx_historico_evento_time" already exists, skipping
+NOTICE:  relation "idx_historico_evento_pais" already exists, skipping
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+NOTICE:  relation "cuarentena" already exists, skipping
+## tablas
+               List of relations
+  Schema   |    Name    | Type  |    Owner     
+-----------+------------+-------+--------------
+ historico | archivo    | table | observatorio
+ historico | consulta   | table | observatorio
+ historico | cuarentena | table | observatorio
+ historico | evento     | table | observatorio
+(4 rows)
+
+ filas_live 
+------------
+        329
+(1 row)
+
+                                             Table "historico.consulta"
+     Column      |           Type           | Collation | Nullable |                    Default                     
+-----------------+--------------------------+-----------+----------+------------------------------------------------
+ id              | bigint                   |           | not null | nextval('historico.consulta_id_seq'::regclass)
+ inicio          | timestamp with time zone |           | not null | 
+ fin             | timestamp with time zone |           | not null | 
+ filtros         | jsonb                    |           | not null | 
+ tramo_padre     | bigint                   |           |          | 
+ url             | text                     |           | not null | 
+ extraida_at     | timestamp with time zone |           | not null | now()
+ resultado       | text                     |           | not null | 
+ http_status     | integer                  |           |          | 
+ intentos        | integer                  |           |          | 
+ error           | text                     |           |          | 
+ esperado        | integer                  |           |          | 
+ obtenidos       | integer                  |           |          | 
+ duplicados      | integer                  |           | not null | 0
+ fuera_de_tramo  | integer                  |           | not null | 0
+ peticiones_http | integer                  |           | not null | 0
+Indexes:
+    "consulta_pkey" PRIMARY KEY, btree (id)
+    "consulta_inicio_fin_filtros_key" UNIQUE CONSTRAINT, btree (inicio, fin, filtros)
+Check constraints:
+    "consulta_check" CHECK (fin > inicio)
+    "consulta_resultado_check" CHECK (resultado = ANY (ARRAY['ok'::text, 'error'::text, 'subdividido'::text]))
+Foreign-key constraints:
+    "consulta_tramo_padre_fkey" FOREIGN KEY (tramo_padre) REFERENCES historico.consulta(id)
+Referenced by:
+    TABLE "historico.archivo" CONSTRAINT "archivo_consulta_id_fkey" FOREIGN KEY (consulta_id) REFERENCES historico.consulta(id)
+    TABLE "historico.consulta" CONSTRAINT "consulta_tramo_padre_fkey" FOREIGN KEY (tramo_padre) REFERENCES historico.consulta(id)
+    TABLE "historico.cuarentena" CONSTRAINT "cuarentena_consulta_id_fkey" FOREIGN KEY (consulta_id) REFERENCES historico.consulta(id)
+    TABLE "historico.evento" CONSTRAINT "evento_consulta_id_fkey" FOREIGN KEY (consulta_id) REFERENCES historico.consulta(id)
+

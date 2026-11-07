@@ -50,6 +50,8 @@ class ConfigPostgres:
 
 
 SOURCE_ADMITIDO = "usgs-all-day"
+SOURCE_RECUPERACION = "usgs-fdsn-recuperacion"  # solo lo publica la orden de recuperación de huecos (F4, paso 4.5)
+SOURCES_ADMITIDOS = (SOURCE_ADMITIDO, SOURCE_RECUPERACION)
 URL_USGS = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
 
 
@@ -88,6 +90,7 @@ class ConfigIngesta:
     retencion_respuestas_dias: int
     retencion_consultas_dias: int
     publicar: bool  # False = modo seco: consulta y registra, pero no publica ni marca versiones (R-015)
+    hueco_margen_s: int = 21600  # margen de la detección de huecos (F4): se aplica por ambos lados del intervalo; 6 h por defecto
 
     @classmethod
     def desde_entorno(cls) -> "ConfigIngesta":
@@ -102,6 +105,7 @@ class ConfigIngesta:
             retencion_respuestas_dias=_entero("RETENCION_RESPUESTAS_DIAS", 3),
             retencion_consultas_dias=_entero("RETENCION_CONSULTAS_DIAS", 30),
             publicar=_booleano("INGESTA_PUBLICAR", False),
+            hueco_margen_s=_entero("HUECO_MARGEN_S", 21600, minimo=0),
         )
 
 
@@ -120,3 +124,55 @@ class ConfigGeo:
         if not ruta.is_file():
             raise ConfigError(f"CATALOGO_PATH debe ser un archivo existente (catálogo de países), no {str(ruta)!r}")
         return cls(catalogo_path=ruta)
+
+
+URL_FDSN_DEFECTO = "https://earthquake.usgs.gov/fdsnws/event/1/"
+EXPORTACION_DEFECTO = "/exportacion"
+LIMITE_FDSN = 20000  # máximo de resultados por consulta que admite el catálogo de USGS
+
+
+def _decimal(nombre: str, defecto: float, minimo: float, maximo: float) -> float:
+    texto = os.environ.get(nombre, "").strip()
+    if not texto:
+        return defecto
+    try:
+        valor = float(texto)
+    except ValueError:
+        raise ConfigError(f"{nombre} debe ser un número, no {texto!r}") from None
+    if not minimo <= valor <= maximo:
+        raise ConfigError(f"{nombre} debe estar entre {minimo:g} y {maximo:g}, no {valor:g}")
+    return valor
+
+
+@dataclass(frozen=True)
+class ConfigHistorico:
+    """Carga histórica de USGS (F4). Todas las variables son opcionales; los valores por defecto son los del enunciado."""
+
+    anio: int
+    mag_min: float
+    limite: int
+    url_base: str
+    timeout_s: int
+    max_reintentos: int
+    exportacion: Path  # carpeta donde se exporta cada archivo original (se monta con -v; ignorada por Git)
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigHistorico":
+        url = os.environ.get("HISTORICO_URL", "").strip() or URL_FDSN_DEFECTO
+        if not url.startswith(("http://", "https://")):
+            raise ConfigError(f"HISTORICO_URL debe empezar por http:// o https://, no {url!r}")
+        limite = _entero("HISTORICO_LIMITE", LIMITE_FDSN, minimo=2)
+        if limite > LIMITE_FDSN:
+            raise ConfigError(f"HISTORICO_LIMITE no puede superar {LIMITE_FDSN} (máximo del catálogo de USGS), no {limite}")
+        anio = _entero("HISTORICO_ANIO", 2025, minimo=1900)
+        if anio > 2100:
+            raise ConfigError(f"HISTORICO_ANIO fuera de rango razonable: {anio}")
+        return cls(
+            anio=anio,
+            mag_min=_decimal("HISTORICO_MAG_MIN", 4.0, 0.0, 10.0),
+            limite=limite,
+            url_base=url if url.endswith("/") else url + "/",
+            timeout_s=_entero("HISTORICO_TIMEOUT_S", 60),
+            max_reintentos=_entero("HISTORICO_MAX_REINTENTOS", 3, minimo=0),
+            exportacion=Path(os.environ.get("HISTORICO_EXPORT_DIR", "").strip() or EXPORTACION_DEFECTO),
+        )

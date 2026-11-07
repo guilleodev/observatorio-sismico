@@ -69,7 +69,7 @@ async def main() -> None:
             inicio = time.monotonic()
             for _ in (1, 2):
                 try:
-                    await ejecutar_ciclo(RepositorioProductor(conexion), config, publicador)
+                    await ejecutar_ciclo(RepositorioProductor(conexion, config.hueco_margen_s if publicador is not None else None), config, publicador)
                     break
                 except psycopg.Error as exc:  # sin PostgreSQL no se publica a ciegas (R-014)
                     log.error("PostgreSQL falló (%s); se reconecta antes de reintentar el ciclo", exc)

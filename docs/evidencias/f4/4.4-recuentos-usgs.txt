@@ -1,0 +1,38 @@
+# 4.4 T037 - recuento real en USGS (solo count, sin descarga) 2026-11-07T08:58:07Z
+# formato: inicio fin recuento (la última línea es el año completo)
+ Container observatorio-producer-run-81d9eb0d1499 Creating 
+ Container observatorio-producer-run-81d9eb0d1499 Created 
+2025-01-01T00:00:00Z 2025-02-01T00:00:00Z 1413
+2025-02-01T00:00:00Z 2025-03-01T00:00:00Z 1394
+2025-03-01T00:00:00Z 2025-04-01T00:00:00Z 1178
+2025-04-01T00:00:00Z 2025-05-01T00:00:00Z 1316
+2025-05-01T00:00:00Z 2025-06-01T00:00:00Z 1228
+2025-06-01T00:00:00Z 2025-07-01T00:00:00Z 1156
+2025-07-01T00:00:00Z 2025-08-01T00:00:00Z 2684
+2025-08-01T00:00:00Z 2025-09-01T00:00:00Z 2222
+2025-09-01T00:00:00Z 2025-10-01T00:00:00Z 1604
+2025-10-01T00:00:00Z 2025-11-01T00:00:00Z 1509
+2025-11-01T00:00:00Z 2025-12-01T00:00:00Z 1321
+2025-12-01T00:00:00Z 2026-01-01T00:00:00Z 1277
+2025-01-01T00:00:00Z 2026-01-01T00:00:00Z 18302
+peticiones_http=13
+
+# 4.4 T037 (parte 2) - comportamiento de starttime/endtime (solo count) 2026-11-07T09:01:53Z
+== Parte A: ¿se tienen en cuenta los milisegundos de los parámetros? ==
+terremoto de referencia: us7000pn9s, time = 2025-03-28T06:20:52.715+00:00
+  [T-10ms, T+10ms]  (lo contiene con precisión de ms): count=0
+  [T, T+1 s]: count=1
+  [T-1 s, T]: count=0
+  [06:20:52.000, 06:20:52.999]: count=0
+  [06:20:52.999, 06:20:53.000]: count=1
+  [06:20:52, 06:20:53] (segundos enteros): count=1
+  [06:20:53, 06:20:54] (segundos enteros): count=0
+Lectura: el evento solo se cuenta si la ventana llega a 06:20:53 y empieza antes: USGS descarta la parte de milisegundos de los parámetros,
+por eso el cargador usa siempre segundos enteros.
+
+== Parte B: extremos con terremotos de la carga cuyo instante es un segundo exacto ==
+  nc75288851 time=2025-12-31T05:49:32.000+00:00 | [T-1 s, T] (T = endtime): count=1 | [T, T+1 s] (T = starttime): count=1 | [T, T]: count=1
+  us6000pwsi time=2025-03-04T11:18:39.000+00:00 | [T-1 s, T] (T = endtime): count=1 | [T, T+1 s] (T = starttime): count=1 | [T, T]: count=1
+  us6000q438 time=2025-03-08T11:55:39.000+00:00 | [T-1 s, T] (T = endtime): count=1 | [T, T+1 s] (T = starttime): count=1 | [T, T]: count=1
+  us6000q638 time=2025-04-15T01:36:20.000+00:00 | [T-1 s, T] (T = endtime): count=1 | [T, T+1 s] (T = starttime): count=1 | [T, T]: count=1
+Lectura: si [T-1 s, T] cuenta el evento, `endtime` es inclusivo; si [T, T+1 s] también, `starttime` lo es (el evento sale en dos ventanas contiguas).
