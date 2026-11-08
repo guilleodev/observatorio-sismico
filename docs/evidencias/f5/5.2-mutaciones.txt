@@ -1,0 +1,23 @@
+/scripts5/mutaciones_52.py:27: SyntaxWarning: invalid escape sequence '\ '
+  ("estadísticas sin instantánea consistente (READ COMMITTED)", "repositorio.py", 'r"-c default_transaction_isolation=repeatable\ read " + ', ""),
+# 5.2 T014 - mutaciones del paso 5.2
+Base sin mutar: OK (168 passed, 1 warning in 11.11s)
+
+  DETECTADA  los nulos de magnitud/profundidad se cuentan en el primer intervalo  [FAILED tests/unit/test_api_estadisticas.py::test_magnitud_con_intervalos_fijos_bordes_inclusivos_por_la_izquie]
+  DETECTADA  el borde del intervalo pasa a ser inclusivo por la derecha  [FAILED tests/unit/test_api_estadisticas.py::test_magnitud_con_intervalos_fijos_bordes_inclusivos_por_la_izquie]
+  DETECTADA  el último intervalo abierto se funde con el anterior  [FAILED tests/unit/test_api_estadisticas.py::test_magnitud_con_intervalos_fijos_bordes_inclusivos_por_la_izquie]
+  DETECTADA  los intervalos vacíos no valen 0  [FAILED tests/unit/test_api_estadisticas.py::test_magnitud_con_intervalos_fijos_bordes_inclusivos_por_la_izquie]
+  DETECTADA  los eventos sin asignar se cuentan como país  [FAILED tests/unit/test_api_estadisticas.py::test_recuentos_por_pais_con_sin_pais_y_sin_asignar_aparte]
+  DETECTADA  los eventos sin país no llevan nombre «Sin país asignado»  [FAILED tests/unit/test_api_estadisticas.py::test_recuentos_por_pais_con_sin_pais_y_sin_asignar_aparte]
+  DETECTADA  países sin ordenar por recuento  [FAILED tests/unit/test_api_estadisticas.py::test_recuentos_por_pais_con_sin_pais_y_sin_asignar_aparte]
+  DETECTADA  el total ignora el umbral de magnitud en sin_magnitud  [FAILED tests/unit/test_api_estadisticas.py::test_min_mag_excluye_los_nulos_los_cuenta_aparte_y_deja_sin_valor_]
+  DETECTADA  el total se calcula sin el filtro de país  [FAILED tests/unit/test_api_estadisticas.py::test_recuentos_por_pais_con_sin_pais_y_sin_asignar_aparte]
+  DETECTADA  el recuento por país lee otra tabla  [FAILED tests/unit/test_api_estadisticas.py::test_recuentos_por_pais_con_sin_pais_y_sin_asignar_aparte]
+  DETECTADA  estadísticas acepta limit/offset  [FAILED tests/unit/test_api_estadisticas.py::test_los_errores_de_parametros_son_422_con_el_mismo_formato_que_ev]
+  DETECTADA  estadísticas no valida el país  [FAILED tests/unit/test_api_estadisticas.py::test_los_errores_de_parametros_son_422_con_el_mismo_formato_que_ev]
+  DETECTADA  estadísticas sin instantánea consistente (READ COMMITTED)  [FAILED tests/unit/test_api_estadisticas.py::test_con_la_sesion_de_produccion_total_y_bloques_salen_del_mismo_e]
+  DETECTADA  estadísticas con la base caída devuelven un diccionario vacío  [WARNING  psycopg.pool:pool_async.py:758 error connecting in 'pool-2': failed to resolve host 'servidor-inexist]
+  DETECTADA  min_mag no se refleja en filters  [FAILED tests/unit/test_api_estadisticas.py::test_min_mag_excluye_los_nulos_los_cuenta_aparte_y_deja_sin_valor_]
+
+Restaurado: OK (168 passed, 1 warning in 11.11s)
+Mutaciones: 15 | detectadas: 15 | supervivientes: ninguna

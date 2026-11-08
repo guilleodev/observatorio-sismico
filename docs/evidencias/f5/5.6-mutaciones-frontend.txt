@@ -1,0 +1,22 @@
+# 5.6 T041-T042 - mutaciones del frontend
+Base sin mutar: OK (ℹ pass 87 | ℹ fail 0)
+
+  DETECTADA  los segundos de la edad no llevan cero a la izquierda  [✖ formatoEdad: segundos, minutos, horas y días (1.6645ms) | ✖ red, tiempo agotado, 503 y formato son]
+  DETECTADA  la edad de la lectura puede salir negativa  [✖ la antigüedad de la lectura se mide con un reloj monotónico, nunca con la hora del navegador (0.72]
+  DETECTADA  tras un fallo se espera refreshMs en vez de reintentar pronto  [✖ reintento: tras un fallo en el mínimo permitido; tras un éxito, cada refreshMs (con mínimo) (0.672]
+  DETECTADA  un 422 se trata como sin conexión  [✖ un 422 es «filtros rechazados», NO sin conexión (0.5424ms) | ✖ con un error de conexión y la últim]
+  DETECTADA  «desactualizado» se muestra aunque no haya conexión  [✖ no se muestra «desactualizado» mientras hay error de conexión (no se sabe el estado actual) (1.027]
+  DETECTADA  «sin eventos» se muestra aunque haya un error de conexión  [✖ con un error de conexión y la última lectura sin eventos NO se dice «sin eventos»: ahora no se sab]
+  DETECTADA  el aviso de truncado salta con todos los eventos cargados  [✖ todo en orden: ningún aviso y estado «Datos al día» (1.0355ms) | ✖ datos desactualizados: según st]
+  DETECTADA  se avisa de huecos aunque haya 0  [✖ todo en orden: ningún aviso y estado «Datos al día» (1.03ms) | ✖ datos desactualizados: según stal]
+  DETECTADA  se anuncia la recuperación con el error vigente  [✖ conexión recuperada: aviso informativo y datos al día (0.9709ms) | ℹ pass 86]
+  DETECTADA  un 422 hace que el estado general sea sin conexión  [✖ un 422 es «filtros rechazados», NO sin conexión (0.7626ms) | ℹ pass 86]
+  DETECTADA  la antigüedad de la ingesta se muestra en segundos como milisegundos  [✖ textoIngesta (1.5656ms) | ℹ pass 86]
+  DETECTADA  sin ingesta no se avisa de desactualizado  [✖ nunca hubo ingesta correcta: desactualizado con su propio texto (0.1577ms) | ℹ pass 86]
+  DETECTADA  referencia descarta el estado de /api/salud  [✖ referencia devuelve generated Y el estado de /api/salud cuando la API ya lo incluye (0.811ms) | ℹ ]
+  DETECTADA  la lectura parcial no indica qué página falta  [✖ la carga inicial puede limitarse a UNA página y devuelve siguiente para «cargar el resto» con el m]
+  DETECTADA  «cargar el resto» empieza otra vez desde el principio  [✖ la carga inicial puede limitarse a UNA página y devuelve siguiente para «cargar el resto» con el m]
+  DETECTADA  el panel pide todas las páginas en la carga inicial  [✖ panel(…, 1) pide solo la primera página de eventos y las estadísticas completas (1.9822ms) | ℹ pas]
+
+Restaurado: OK (ℹ pass 87 | ℹ fail 0)
+Mutaciones: 16 | detectadas: 16 | supervivientes: ninguna

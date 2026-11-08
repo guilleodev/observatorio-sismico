@@ -1,6 +1,33 @@
 <main>
   <header><p class="eyebrow">BIG DATA · PROYECTO DE AULA</p><h1>Observatorio de actividad sísmica</h1><p>Mapa base, fronteras y eventos en capas independientes.</p></header>
-  <section class="info" aria-live="polite"><strong>{{ mode() }}</strong><p>{{ status() }}</p><p>{{ countriesStatus() }} · {{ count() }} eventos dibujados · {{ omitted() }} omitidos por coordenadas inválidas</p><small>Última lectura UTC: {{ lastRead() }}<br>Generación de la respuesta UTC: {{ generated() }}</small></section>
+  <section class="info" aria-live="polite"><strong>{{ mode() }}</strong><p>{{ status() }}</p><p>{{ countriesStatus() }} · {{ count() }} eventos dibujados · {{ omitted() }} omitidos por coordenadas inválidas</p><small>Última lectura UTC: {{ lastRead() }}<br>Generación de la respuesta UTC: {{ generated() }}</small>
+    @if (esApi()) {
+      <p>Filtros activos: {{ resumenFiltros() }} · Periodo consultado (UTC): {{ periodo() }} · {{ count() }} de {{ total() ?? 'ND' }} eventos dibujados</p>
+      @if (cargando()) { <p>Actualizando…</p> }
+    }
+  </section>
+  @if (esApi()) { <app-estado [entrada]="entradaEstado()" [ultimoAcceso]="ultimoAcceso()" [periodo]="periodo()" [filtros]="resumenFiltros()" [cargandoResto]="cargandoResto()" (cargarResto)="cargarResto()" /> }
+  @if (esApi()) { <app-filtros [paises]="paises()" [referencia]="ventana()" (aplicado)="aplicarFiltros($event)" /> }
   <div class="map" leaflet [leafletOptions]="options" (leafletMapReady)="onMapReady($event)" aria-label="Mapa interactivo de terremotos"></div>
+  @if (esApi() && estadisticas(); as est) {
+    <section class="panel" aria-label="Análisis del periodo consultado">
+      <p class="contador" role="status">Contador cruzado del periodo consultado — mapa: {{ count() }} dibujados · tabla: {{ eventos().length }} · estadísticas: {{ est.total }} · total de la API: {{ total() ?? 'ND' }}.
+        @if (eventos().length !== est.total && siguienteOffset() === null) { Difieren porque llegaron o se revisaron eventos entre las dos peticiones; al actualizar vuelven a coincidir. }
+        @if (omitted() > 0) { {{ omitted() }} sin coordenadas válidas solo aparecen en la tabla. }</p>
+      @if (avisoSeleccion()) { <p role="alert" class="contador">{{ avisoSeleccion() }}</p> }
+      <app-comparacion [datos]="est.comparacion" [nombrePais]="nombrePaisActual()" />
+      <div class="graficas">
+        <app-barras idBase="g-hora" titulo="Terremotos por hora UTC" descripcion="Recuento por ventana fija de una hora UTC según el tiempo del evento; las horas sin eventos valen 0."
+          [items]="itemsHora()" [sinValor]="est.por_hora.sin_valor" [omitido]="omitidoHora()" unidad="eventos" />
+        <app-barras idBase="g-pais" titulo="Terremotos por país" descripcion="Recuento por país; «Sin país asignado» es una categoría propia (eventos en el mar o sin polígono), nunca el país más cercano."
+          orientacion="horizontal" [items]="itemsPaises()" [sinValor]="est.por_pais.sin_valor" unidad="eventos" />
+        <app-barras idBase="g-mag" titulo="Distribución de la magnitud" descripcion="Número de terremotos por intervalo de magnitud [desde, hasta). Los eventos sin magnitud se cuentan aparte."
+          [items]="itemsMagnitud()" [sinValor]="est.magnitud.sin_valor" unidad="eventos" />
+        <app-barras idBase="g-prof" titulo="Distribución de la profundidad (km)" descripcion="Número de terremotos por intervalo de profundidad [desde, hasta) en km. Los eventos sin profundidad se cuentan aparte."
+          [items]="itemsProfundidad()" [sinValor]="est.profundidad.sin_valor" unidad="eventos" />
+      </div>
+      <app-tabla [eventos]="eventos()" [seleccionado]="seleccionado()" (seleccionar)="elegir($event, 'tabla')" />
+    </section>
+  }
   <footer><strong>Profundidad</strong><span>🟡 Menos de 70 km</span><span>🟠 70–299,99 km</span><span>🟣 300 km o más</span><span>⚪ No disponible</span><p>Tamaño: escala visual creciente con la magnitud; no representa energía ni área afectada. Sin magnitud: radio mínimo. El mapa base puede desactivarse en el selector de capas.</p><p>Base proporcionada: añade filtros, gráficos, tabla accesible y conclusiones para completar el proyecto.</p></footer>
 </main>

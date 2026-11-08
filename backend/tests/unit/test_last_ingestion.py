@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from observatorio.api.main import crear_app
-from observatorio.api.repositorio import RepositorioApi
+from observatorio.api.repositorio import EstadoSalud, PaginaEventos, RepositorioApi
 from observatorio.config import ConfigPostgres
 from observatorio.producer.repositorio import RepositorioProductor
 from observatorio.producer.usgs import ErrorUsgs, Respuesta
@@ -26,7 +26,8 @@ class RepoFalso:
     async def abrir(self): ...
     async def cerrar(self): ...
     async def comprobar_base(self): ...
-    async def eventos_recientes(self, ahora_ms): return []
+    async def estado_salud(self): return EstadoSalud(self.ultima, None, 0)
+    async def pagina_eventos(self, filtros, limit, offset): return PaginaEventos([], 0, 0, self.ultima, None)
     async def ultima_ingestion(self): return self.ultima
 
 
@@ -37,7 +38,9 @@ def cliente(ultima):
 def test_la_api_devuelve_el_instante_de_la_ultima_consulta_correcta_en_los_dos_endpoints():
     c = cliente(AHORA - 12_000)
     assert c.get("/api/eventos").json()["metadata"]["last_ingestion"] == AHORA - 12_000
-    assert c.get("/api/salud").json() == {"status": "ok", "database": "ok", "last_ingestion": AHORA - 12_000}
+    salud = c.get("/api/salud").json()
+    assert (salud["status"], salud["database"], salud["last_ingestion"]) == ("ok", "ok", AHORA - 12_000)  # F5: los campos previos no cambian
+    assert salud["generated"] == AHORA and salud["ingestion_age_s"] == 12 and salud["stale"] is False
 
 
 def test_sin_consultas_correctas_last_ingestion_es_null_aunque_la_api_responda():

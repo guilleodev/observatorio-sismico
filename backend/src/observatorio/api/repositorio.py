@@ -1,6 +1,7 @@
 """Consultas a live.evento_actual y conversión a GeoJSON (CONTRATO-API.md)."""
 
 import math
+from dataclasses import dataclass
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
 
@@ -8,22 +9,27 @@ import psycopg
 from psycopg import AsyncConnection
 from psycopg_pool import PoolTimeout
 
+from observatorio.api import estadisticas
+from observatorio.api.comparacion import SQL_COBERTURA, SQL_HUECOS_PENDIENTES, SQL_ULTIMA_INGESTION
+from observatorio.api.filtros import SIN_PAIS, ErrorParametro, Filtros
 from observatorio.modos import MODO_LIVE, MODOS_CONTRACTUALES
 
-VENTANA_MS = 24 * 3600 * 1000
-
+# {donde} lo construye Filtros.donde() solo con marcadores %(nombre)s: ningún valor del usuario se concatena en el SQL.
 SQL_EVENTOS = """
 SELECT event_id, longitude, latitude, depth_km, mag, mag_type, place,
        (extract(epoch FROM event_time) * 1000)::bigint,
        (extract(epoch FROM updated_at) * 1000)::bigint,
        country_id, country_name
 FROM live.evento_actual
-WHERE event_time >= to_timestamp(%s / 1000.0) AND NOT retirado
-ORDER BY event_time DESC
+WHERE {donde}
+ORDER BY event_time DESC, event_id ASC
+LIMIT %(p_limit)s OFFSET %(p_offset)s
 """
+SQL_TOTAL = "SELECT count(*) FROM live.evento_actual WHERE {donde}"
+SQL_SIN_MAGNITUD = "SELECT count(*) FROM live.evento_actual WHERE {donde} AND mag IS NULL"
+SQL_PAIS_EXISTE = "SELECT 1 FROM geo.pais WHERE country_id = %s"
 
 
-SQL_ULTIMA_INGESTION = "SELECT (extract(epoch FROM ultima_consulta_ok_at) * 1000)::bigint FROM live.estado_ingesta WHERE id = 1"
 
 
 class BaseDatosNoDisponible(Exception):
@@ -36,6 +42,44 @@ def _numero(valor) -> float | None:
         return None
     valor = float(valor)
     return valor if math.isfinite(valor) else None
+
+
+@dataclass(frozen=True)
+class PaginaEventos:
+    """Una página de eventos y las cifras de la MISMA instantánea (una sola transacción de lectura)."""
+
+    eventos: list[dict]
+    total: int
+    sin_magnitud: int
+    last_ingestion: int | None
+    live_since: int | None
+
+
+@dataclass(frozen=True)
+class EstadoSalud:
+    """Estado de la ingesta leído en UNA transacción: la edad y el aviso de «desactualizado» los calcula la API con su propio reloj."""
+
+    last_ingestion: int | None
+    live_since: int | None
+    gaps_pending: int
+
+
+def opciones_conexion(statement_timeout_s: int) -> str:
+    """Opciones de sesión del pool de la API: instantánea consistente por petición, solo lectura, UTC y tiempo máximo por consulta.
+
+    `default_transaction_isolation = repeatable read`: la primera consulta de la petición fija la instantánea y todas las demás (total,
+    página, cobertura, última ingesta) ven el mismo estado aunque el consumidor siga escribiendo. `default_transaction_read_only`: la
+    API no puede escribir ni por error.
+    """
+    return (r"-c default_transaction_isolation=repeatable\ read " + "-c default_transaction_read_only=on "
+            f"-c timezone=UTC -c statement_timeout={int(statement_timeout_s) * 1000}")
+
+
+async def _validar_pais(conn, filtros: Filtros) -> None:
+    """Un código de país que no está en el catálogo es un error de parámetro (422), no una consulta vacía."""
+    if filtros.country_id not in (None, SIN_PAIS):
+        if await (await conn.execute(SQL_PAIS_EXISTE, (filtros.country_id,))).fetchone() is None:
+            raise ErrorParametro(f"country_id desconocido: {filtros.country_id!r} no está en el catálogo de países (use «{SIN_PAIS}» para eventos sin país)")
 
 
 class RepositorioApi:
@@ -60,14 +104,48 @@ class RepositorioApi:
         except (psycopg.Error, PoolTimeout, OSError) as exc:
             raise BaseDatosNoDisponible(type(exc).__name__) from exc
 
-    async def eventos_recientes(self, ahora_ms: int) -> list[dict]:
-        filas = await self._consultar(SQL_EVENTOS, (ahora_ms - VENTANA_MS,))
-        return [
+    async def pagina_eventos(self, filtros: Filtros, limit: int, offset: int) -> PaginaEventos:
+        """Eventos del filtro (página `limit`/`offset`) con total, magnitudes nulas, última ingesta y cobertura, en UNA transacción."""
+        donde, parametros = filtros.donde()
+        donde_sin_umbral, parametros_sin_umbral = filtros.donde(con_magnitud=False)
+        try:
+            async with self._conexion() as conn:
+                await _validar_pais(conn, filtros)
+                total = (await (await conn.execute(SQL_TOTAL.format(donde=donde), parametros)).fetchone())[0]
+                sin_magnitud = (await (await conn.execute(SQL_SIN_MAGNITUD.format(donde=donde_sin_umbral), parametros_sin_umbral)).fetchone())[0]
+                filas = await (await conn.execute(SQL_EVENTOS.format(donde=donde), {**parametros, "p_limit": limit, "p_offset": offset})).fetchall()
+                cobertura = (await (await conn.execute(SQL_COBERTURA)).fetchone())[0]
+                ingestion = await (await conn.execute(SQL_ULTIMA_INGESTION)).fetchone()
+        except (psycopg.Error, PoolTimeout, OSError) as exc:
+            raise BaseDatosNoDisponible(type(exc).__name__) from exc
+        eventos = [
             {"id": f[0], "lon": f[1], "lat": f[2], "depth": _numero(f[3]), "mag": _numero(f[4]),
              "mag_type": f[5], "place": f[6], "time": f[7], "updated": f[8],
              "country_id": f[9], "country_name": f[10]}
             for f in filas
         ]
+        return PaginaEventos(eventos, total, sin_magnitud, ingestion[0] if ingestion else None, cobertura)
+
+    async def estadisticas(self, filtros: Filtros, generado_ms: int, max_casillas: int, margen_publicacion_s: int) -> dict:
+        """Estadísticas y comparación del filtro, en UNA transacción de lectura (la misma instantánea que /api/eventos)."""
+        try:
+            async with self._conexion() as conn:
+                await _validar_pais(conn, filtros)
+                return await estadisticas.calcular(conn, filtros, generado_ms, max_casillas, margen_publicacion_s)
+        except (psycopg.Error, PoolTimeout, OSError) as exc:
+            raise BaseDatosNoDisponible(type(exc).__name__) from exc
+
+    async def estado_salud(self) -> EstadoSalud:
+        """Última consulta correcta a USGS, inicio de la cobertura real y huecos pendientes; falla con BaseDatosNoDisponible (503) si la base no responde."""
+        try:
+            async with self._conexion() as conn:
+                await conn.execute("SELECT 1")
+                ingestion = await (await conn.execute(SQL_ULTIMA_INGESTION)).fetchone()
+                cobertura = (await (await conn.execute(SQL_COBERTURA)).fetchone())[0]
+                huecos = (await (await conn.execute(SQL_HUECOS_PENDIENTES)).fetchone())[0]
+        except (psycopg.Error, PoolTimeout, OSError) as exc:
+            raise BaseDatosNoDisponible(type(exc).__name__) from exc
+        return EstadoSalud(ingestion[0] if ingestion else None, cobertura, huecos)
 
     async def comprobar_base(self) -> None:
         await self._consultar("SELECT 1")
@@ -81,9 +159,13 @@ class RepositorioApi:
         return filas[0][0] if filas else None
 
 
-def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None, modo: str = MODO_LIVE) -> dict:
+def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None, modo: str = MODO_LIVE, *,
+              total: int | None = None, limit: int | None = None, offset: int = 0, sin_magnitud: int = 0,
+              period: dict | None = None, live_since: int | None = None) -> dict:
     if modo not in MODOS_CONTRACTUALES:
         raise ValueError(f"mode no contractual: {modo!r}")
+    total = len(eventos) + offset if total is None else total
+    truncado = offset + len(eventos) < total
     return {
         "type": "FeatureCollection",
         "metadata": {
@@ -91,7 +173,14 @@ def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | 
             "last_ingestion": ultima_ingestion_ms,
             "mode": modo,
             "count": len(eventos),
-            "truncated": False,
+            "truncated": truncado,
+            "total": total,
+            "limit": len(eventos) if limit is None else limit,
+            "offset": offset,
+            "next_offset": offset + len(eventos) if truncado else None,
+            "sin_magnitud": sin_magnitud,
+            "period": period,
+            "coverage": {"live_since": live_since},
         },
         "features": [
             {

@@ -1,0 +1,16 @@
+# 5.6 T039-T040 - mutaciones del backend de /api/salud
+Base sin mutar: OK (52 passed, 1 warning in 5.13s)
+
+  DETECTADA  el umbral de «desactualizado» es inclusivo (>=)  [FAILED tests/unit/test_api_salud.py::test_stale_justo_antes_y_despues_del_umbral_con_reloj_simulado[300000-Fal]
+  DETECTADA  sin ninguna ingesta no se considera desactualizado  [FAILED tests/unit/test_api_salud.py::test_sin_ninguna_ingesta_correcta_es_desactualizado_y_la_edad_es_null]
+  DETECTADA  la edad con reloj en el futuro sale negativa  [FAILED tests/unit/test_api_salud.py::test_un_reloj_de_ingesta_en_el_futuro_no_da_edad_negativa_ni_stale]
+  DETECTADA  la edad se calcula en décimas de segundo  [FAILED tests/unit/test_api_salud.py::test_campos_previos_y_nuevos_del_contrato]
+  DETECTADA  generated usa el reloj de la máquina y no el inyectado  [FAILED tests/unit/test_api_salud.py::test_campos_previos_y_nuevos_del_contrato]
+  DETECTADA  el umbral mostrado no es el configurado  [FAILED tests/unit/test_api_salud.py::test_el_umbral_es_configurable - assert ...]
+  DETECTADA  los huecos recuperados también se cuentan  [FAILED tests/unit/test_api_salud.py::test_integracion_ultima_ingesta_huecos_pendientes_y_cobertura]
+  DETECTADA  la cobertura usa min(event_time)  [FAILED tests/unit/test_api_salud.py::test_integracion_ultima_ingesta_huecos_pendientes_y_cobertura]
+  DETECTADA  con la base caída /api/salud sale sana  [WARNING  psycopg.pool:pool_async.py:758 error connecting in 'pool-5': failed to resolve host 'servidor-inexist]
+  DETECTADA  last_ingestion se toma del evento más reciente  [FAILED tests/unit/test_api_salud.py::test_integracion_ultima_ingesta_huecos_pendientes_y_cobertura]
+
+Restaurado: OK (52 passed, 1 warning in 5.06s)
+Mutaciones: 10 | detectadas: 10 | supervivientes: ninguna

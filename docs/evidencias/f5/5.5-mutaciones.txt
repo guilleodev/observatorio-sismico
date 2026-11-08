@@ -1,0 +1,35 @@
+# 5.5 T032-T036 - mutaciones del frontend
+Base sin mutar: OK (ℹ pass 87 | ℹ fail 0)
+
+  DETECTADA  los nulos se ordenan al principio  [✖ ordenar: numérico, texto y los nulos SIEMPRE al final en ambos sentidos; la entrada no se modifica]
+  DETECTADA  una columna nueva empieza siempre en ascendente  [✖ siguienteOrden: la misma columna invierte; una nueva empieza por lo más reciente o mayor (0.712ms)]
+  DETECTADA  la búsqueda distingue mayúsculas  [✖ buscar: sin tildes ni mayúsculas, todas las palabras, por lugar, país, id, tipo y «sin magnitud» (]
+  DETECTADA  la búsqueda exige solo una palabra  [✖ buscar: sin tildes ni mayúsculas, todas las palabras, por lugar, país, id, tipo y «sin magnitud» (]
+  DETECTADA  la página no se ajusta al máximo  [✖ paginar: tamaño, rango válido y página vacía coherente (0.597ms) | ℹ pass 86]
+  DETECTADA  paginaDe se equivoca en una página  [✖ paginaDe mantiene visible la selección: devuelve la página del evento o null si no está (0.5882ms)]
+  DETECTADA  el corte de clase de profundidad es inclusivo  [✖ clase de profundidad con los mismos cortes que la leyenda del mapa (0.9001ms) | ℹ pass 86]
+  DETECTADA  el evento sin id pierde su identificador derivado  [✖ identificador del evento: el de la API o uno derivado de la posición, igual para mapa y tabla (0.5]
+  DETECTADA  NaN llega a la tabla como número  [✖ filaDe normaliza: nulos como null (nunca 0), país nulo como «Sin país asignado», clase de profundi]
+  DETECTADA  un evento sin país aparece vacío  [✖ filaDe normaliza: nulos como null (nunca 0), país nulo como «Sin país asignado», clase de profundi]
+  DETECTADA  el empate de ordenación no se desempata por id  [✖ ordenar texto con tildes y números, y desempate estable por id (0.8296ms) | ℹ pass 86]
+  DETECTADA  el máximo redondo salta de 2 a 5  [✖ maximoRedondo: 1, 2, 5 × 10^k y nunca divide por cero (2.4712ms) | ℹ pass 86]
+  DETECTADA  las barras inventan una altura mínima  [✖ disenoBarras: altura proporcional, un 0 mide 0 y todas las barras caben en el área útil (0.7557ms)]
+  DETECTADA  las etiquetas del eje se solapan (floor)  [✖ pasoEtiquetas: ninguna etiqueta si caben, una de cada n si no (0.7202ms) | ℹ pass 86]
+  DETECTADA  el extremo abierto se escribe con >  [✖ etiquetaHora en UTC y etiquetaIntervalo con extremos abiertos (null, nunca Infinity) (0.8293ms) | ]
+  DETECTADA  «Sin país asignado» desaparece del gráfico  [✖ itemsPais: «Sin país asignado» siempre como barra propia y el resto agrupado en «Otros» sin perder]
+  DETECTADA  «Otros» suma países en vez de eventos  [✖ itemsPais: «Sin país asignado» siempre como barra propia y el resto agrupado en «Otros» sin perder]
+  DETECTADA  la hora se escribe en hora local  [✖ etiquetaHora en UTC y etiquetaIntervalo con extremos abiertos (null, nunca Infinity) (1.2125ms) | ]
+  DETECTADA  el cero tiene signo negativo  [✖ variación: porcentaje con signo y sin lenguaje de «descenso» o «aumento» (0.9932ms) | ℹ pass 86]
+  DETECTADA  media 0 se presenta como 0 %  [✖ con media 0 la variación es «no definida», nunca 0 ni infinito (0.6275ms) | ℹ pass 86]
+  DETECTADA  el recuento reciente se atribuye al histórico  [✖ las filas llevan SIEMPRE su fuente y no mezclan el recuento reciente con el histórico (1.6041ms) |]
+  DETECTADA  se muestran filas de 2025 sin histórico  [✖ sin histórico cargado no hay filas de 2025 ni valores inventados, y se avisa (0.3453ms) | ℹ pass 8]
+  DETECTADA  no se avisa de la magnitud elevada a 4  [✖ la magnitud elevada a 4 se indica y la efectiva por debajo de 4,5 avisa de cobertura menor (0.5185]
+  DETECTADA  con M4,5 se avisa de cobertura baja  [✖ la magnitud elevada a 4 se indica y la efectiva por debajo de 4,5 avisa de cobertura menor (0.7542]
+  DETECTADA  el aviso de periodo incompleto se invierte  [✖ periodo reciente incompleto: aviso y un motivo legible por cada código de la API (0.5318ms) | ℹ pa]
+  DETECTADA  un motivo desconocido rompe el panel  [✖ periodo reciente incompleto: aviso y un motivo legible por cada código de la API (0.7217ms) | ℹ pa]
+  DETECTADA  las estadísticas se piden con otros filtros  [✖ panel: eventos y estadísticas con EXACTAMENTE el mismo periodo y filtros; si falla uno, falla todo]
+  DETECTADA  no se valida la forma de las estadísticas  [✖ estadisticas exige TODOS los bloques, también la comparación (una respuesta incompleta es un error]
+  DETECTADA  se redondea el valor y no la presentación (ceros sobrantes)  [✖ numeroFinito y texto «sin valor» (1.4404ms) | ℹ pass 86]
+
+Restaurado: OK (ℹ pass 87 | ℹ fail 0)
+Mutaciones: 29 | detectadas: 29 | supervivientes: ninguna

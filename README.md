@@ -3,13 +3,14 @@
 Proyecto académico de Sistemas de Big Data. Arquitectura: productor Python → Apache Kafka → consumidor Python →
 PostgreSQL → API FastAPI → mapa Angular/Leaflet, en cinco servicios de Docker Compose.
 
-**Estado:** fase F4 (geografía e histórico) técnicamente cerrada; pendiente la revisión humana y el commit `[F4]`. Resultados por criterio de éxito en
-[`docs/evidencias/f4/resultados.md`](docs/evidencias/f4/resultados.md). El MVP de la fase F2 (un evento sintético que recorría todo el circuito) está
+**Estado:** fase F5 (API y dashboard) técnicamente cerrada; pendiente la revisión humana del panel y el commit `[F5]`. F4 (geografía e histórico) ya está commiteada. Resultados por criterio de éxito en
+[`docs/evidencias/f5/resultados.md`](docs/evidencias/f5/resultados.md) (F4 en [`docs/evidencias/f4/resultados.md`](docs/evidencias/f4/resultados.md)). El MVP de la fase F2 (un evento sintético que recorría todo el circuito) está
 **retirado del sistema** (paso 3.1) y se conserva en Git (commit `0a56f65`), en `docs/evidencias/mvp/` y en el esquema
 archivado `sintetico` de PostgreSQL, que ningún componente lee. El servicio `producer` consulta el feed de USGS cada 60 s, registra las consultas, conserva la respuesta original y publica en
 Kafka solo las versiones nuevas o revisadas (con `INGESTA_PUBLICAR=true` en el `.env`; el valor por defecto `false` es el modo seco, sin publicar). El consumidor
 valida cada evento, **le asigna el país por pertenencia al polígono**, guarda el historial de versiones y el estado actual, y manda a cuarentena lo no sísmico o no tratable. La API
-sirve los terremotos de las últimas 24 h con `mode: "live"`, `country_id`/`country_name` reales (o `null` = «Sin país asignado») y `last_ingestion` (última consulta correcta a USGS).
+sirve los terremotos con `mode: "live"` (24 h por defecto, o el periodo y los filtros pedidos), `country_id`/`country_name` reales (o `null` = «Sin país asignado») y `last_ingestion` (última consulta correcta a USGS);
+además calcula estadísticas, la comparación con la media de 2025 y el estado de la ingesta, que el panel Angular muestra con mapa, tabla y gráficas.
 
 Documentación de trabajo: [`docs/HOJA-DE-RUTA.md`](docs/HOJA-DE-RUTA.md), [`specs/`](specs/) y la constitución del
 proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
@@ -17,7 +18,7 @@ proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
 ## Requisitos
 
 - Docker Desktop (Docker Compose v2) en marcha.
-- Node.js y npm (solo para el mapa).
+- Node.js 24 y npm (para el panel y las pruebas del frontend).
 
 ## Arranque
 
@@ -59,7 +60,7 @@ proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
    curl http://127.0.0.1:8000/api/eventos
    ```
 
-5. Ver el mapa (`frontend/public/config.json`: `mode: "api"`; con `mode: "demo"` se ve el ejemplo estático):
+5. Ver el panel (`frontend/public/config.json`: `mode: "api"`; con `mode: "demo"` se ve el ejemplo estático):
 
    ```bash
    cd frontend
@@ -124,11 +125,45 @@ docker compose run --rm --no-deps producer python -m observatorio.recuperacion.r
 
 Procedimiento y límites: [`docs/evidencias/f4/procedimiento-hueco.md`](docs/evidencias/f4/procedimiento-hueco.md). La recuperación solo se ha probado con un catálogo simulado, no con un hueco real.
 
+## API y dashboard (F5)
+
+**Endpoints** (solo `GET`/`OPTIONS`; contrato completo en [`specs/004-api-dashboard/contracts/api-f5.md`](specs/004-api-dashboard/contracts/api-f5.md), sobre `CONTRATO-API.md`):
+
+| Endpoint | Qué devuelve |
+|---|---|
+| `GET /api/eventos` | FeatureCollection de `live` (24 h por defecto). Filtros `start` (inclusivo), `end` (exclusivo), `min_mag` y `country_id` (`sin_pais` = «Sin país asignado»); paginación `limit`/`offset` (máximo 5 000) y `metadata` con `total`, `next_offset`, `truncated`, `period`, `coverage` y `sin_magnitud` |
+| `GET /api/estadisticas` | Con los mismos filtros (sin paginación): `por_hora` (horas UTC con ceros; se omite con su motivo si supera 744 casillas), `por_pais`, `magnitud`, `profundidad` y `comparacion` con la media diaria de 2025 |
+| `GET /api/salud` | `status`, `database`, `last_ingestion`, `generated`, `ingestion_age_s`, `stale` (umbral `INGESTA_OBSOLETA_S`), `gaps_pending` y `live_since` |
+
+Un parámetro inválido da **422** (`{error: "parametro_invalido", detail}`) y una base inalcanzable o una consulta demasiado lenta da **503** (`base_de_datos_no_disponible`): nunca se recorta en silencio ni se devuelve una lista vacía. Cada petición lee en una
+transacción de solo lectura `REPEATABLE READ`. Solo `api/comparacion.py` lee `historico.evento` (agregados, para comparar con 2025); nada lee `sintetico`.
+
+**Variables nuevas** (`.env.example`): `API_MAX_EVENTOS=5000`, `API_MAX_VENTANA_HORAS=744`, `INGESTA_OBSOLETA_S=300` (5 ciclos del productor, medido en 60 s), `API_STATEMENT_TIMEOUT_S=10` y `API_MARGEN_PUBLICACION_S=900`.
+Tras cambiarlas, `docker compose up -d --build --no-deps api` recrea solo la API.
+
+**Panel** (`frontend/src/app/`, extiende el frontend entregado sin sustituirlo): filtros de periodo UTC, magnitud mínima y país; mapa Leaflet, tabla ordenable y con búsqueda, cuatro gráficas SVG propias (hora UTC, país, magnitud y profundidad, cada una con su tabla de texto),
+tarjeta de comparación con 2025 y panel de estado con avisos (sin conexión, filtros rechazados, datos desactualizados, sin eventos, resultados truncados, huecos). Mapa, tabla, gráficas y comparación salen de una única lectura con el mismo periodo resuelto.
+Con `mode: "demo"` en `frontend/public/config.json` se ve el ejemplo estático, sin llamadas a la API.
+
+**Reservas que el panel muestra siempre:** el feed reciente no cubre M 4,0–4,5 fuera de EE. UU. como el histórico, por lo que una variación a M ≥ 4 no demuestra un cambio real de actividad (use M ≥ 4,5); lo reciente es preliminar y la cobertura en vivo es corta.
+Esto describe lo observado: no es una predicción ni una evaluación de riesgo.
+
 ## Pruebas
 
 Las pruebas están en `backend/tests/unit/` (Python 3.13). Las de PostgreSQL se ejecutan solo si existe `POSTGRES_HOST` y
 corren en transacciones que se revierten (las de comparación, en una base temporal que se elimina): no dejan datos en las tablas definitivas.
-`scripts/f4/pruebas.sh` las ejecuta en un contenedor temporal de la red de Compose, sin tocar los servicios. Resultados en `docs/evidencias/`.
+`scripts/f4/pruebas.sh` y `scripts/f5/ejecutar.sh <comando>` las ejecutan en un contenedor temporal de la red de Compose, sin tocar los servicios (661 pruebas de backend). Resultados en `docs/evidencias/`.
+
+La lógica pura del frontend (filtros, API, tabla, gráficas, comparación, estado) se prueba con el ejecutor de Node 24, sin dependencias nuevas (88 pruebas), y el panel se comprueba en el navegador:
+
+```bash
+cd frontend
+node --test tests/*.test.ts
+npm run build
+```
+
+Aislamiento e invariantes de solo lectura (`live`/`historico`/`sintetico`, puertos, huellas, archivos que no deben cambiar): `scripts/f5/aislamiento_final.sh`. Mediciones de F5: `scripts/f5/escala_57.py` (planes con y sin índices en una base temporal)
+y `scripts/f5/tiempos_57.py` (tiempos HTTP); sus resultados, en `docs/evidencias/f5/`.
 
 ## Parada
 

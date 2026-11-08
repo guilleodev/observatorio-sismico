@@ -1,0 +1,23 @@
+# 5.6 T045 - ultima lectura, recuperacion automatica y respuestas tardias (navegador integrado, API real http://127.0.0.1:8000) 2026-11-07
+
+## 1. La ultima lectura se conserva sin presentarla como actual
+Con fallos de red inyectados (fetch rechazado) y con la API temporal parada:
+- el mapa, la tabla y las 4 graficas conservan los 166 eventos de la ultima lectura valida;
+- el estado general pasa a «Sin conexion con el backend · ultima lectura valida hace N s» y el aviso role=alert dice que son «los ultimos datos validos... pueden estar desactualizados y no son la situacion actual»;
+- N crece solo (6 s → 10 s en 4 s) porque se mide con performance.now() (reloj monotonico), no con la hora del navegador; la antigüedad de la ingesta y el umbral de «desactualizado» salen del reloj de la API (generated, ingestion_age_s, stale).
+
+## 2. Recuperacion automatica sin recargar la pagina (ENUNCIADO §11)
+- Tras un fallo el siguiente intento se programa en 30 s (el minimo permitido) en vez de esperar refreshMs; el evento `online` del navegador fuerza un reintento inmediato.
+- Ensayo con la API temporal: parada → «Sin conexion»; arrancada de nuevo sin tocar el navegador → a los ~15 s «Datos al dia» + «Conexion recuperada (18:08:51 UTC)», errorPanel=null, misma pestana.
+- Evento `online` con la API disponible: «Datos al dia» + «Conexion recuperada» en < 3 s.
+- Tras un 422 el siguiente intento tambien es a los 30 s, pero con los ULTIMOS FILTROS VALIDOS (no reintenta los rechazados); el evento `online` solo fuerza reintento si hubo un fallo de conexion.
+
+## 3. Una respuesta tardia no pisa a una mas reciente
+Se retrasaron 4 s las peticiones de la primera consulta (magnitud >= 4,5 + sin pais: eventos y estadisticas) y a los 400 ms se lanzo la segunda (Estados Unidos). Resultado a los 7 s:
+filtros mostrados «ultimas 24 h · pais Estados Unidos» · eventos 127 · estadisticas.total 127 · filtros de las estadisticas {min_mag: null, country_id: "USA"} · error null · contador mapa 127 = tabla 127 = estadisticas 127 = total API 127.
+La primera consulta se cancela (AbortController) y, aunque llegara, `UltimaPeticion.vigente(id)` la descarta; «Cargar el resto» tambien descarta su resultado si una actualizacion posterior ya sustituyo la lectura (versionLectura).
+Pruebas automaticas: `UltimaPeticion` y la simulacion de respuestas fuera de orden en frontend/tests/api.service.test.ts.
+
+## 4. Coherencia entre filtros, periodo, tabla, mapa, graficas y mensajes
+En todos los ensayos el contador cruzado coincidio (mapa = tabla = estadisticas = total API salvo el caso de truncado, donde el panel lo avisa), la linea «Filtros activos» describe lo dibujado (no lo ultimo solicitado)
+y mapa, tabla, graficas y comparacion se pidieron con el MISMO periodo resuelto desde `generated` de la API.

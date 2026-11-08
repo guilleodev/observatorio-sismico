@@ -10,7 +10,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from observatorio.api.main import crear_app
-from observatorio.api.repositorio import BaseDatosNoDisponible, RepositorioApi, a_geojson
+from observatorio.api.filtros import Filtros
+from observatorio.api.repositorio import BaseDatosNoDisponible, EstadoSalud, PaginaEventos, RepositorioApi, a_geojson
 from observatorio.config import ConfigPostgres
 from observatorio.consumer.mensaje import interpretar_mensaje
 from observatorio.consumer.repositorio import RepositorioEventos
@@ -38,10 +39,16 @@ class RepoFalso:
         if self.falla:
             raise BaseDatosNoDisponible("OperationalError")
 
-    async def eventos_recientes(self, ahora_ms):
+    async def estado_salud(self):
         if self.falla:
             raise BaseDatosNoDisponible("OperationalError")
-        return self.eventos
+        return EstadoSalud(self.ultima, None, 0)
+
+    async def pagina_eventos(self, filtros, limit, offset):
+        if self.falla:
+            raise BaseDatosNoDisponible("OperationalError")
+        pagina = self.eventos[offset:offset + limit]
+        return PaginaEventos(pagina, len(self.eventos), sum(1 for e in self.eventos if e["mag"] is None), self.ultima, None)
 
     async def ultima_ingestion(self):
         if self.falla:
@@ -59,7 +66,10 @@ def test_estructura_geojson_y_metadatos():
     cuerpo = r.json()
     assert cuerpo["type"] == "FeatureCollection"
     assert cuerpo["metadata"] == {"generated": AHORA, "last_ingestion": AHORA - 5_000,
-                                  "mode": "live", "count": 1, "truncated": False}
+                                  "mode": "live", "count": 1, "truncated": False,
+                                  # F5: campos aditivos del contrato (los cinco anteriores conservan nombre y significado)
+                                  "total": 1, "limit": 5000, "offset": 0, "next_offset": None, "sin_magnitud": 0,
+                                  "period": {"start": AHORA - 86_400_000, "end": AHORA}, "coverage": {"live_since": None}}
     f = cuerpo["features"][0]
     assert f["type"] == "Feature" and f["id"] == "prueba-001"
     assert f["geometry"] == {"type": "Point", "coordinates": [-3.7, 40.4, 12.0]}  # lon, lat, prof.
@@ -92,7 +102,9 @@ def test_base_caida_devuelve_503_no_lista_vacia():
 def test_salud_ok_y_503():
     ok = cliente(RepoFalso(ultima=None)).get("/api/salud")
     assert ok.status_code == 200
-    assert ok.json() == {"status": "ok", "database": "ok", "last_ingestion": None}
+    # F5 (5.6): campos aditivos del contrato; status, database y last_ingestion conservan nombre y significado
+    assert ok.json() == {"status": "ok", "database": "ok", "last_ingestion": None, "generated": AHORA, "ingestion_age_s": None, "stale": True,
+                         "stale_after_s": 300, "gaps_pending": 0, "live_since": None}
     assert cliente(RepoFalso(falla=True)).get("/api/salud").status_code == 503
 
 
@@ -156,7 +168,7 @@ def test_ventana_24h_excluye_el_antiguo_e_incluye_el_reciente():
                 escritor, lector = RepositorioEventos(conn), RepositorioApi(misma_conexion)
                 await escritor.guardar_version(_mensaje(950, 10), "t", 0, 1)     # reciente (10 min)
                 await escritor.guardar_version(_mensaje(951, 1500), "t", 0, 2)   # 25 h: fuera de la ventana
-                ids = [e["id"] for e in await lector.eventos_recientes(AHORA)]
+                ids = [e["id"] for e in (await lector.pagina_eventos(Filtros.desde_parametros(AHORA), 5000, 0)).eventos]
                 assert "prueba-950" in ids and "prueba-951" not in ids
                 assert await lector.ultima_ingestion() != 0  # viene de estado_ingesta; sus casos están en test_last_ingestion.py
     asyncio.run(prueba())
@@ -169,7 +181,7 @@ def test_conexion_fallida_se_traduce_a_base_no_disponible():
         yield
 
     with pytest.raises(BaseDatosNoDisponible):
-        asyncio.run(RepositorioApi(rota).eventos_recientes(AHORA))
+        asyncio.run(RepositorioApi(rota).pagina_eventos(Filtros.desde_parametros(AHORA), 5000, 0))
 
 
 @hay_pg
@@ -187,7 +199,7 @@ def test_los_eventos_retirados_no_aparecen_en_la_api():
                 await escritor.guardar_version(_mensaje(960, 10), "t", 0, 1)
                 await escritor.guardar_version(_mensaje(961, 10), "t", 0, 2)
                 assert await escritor.retirar_evento("prueba-961", AHORA + 1) is True
-                ids = [e["id"] for e in await lector.eventos_recientes(AHORA)]
+                ids = [e["id"] for e in (await lector.pagina_eventos(Filtros.desde_parametros(AHORA), 5000, 0)).eventos]
                 assert "prueba-960" in ids and "prueba-961" not in ids
                 cur = await conn.execute("SELECT count(*) FROM live.evento_actual WHERE event_id = 'prueba-961'")
                 assert (await cur.fetchone())[0] == 1  # no se borra: solo deja de mostrarse
@@ -223,7 +235,7 @@ def test_la_api_devuelve_el_pais_asignado_o_null_sin_cambiar_el_resto(tmp_path):
                 escritor, lector = RepositorioEventos(conn, Asignador(catalogo)), RepositorioApi(misma_conexion)
                 await escritor.guardar_version(con_coordenadas(970, 5, 5), "t", 0, 1)  # dentro de ZA1
                 await escritor.guardar_version(con_coordenadas(971, 100, 50), "t", 0, 2)  # mar abierto: sin país
-                por_id = {e["id"]: e for e in await lector.eventos_recientes(AHORA)}
+                por_id = {e["id"]: e for e in (await lector.pagina_eventos(Filtros.desde_parametros(AHORA), 5000, 0)).eventos}
                 assert (por_id["prueba-970"]["country_id"], por_id["prueba-970"]["country_name"]) == ("ZA1", "Alfa")
                 assert (por_id["prueba-971"]["country_id"], por_id["prueba-971"]["country_name"]) == (None, None)
                 cuerpo = a_geojson([por_id["prueba-970"], por_id["prueba-971"]], AHORA, None)

@@ -1,0 +1,19 @@
+# 5.6 T044 - estado real de la ingesta, DF4 y despliegue de api 2026-11-07T18:13:44Z
+
+## Ciclo real de ingesta (live.consulta_extraccion, ultima hora, solo lectura)
+consultas_ok | media_s | min_s | max_s = 59 | 60.0 | 60.0 | 60.1
+consultas con error en la ultima hora: 0
+Lectura: el productor consulta cada 60,0 s (maximo observado 60,1 s). El umbral de 300 s (DF4) son 5 ciclos: tolera hasta 4 consultas seguidas fallidas sin falsa alarma y avisa cuando faltan ~5 min de datos. Se propone MANTENER 300 s (INGESTA_OBSOLETA_S); la persona estudiante lo confirma o lo ajusta.
+
+## /api/salud real tras redesplegar solo api (id 9c2772e5 -> 4ac7520a; consumer, producer, Kafka y PostgreSQL con los mismos ids)
+{"status":"ok","database":"ok","last_ingestion":1794075177377,"generated":1794075225520,"ingestion_age_s":48,"stale":false,"stale_after_s":300,"gaps_pending":0,"live_since":1793897694423}
+
+## Healthcheck de Compose (urlopen a /api/salud)
+estado=healthy fallos_consecutivos=0
+api Up 7 minutes (healthy)
+
+## Campos y contrato
+['database', 'gaps_pending', 'generated', 'ingestion_age_s', 'last_ingestion', 'live_since', 'stale', 'stale_after_s', 'status']
+stale con umbral 300 s y edad 48 s -> False
+CORS preflight /api/salud: 200
+POST /api/salud: 405

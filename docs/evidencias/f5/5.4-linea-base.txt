@@ -1,0 +1,29 @@
+# 5.4 T024 - linea base del frontend 2026-11-07T17:33:08Z
+node v24.11.1 | npm 11.6.2
+Se uso npm ls (dependencias coherentes con package-lock.json) y NO npm ci, para no borrar node_modules y depender de la red; npm run build funciona.
+
+## npm run build (sin cambios, antes de 5.4): Application bundle generation complete (1,9 s); initial total 307,18 kB (85,14 kB comprimido); unica advertencia: Module leaflet is not ESM (ya existia).
+
+## sha256 de lo que 5.4 NO modifica (y de los archivos que si se tocan, antes del cambio)
+d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c  public/datos/paises.geojson
+3462cabfe534ea55ae5935bdbf5d72b9874b5b005f0eef5dd9fab5b6d8e5848d  public/datos/terremotos-demo.geojson
+6036983e5fc00f0169c9e939b1816ed771eee00e27f2fcc517b819041460b9ef  public/_redirects
+af4a88eb8a92a9dc6205e086b7ef5578ab41c34610fc5048a88bf4e1f9d1b827  netlify.toml
+934e0c913b10a3273a65de5430d0d5defaf54c9271ba345d2736afd99246e1d9  package.json
+0185b54a7ebe69b3452fdf38e1a024183cf5b3116d35e7c57efa269fcd61e339  package-lock.json
+d42a020876ef636cb993c7c35e2738ce0a095243d714f9eae7fd02e4e399f87d  tsconfig.json
+caa84e8abdba5afa155da8dc22276ae5144efe50508f6c346ecf99e7ad5015f3  tsconfig.app.json
+4e288bfc5cb983e004a192db4266597d0fee3c7f5b14478618fd9589ec5108b9  angular.json
+767e582c024e7bce6f13c70671cac1d2e579b613c23105c71fb60bbccee17d1e  src/index.html
+7fdacdc1b9222f58b1a113cc1bfdca1c273b0e4218d4dc57b329893655e38d7b  src/main.ts
+d591842774733399c438f0b1d9f1aeca708a0a62790b3cf2fceee1be700f9038  src/styles.css
+# se modificaran: public/config.json (solo si hiciera falta), src/app/app.component.{ts,html,css}
+27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525  public/config.json
+592ff4e4a3cb0384cbb1f09bb2140ba0d48153af4c47aad8cdb2aced3b036a51  src/app/app.component.ts
+e7fbe2744a09dbd01b7857b15f529ba2745429b864a0b0e0f0a7ead364b9f857  src/app/app.component.html
+aa14c5d4b410876aa2ebfe9bc675c98f8b37029b7b33aee41d9bc72c725c7df4  src/app/app.component.css
+
+## Navegador integrado, modo api (API real http://127.0.0.1:8000), ANTES del cambio
+API · datos del backend | API accesible · consulta completada | Catalogo de paises cargado · 169 eventos dibujados · 0 omitidos | Ultima lectura UTC y generacion de la respuesta UTC visibles | leyenda de profundidad y nota de tamano
+## Navegador integrado, modo demo (config.json temporalmente con mode demo; restaurado y verificado con sha256)
+DEMOSTRACION · datos ficticios | Ejemplo estatico: no representa actividad real | 4 eventos dibujados | sin ninguna peticion a la API (solo datos/terremotos-demo.geojson, paises.geojson y config.json)

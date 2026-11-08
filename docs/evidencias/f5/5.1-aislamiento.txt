@@ -1,0 +1,27 @@
+== invariantes [5.1 despues] 2026-11-07T15:48:30Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=545 versiones=529 cuarentena=16 | offset/final/lag=555/555/0
+geo: reparto live=interior=319, sin_pais=63 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+## Contenedores (ids despues del despliegue; solo api cambia)
+api Up About a minute (healthy) b96126604258
+consumer Up 6 hours (healthy) 1bd149cce180
+kafka Up 7 hours (healthy) 8334b55b327c
+postgres Up 7 hours (healthy) 046081f539aa
+producer Up 6 hours (healthy) 8e645f8153e2
+
+## Puertos publicados
+api: 127.0.0.1:8000->8000/tcp
+consumer: 
+kafka: 9092/tcp
+postgres: 5432/tcp
+producer: 
+
+## Registro de la API (errores desde el despliegue)
+0
+## Git: archivos de docs/referencias, specs 001-003, frontend
+0

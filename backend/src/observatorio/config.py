@@ -176,3 +176,24 @@ class ConfigHistorico:
             max_reintentos=_entero("HISTORICO_MAX_REINTENTOS", 3, minimo=0),
             exportacion=Path(os.environ.get("HISTORICO_EXPORT_DIR", "").strip() or EXPORTACION_DEFECTO),
         )
+
+
+@dataclass(frozen=True)
+class ConfigApi:
+    """Límites y umbrales de la API de consulta (F5). Todas las variables son opcionales; los valores por defecto son los aprobados en DF3/DF4/DF7."""
+
+    max_eventos: int  # máximo de eventos por respuesta de /api/eventos (DF3, DF7)
+    max_ventana_horas: int  # máximo de casillas de la serie horaria de /api/estadisticas (31 días)
+    obsoleta_s: int  # antigüedad de la última ingesta a partir de la cual /api/salud marca stale (DF4)
+    statement_timeout_s: int  # tiempo máximo de cada consulta; al superarlo la API responde 503
+    margen_publicacion_s: int  # margen del motivo «hasta_ahora» de la comparación (a confirmar con medidas reales)
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigApi":
+        return cls(
+            max_eventos=_entero("API_MAX_EVENTOS", 5000),
+            max_ventana_horas=_entero("API_MAX_VENTANA_HORAS", 744),
+            obsoleta_s=_entero("INGESTA_OBSOLETA_S", 300),
+            statement_timeout_s=_entero("API_STATEMENT_TIMEOUT_S", 10),
+            margen_publicacion_s=_entero("API_MARGEN_PUBLICACION_S", 900, minimo=0),
+        )

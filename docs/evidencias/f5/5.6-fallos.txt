@@ -1,0 +1,49 @@
+# 5.6 T043 - ensayo de fallos controlados en el navegador integrado (Angular en http://localhost:4200) 2026-11-07
+
+## Recursos temporales (nunca se tocaron los servicios reales)
+- Para los fallos de la API se levantaron contenedores TEMPORALES de la misma imagen (`docker compose run -d --rm --no-deps --name api-f5-temp -p 127.0.0.1:8001:8000 -e ... api`), solo lectura sobre PostgreSQL,
+  y `frontend/public/config.json` apuntó temporalmente a http://127.0.0.1:8001 (restaurado y verificado: sha256 27cb394e… igual que la linea base). Al terminar: 0 contenedores api-f5-temp; la API real (8000), PostgreSQL, Kafka,
+  productor y consumidor siguieron `healthy` con los mismos ids y el lag/la reconciliacion en 0 (5.6-pruebas.txt).
+- Los fallos que no se pueden provocar sin escribir (huecos pendientes) o que son del cliente (422, tiempo de espera, respuestas tardias) se simularon sustituyendo `window.fetch` durante la prueba; la API real no se modifico.
+  El comportamiento backend de huecos pendientes, ingesta antigua y base caida esta probado con PostgreSQL real en `backend/tests/unit/test_api_salud.py`.
+
+## 1. Resultados truncados (API temporal con API_MAX_EVENTOS=20)
+Panel: «Resultados truncados. Se muestran 20 de 166 eventos (la API limita cada respuesta). Las estadisticas, las graficas y la comparacion usan TODOS los eventos del periodo; la tabla y el mapa solo los cargados.» + boton «Cargar el resto de eventos».
+Contador cruzado: mapa 20 · tabla 20 · estadisticas 166 · total de la API 166 (las estadisticas NO se calculan sobre la muestra).
+Pulsar el boton → 166 eventos cargados con el MISMO periodo (start/end fijos), 0 ids duplicados, el aviso desaparece, mapa 166 y tabla 166; las estadisticas no cambian (misma respuesta).
+
+## 2. API sin conexion (se para el contenedor temporal) y recuperacion automatica
+- Con la API parada y «Aplicar filtros»: estado general «Sin conexion con el backend · ultima lectura valida hace 27 s» (punto rojo) y aviso role=alert: «No se puede conectar con la API (red, tunel o CORS). Se muestran los ultimos datos validos, leidos hace 23 s:
+  pueden estar desactualizados y no son la situacion actual. Se reintenta automaticamente.» Los 166 eventos, el mapa, la tabla y las 4 graficas se conservan. El texto original del frontend proporcionado sigue (no se pudo actualizar...).
+- La antigüedad sube sola con un reloj monotonico: «hace 6 s» → «hace 10 s» cuatro segundos despues (sin consultar la hora del navegador).
+- Se arranca de nuevo el contenedor temporal y NO se toca nada en el navegador: a los ~15 s el reintento automatico (cada 30 s tras un fallo) recupera la conexion: «Datos al dia» + aviso informativo «Conexion recuperada (18:08:51 UTC)»;
+  la pestana no se recargo (window.__t0 sigue definido, un solo evento de navegacion).
+- Evento `online` del navegador con la API disponible: reintento inmediato y recuperacion en < 3 s.
+
+## 3. Base de datos inalcanzable (contenedor temporal con POSTGRES_HOST inexistente)
+HTTP: /api/salud, /api/eventos y /api/estadisticas → 503 {"error":"base_de_datos_no_disponible", ...} (nunca 200 con ceros).
+Panel (con la lectura anterior en pantalla): «Sin conexion con el backend. La API no puede consultar su base de datos (503). Se muestran los ultimos datos validos, leidos hace 35 s...»; 166 eventos, mapa y 4 graficas conservados;
+NO aparece «Sin eventos para estos filtros» (sin datos ≠ sin conexion).
+
+## 4. Datos desactualizados (contenedor temporal con INGESTA_OBSOLETA_S=1; la API real mantiene 300 s)
+Estado general «Datos desactualizados» y aviso role=status: «El backend responde, pero la ultima ingesta correcta de USGS fue hace 11 s (umbral: 1 s). Los eventos mas recientes pueden faltar.» Los datos se siguen mostrando (error=null).
+Con el umbral real (300 s) y una ingesta de 34-55 s: «Datos al dia», 0 avisos. En las pruebas con PostgreSQL real el aviso aparece al superar el umbral y desaparece al reanudarse la ingesta.
+
+## 5. Sin eventos ≠ error ≠ desactualizado
+Filtro Afganistan (0 eventos) con la API desactualizada: DOS avisos distintos y a la vez — «Datos desactualizados» y «Sin eventos para estos filtros» (informativo: «la consulta funciono y no hay terremotos que cumplan los filtros...: no es un error ni una perdida de conexion») —;
+la tabla dice «Sin eventos para estos filtros.» y las graficas tambien. Con la API real y sin desactualizacion solo aparece el aviso informativo.
+
+## 6. Huecos de ingesta pendientes (respuesta de /api/salud con gaps_pending=2)
+Aviso «Huecos de ingesta pendientes. Hay 2 huecos de ingesta sin recuperar: puede faltar actividad en esos intervalos.» y el campo «Huecos de ingesta pendientes: 2» del panel; sin hueco, 0 avisos.
+
+## 7. 422 de la API (simulado): NO es «sin conexion»
+Estado general «Datos al dia» (la conexion funciona) y aviso role=alert «La API rechazo los filtros. country_id desconocido: simulado Se conserva la ultima lectura valida y los filtros anteriores.»; los filtros vigentes vuelven a los ultimos validos (la actualizacion automatica no reintenta los rechazados).
+
+## 8. Respuesta lenta
+/api/eventos sin responder hasta el tiempo de espera de 15 s: a los ~17 s «Sin conexion con el backend. La API no respondio a tiempo. Se muestran los ultimos datos validos, leidos hace 18 s...»; los 166 eventos se conservan.
+
+## 9. Modo demo (config.json temporalmente con mode demo; restaurado, sha256 identico)
+«DEMOSTRACION · datos ficticios», 4 eventos, 0 componentes de estado/filtros/tabla/graficas/comparacion y 0 peticiones a 127.0.0.1; solo datos/paises.geojson, config.json y datos/terremotos-demo.geojson (igual que la linea base).
+
+## Limites
+Una sola ventana del navegador integrado; no se probaron otros navegadores ni movil. Las capturas se vieron en el panel pero no se guardan en el repositorio. Tras cada recuperacion el refresco vuelve a la primera pagina de eventos (lo cargado con «Cargar el resto» se descarta).

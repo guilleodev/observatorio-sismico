@@ -132,3 +132,36 @@ def test_config_historico_valores_invalidos_dan_error_claro(monkeypatch, nombre,
     monkeypatch.setenv(nombre, valor)
     with pytest.raises(ConfigError, match=nombre):
         ConfigHistorico.desde_entorno()
+
+
+# --- ConfigApi (F5, paso 5.1) ----------------------------------------------------------------------------------------
+
+API_VARIABLES = ("API_MAX_EVENTOS", "API_MAX_VENTANA_HORAS", "INGESTA_OBSOLETA_S", "API_STATEMENT_TIMEOUT_S", "API_MARGEN_PUBLICACION_S")
+
+
+def test_config_api_por_defecto_son_los_valores_aprobados(monkeypatch):
+    from observatorio.config import ConfigApi
+
+    for nombre in API_VARIABLES:
+        monkeypatch.delenv(nombre, raising=False)
+    assert ConfigApi.desde_entorno() == ConfigApi(max_eventos=5000, max_ventana_horas=744, obsoleta_s=300, statement_timeout_s=10, margen_publicacion_s=900)
+
+
+def test_config_api_valores_validos(monkeypatch):
+    from observatorio.config import ConfigApi
+
+    for nombre, valor in zip(API_VARIABLES, ("100", "48", "600", "3", "0")):
+        monkeypatch.setenv(nombre, valor)
+    assert ConfigApi.desde_entorno() == ConfigApi(100, 48, 600, 3, 0)  # el margen de publicación admite 0
+
+
+@pytest.mark.parametrize("nombre,valor", [("API_MAX_EVENTOS", "0"), ("API_MAX_EVENTOS", "-5"), ("API_MAX_EVENTOS", "mucho"), ("API_MAX_EVENTOS", "5.5"),
+                                          ("API_MAX_VENTANA_HORAS", "0"), ("INGESTA_OBSOLETA_S", "0"), ("API_STATEMENT_TIMEOUT_S", "0"), ("API_MARGEN_PUBLICACION_S", "-1")])
+def test_config_api_rechaza_valores_invalidos_con_el_nombre_de_la_variable(monkeypatch, nombre, valor):
+    from observatorio.config import ConfigApi
+
+    for n in API_VARIABLES:
+        monkeypatch.delenv(n, raising=False)
+    monkeypatch.setenv(nombre, valor)
+    with pytest.raises(ConfigError, match=nombre):
+        ConfigApi.desde_entorno()

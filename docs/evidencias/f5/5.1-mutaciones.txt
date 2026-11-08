@@ -1,0 +1,27 @@
+# 5.1 T008 - mutaciones del paso 5.1
+Base sin mutar: OK (130 passed, 1 warning in 6.81s)
+
+  DETECTADA  end deja de ser exclusivo (< pasa a <=)  [FAILED tests/unit/test_api_filtros.py::test_donde_solo_usa_marcadores_y_nunca_concatena_valores]
+  DETECTADA  start deja de ser inclusivo (>= pasa a >)  [FAILED tests/unit/test_api_filtros.py::test_donde_solo_usa_marcadores_y_nunca_concatena_valores]
+  DETECTADA  se incluyen los eventos retirados  [FAILED tests/unit/test_api_filtros.py::test_donde_solo_usa_marcadores_y_nunca_concatena_valores]
+  DETECTADA  min_mag exclusivo (>= pasa a >)  [FAILED tests/unit/test_api_filtros.py::test_donde_sin_umbral_omite_solo_la_magnitud]
+  DETECTADA  la magnitud nula se trata como 0  [FAILED tests/unit/test_api_filtros.py::test_donde_sin_umbral_omite_solo_la_magnitud]
+  DETECTADA  sin_pais por country_id nulo (incluye los sin asignar)  [FAILED tests/unit/test_api_filtros.py::test_donde_sin_pais_usa_geo_resultado_y_no_country_id_nulo]
+  DETECTADA  el país no se filtra  [FAILED tests/unit/test_api_filtros.py::test_donde_solo_usa_marcadores_y_nunca_concatena_valores]
+  DETECTADA  limit se recorta en silencio  [FAILED tests/unit/test_api_filtros.py::test_limit_u_offset_fuera_de_rango_es_error_y_nunca_se_recorta[0-None-l]
+  DETECTADA  start >= end se acepta  [FAILED tests/unit/test_api_filtros.py::test_start_igual_o_posterior_a_end_es_error[2026-11-02T00:00:00Z-2026-1]
+  DETECTADA  el país en minúsculas no se normaliza  [FAILED tests/unit/test_api_filtros.py::test_country_id_se_normaliza_y_sin_pais_es_un_valor_reservado[esp-ESP]]
+  DETECTADA  sin_magnitud ignora el umbral de magnitud  [FAILED tests/unit/test_api_eventos_filtros.py::test_el_recuento_paginado_coincide_con_el_oraculo_independiente]
+  DETECTADA  sin desempate por id  [FAILED tests/unit/test_api_eventos_filtros.py::test_el_recuento_paginado_coincide_con_el_oraculo_independiente]
+  DETECTADA  truncated con <= en vez de <  [FAILED tests/unit/test_api_filtros.py::test_sin_parametros_el_periodo_es_el_resuelto_y_se_devuelve_en_metadata]
+  DETECTADA  next_offset siempre presente  [FAILED tests/unit/test_api_filtros.py::test_sin_parametros_el_periodo_es_el_resuelto_y_se_devuelve_en_metadata]
+  DETECTADA  sin instantánea consistente (READ COMMITTED)  [FAILED tests/unit/test_api_paginacion.py::test_con_la_sesion_de_produccion_total_y_eventos_salen_del_mismo_est]
+  DETECTADA  la sesión de la API deja de ser de solo lectura  [FAILED tests/unit/test_api_paginacion.py::test_la_sesion_de_la_api_es_repeatable_read_solo_lectura_utc_y_con_t]
+  DETECTADA  un país desconocido se acepta  [FAILED tests/unit/test_api_eventos_filtros.py::test_pais_desconocido_es_422_y_no_una_lista_vacia]
+  DETECTADA  la cobertura usa min(event_time)  [FAILED tests/unit/test_api_eventos_filtros.py::test_cobertura_es_la_primera_ingesta_menos_24h_y_last_ingestion]
+  DETECTADA  un parámetro desconocido se ignora  [FAILED tests/unit/test_api_filtros.py::test_parametro_invalido_responde_422_con_error_y_detalle_sin_features[m]
+  DETECTADA  un parámetro repetido se acepta  [FAILED tests/unit/test_api_filtros.py::test_parametro_invalido_responde_422_con_error_y_detalle_sin_features[s]
+  DETECTADA  la base caída devuelve una lista vacía  [WARNING  psycopg.pool:pool_async.py:758 error connecting in 'pool-10': failed to resolve host 'servidor-inexis]
+
+Restaurado: OK (130 passed, 1 warning in 6.80s)
+Mutaciones: 21 | detectadas: 21 | supervivientes: ninguna

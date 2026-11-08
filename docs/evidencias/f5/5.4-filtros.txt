@@ -1,0 +1,37 @@
+# 5.4 T030 - comprobacion en el navegador integrado (Claude Browser, Angular en http://localhost:4200, API real http://127.0.0.1:8000) 2026-11-07T17:40:17Z
+
+## 1. Carga inicial (modo api)
+- 168/169 eventos dibujados de 168/169 (24 h hasta generated), «Filtros activos: ultimas 24 h», periodo consultado en UTC con fin exclusivo, mapa, capas y leyenda del frontend entregado intactos.
+- La lista de paises (Todos, Sin pais asignado y los 177 del catalogo entregado por nombre en espanol) sale de datos/paises.geojson, sin endpoint nuevo.
+- Red: primero GET /api/salud (sonda: aun no trae generated, se anotara en 5.6) y despues GET /api/eventos?limit=1 (metadata.generated) para fijar la ventana con el reloj de la API;
+  en los refrescos siguientes solo /api/eventos?limit=1 y las paginas. Las cabeceras ngrok-skip-browser-warning provocan los OPTIONS (preflight) correctos (200).
+
+## 2. Los parametros viajan a la API (pestana de red)
+- Magnitud minima «4,5» + «Sin pais asignado» -> GET /api/eventos?start=2026-11-06T17%3A37%3A33.491Z&end=2026-11-07T17%3A37%3A33.491Z&min_mag=4.5&country_id=sin_pais -> 200
+  Panel: «Filtros activos: ultimas 24 h · magnitud >= 4.5 · Sin pais asignado · ... · 6 de 6 eventos dibujados»; curl con los mismos parametros: metadata.total = 6 (coincide).
+- 7 dias + Estados Unidos: «ultimos 7 dias · pais Estados Unidos · 312 de 312 eventos dibujados».
+- Periodo personalizado 2026-11-06T12:00 -> 2026-11-07T00:00 (UTC): «95 de 95 eventos dibujados», periodo consultado exactamente ese intervalo.
+
+## 3. Validacion en el cliente (sin llamar a la API)
+- «Desde» posterior a «Hasta»: «"Desde" debe ser anterior a "Hasta": el periodo es [desde, hasta) en UTC.» y el boton «Aplicar filtros» queda deshabilitado.
+- Magnitud «abc»: «La magnitud minima debe ser un numero (p. ej. 4 o 4,5).»
+
+## 4. Fallos inyectados en el navegador (window.fetch sustituido solo durante la prueba; la API real no se toco)
+- 422 simulado: estado «Filtros rechazados por la API: se conserva la ultima lectura valida.» + alerta «La API rechazo los filtros: country_id desconocido: simulado»; el mapa conserva los 169 eventos
+  y la linea «Filtros activos» sigue describiendo la lectura dibujada (no el filtro rechazado); la actualizacion automatica vuelve a los ultimos filtros validos; un exito posterior limpia la alerta.
+- 503 simulado: «No se pudo actualizar: La API no puede consultar su base de datos (503). Se conserva la ultima lectura. Revisa API, tunel y CORS.»
+- Fallo de red simulado: «No se pudo actualizar: No se pudo conectar con la API (red, tunel o CORS). Se conserva la ultima lectura. ...»
+- Respuesta tardia: primera consulta (4,5 + sin pais) retrasada 3 s, segunda (Estados Unidos) lanzada a los 300 ms: el panel muestra la segunda (131 de 131) y la primera se cancela y se descarta.
+
+## 5. Modo demo (config.json temporalmente con mode demo; restaurado, sha256 identico al de la linea base)
+- «DEMOSTRACION · datos ficticios | Ejemplo estatico: no representa actividad real | 4 eventos dibujados»; 0 componentes de filtros; 0 peticiones a 127.0.0.1:8000;
+  solo se leen datos/paises.geojson, config.json y datos/terremotos-demo.geojson: igual que la linea base.
+
+## 6. Advertencia de cobertura (hallazgo de 5.3), visible de forma permanente bajo los filtros
+«Cobertura distinta: el feed en vivo de USGS no es completo por debajo de M4,5 fuera de EE. UU., mientras que el historico de 2025 si incluye esas magnitudes. Por eso una diferencia con 2025 no demuestra
+un descenso real de la actividad; para comparar de forma mas justa usa magnitud minima 4,5.» (el panel no calcula ni muestra comparaciones con 2025 en este paso: llegan en 5.5 con este aviso).
+No se cambia ningun valor por defecto (la magnitud minima empieza vacia).
+
+## Limites de esta comprobacion
+- Se hizo con el navegador integrado de la aplicacion (una sola ventana); no se probo en otros navegadores ni en movil. Las capturas se vieron en el panel pero no se guardan en el repositorio.
+- El respaldo de `generated` con /api/eventos?limit=1 se mantiene hasta que /api/salud lo incluya (paso 5.6, T040).

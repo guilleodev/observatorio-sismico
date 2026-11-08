@@ -1,0 +1,48 @@
+# 5.2 T015 - matriz contra la API real 2026-11-07T15:59:35Z  (http://api:8000)
+filas en live.evento_actual: 383 (retiradas: 3) | ventana fija: [2026-11-06T02:49:13Z, 2026-11-07T14:49:13Z)
+
+== 0. Rango real de los datos (justifica los bordes provisionales de los intervalos) ==
+  magnitud: -0.10 .. 6.10 (nulos: 0) | profundidad km: -2.61 .. 567.22 (nulos: 0)
+  eventos con magnitud < 0: 1 | con profundidad < 0: 4 | magnitud ≥ 8: 0 | profundidad ≥ 500: 4
+  reparto por los intervalos de profundidad propuestos: [198, 96, 39, 42, 3, 1, 4] (sin intervalos con todo el peso: confirma los bordes)
+
+== 1. /api/estadisticas frente al oráculo independiente y a /api/eventos (listado paginado de 50) ==
+  OK    ventana fija de 36 h: total=277 (= eventos 277 = oráculo 277), países=5+sin país 48, sin_magnitud=0, Σ bloques = total
+  OK    min_mag=3: total=29 (= eventos 29 = oráculo 29), países=5+sin país 22, sin_magnitud=0, Σ bloques = total
+  OK    min_mag=4: total=18 (= eventos 18 = oráculo 18), países=3+sin país 15, sin_magnitud=0, Σ bloques = total
+  OK    min_mag=5.5: total=2 (= eventos 2 = oráculo 2), países=0+sin país 2, sin_magnitud=0, Σ bloques = total
+  OK    country_id=USA: total=222 (= eventos 222 = oráculo 222), países=1+sin país 0, sin_magnitud=0, Σ bloques = total
+  OK    country_id=usa (minúsculas): total=222 (= eventos 222 = oráculo 222), países=1+sin país 0, sin_magnitud=0, Σ bloques = total
+  OK    country_id=PRI + min_mag=3: total=1 (= eventos 1 = oráculo 1), países=1+sin país 0, sin_magnitud=0, Σ bloques = total
+  OK    country_id=sin_pais: total=48 (= eventos 48 = oráculo 48), países=0+sin país 48, sin_magnitud=0, Σ bloques = total
+  OK    sin_pais + min_mag=4: total=15 (= eventos 15 = oráculo 15), países=0+sin país 15, sin_magnitud=0, Σ bloques = total
+  OK    ventana de 6 h: total=43 (= eventos 43 = oráculo 43), países=3+sin país 4, sin_magnitud=0, Σ bloques = total
+  OK    solo end (start = end − 24 h): total=175 (= eventos 175 = oráculo 175), países=5+sin país 28, sin_magnitud=0, Σ bloques = total
+  OK    toda la cobertura: total=374 (= eventos 374 = oráculo 374), países=9+sin país 61, sin_magnitud=0, Σ bloques = total
+  OK    min_mag=10 (vacío): total=0 (= eventos 0 = oráculo 0), países=0+sin país 0, sin_magnitud=0, Σ bloques = total
+  OK    periodo pasado sin datos: total=0 (= eventos 0 = oráculo 0), países=0+sin país 0, sin_magnitud=0, Σ bloques = total
+  OK    periodo futuro: total=0 (= eventos 0 = oráculo 0), países=0+sin país 0, sin_magnitud=0, Σ bloques = total
+
+== 2. Estructura, defecto y unidades ==
+  OK    claves: ['filters', 'generated', 'magnitud', 'period', 'por_pais', 'profundidad', 'sin_magnitud', 'total']
+  OK    periodo por defecto = últimas 24 h hasta generated
+  OK    unidades y filtros aplicados
+  OK    10 intervalos de magnitud y 7 de profundidad, extremos abiertos como null
+  OK    sin NaN/Infinity, sin histórico ni sintético
+  OK    total de /api/eventos (sin parámetros) = total de /api/estadisticas = 170
+  top de países (24 h): [('USA', 135), (None, 28), ('PRI', 3), ('CHL', 1), ('IDN', 1)] | sin país asignado: 28
+
+== 3. Parámetros inválidos: 422 con {error, detail}; nunca ceros ==
+  OK    {'start': 'ayer'} -> 422: start debe ser una fecha ISO 8601 (p. ej. 2026-11-01T00:00:00Z); recibido 'ayer'
+  OK    {'start': '2026-11-02', 'end': '2026-11-01'} -> 422: start debe ser anterior a end (start=2026-11-02T00:00:00+00:00, end=2026-11-01T0
+  OK    {'min_mag': 'abc'} -> 422: min_mag debe ser un número finito, no 'abc'
+  OK    {'min_mag': 'inf'} -> 422: min_mag debe ser un número finito, no 'inf'
+  OK    {'country_id': 'ATLANTIDA'} -> 422: country_id desconocido: 'ATLANTIDA' no está en el catálogo de países (use «sin_p
+  OK    {'limit': '10'} -> 422: parámetro desconocido: 'limit'; admitidos: start, end, min_mag, country_id
+  OK    {'offset': '1'} -> 422: parámetro desconocido: 'offset'; admitidos: start, end, min_mag, country_id
+  OK    {'min_magnitud': '4'} -> 422: parámetro desconocido: 'min_magnitud'; admitidos: start, end, min_mag, country_i
+
+== 4. Idempotencia: dos lecturas idénticas de una ventana fija ==
+  OK    mismas cifras en dos lecturas
+
+RESULTADO: OK

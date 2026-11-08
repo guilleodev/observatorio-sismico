@@ -1,0 +1,42 @@
+# 5.5 T037 - comprobacion del panel en el navegador integrado (Claude Browser; Angular en http://localhost:4200; API real http://127.0.0.1:8000) 2026-11-07
+
+## 1. Panel completo con datos reales (24 h, sin filtros)
+Mapa Leaflet con sus capas y leyenda (sin cambios) + «Contador cruzado»: mapa 169 dibujados · tabla 169 · estadisticas 169 · total de la API 169.
+Bajo el mapa: tarjeta de comparacion con 2025, cuatro graficas SVG (hora UTC, pais, magnitud, profundidad; cada una con titulo, descripcion, «Registros sin valor» y «Ver los datos como tabla») y la tabla de eventos.
+Las graficas son SVG propio de Angular (25 barras horarias, 10 intervalos de magnitud, 7 de profundidad, hasta 10 barras de paises mas «Sin pais asignado»): sin biblioteca de graficos nueva; package.json sin cambios.
+
+## 2. Contador cruzado en 7 combinaciones (recuento mapa = tabla = estadisticas = total de la API = suma de cada grafica con su «sin valor»)
+OK  24 h (defecto)              mapa 166 | tabla 166 | estadisticas 166 | API 166 | Σ hora 166 | Σ paises+sin valor 166 | Σ magnitud+sv 166 | Σ profundidad+sv 166 | comparacion reciente (>=4) 15
+OK  magnitud >= 4,5             11 | 11 | 11 | 11 | 11 | 11 | 11 | 11 | comparacion reciente (>=4,5) 11
+OK  7 dias + Estados Unidos     314 en todos los recuentos | comparacion reciente 0
+OK  Sin pais asignado           29 en todos los recuentos | solo la categoria «Sin pais asignado» en la tabla y en el grafico de paises
+OK  Chile + magnitud >= 3       1 en todos los recuentos
+OK  Afganistan (sin eventos)    0 en todos los recuentos: tabla «Sin eventos en el periodo.», graficas «Sin eventos para estos filtros.» (no un error), comparacion con reciente 0
+OK  periodo personalizado 2 d   384 en todos los recuentos | comparacion reciente 30
+Ademas: personalizado de 48 dias → 351 en todos los recuentos; la serie por hora se omite con el motivo «la ventana necesita mas de 744 horas» y las otras tres graficas y la comparacion siguen validas.
+
+## 3. Seleccion sincronizada mapa ↔ tabla (un unico evento seleccionado)
+- Tabla → mapa: pulsar «Lugar» de una fila → fila resaltada (aria-pressed=true), el mapa se centra y abre la ficha con su ID. Elegir otra fila: queda UNA sola fila seleccionada y UN solo popup. Pulsar de nuevo la misma: se deselecciona y el popup se cierra.
+- Mapa → tabla: clic real sobre un marcador (con marcadores superpuestos gana el superior): la tabla salta a su pagina (pagina 6 de 7), resalta solo esa fila y el popup coincide con ese ID.
+- Evento sin coordenadas validas (inyectado en la respuesta): se ve en la tabla («sin valor» en longitud y latitud), no se dibuja, se cuenta como «1 sin coordenadas validas solo aparecen en la tabla» y al seleccionarlo aparece la alerta «Este evento no tiene coordenadas validas y no se dibuja en el mapa; se conserva en la tabla.»; al elegir otro la alerta desaparece.
+
+## 4. Valores nulos (respuesta alterada en el navegador; la API real no se toco)
+Magnitud y profundidad nulas → «sin valor» / clase de profundidad «sin valor» (nunca 0), marcador gris de radio 4 en el mapa y ficha «Magnitud: ND / Profundidad: ND»; sin pais → «Sin pais asignado»; sin tipo de magnitud → «sin valor»; las graficas muestran «Registros sin valor (no se cuentan en las barras)».
+
+## 5. Tabla: orden, busqueda y paginacion
+Orden por Magnitud: 5.5, 5.5, 4.9, 4.9 (descendente al pulsar) y -0.1, 0.26, 0.36, 0.4 (ascendente al invertir), aria-sort actualizado; los nulos van siempre al final. Busqueda «ecuador» → 1 de 167 eventos; «zzzz» → «Ningun evento coincide con la busqueda.». Paginas de 25. Se redondea solo la presentacion (6.15, 34.251).
+
+## 6. Teclado y accesibilidad (arbol DOM/ARIA leido en el navegador)
+- Foco en el encabezado «Profundidad (km)» + Intro → ordena (aria-sort=descending) y el foco se queda en el encabezado. 12 Tab desde ahi llegan a un boton de fila («Lugar»); Intro sobre el boton lo selecciona (aria-pressed=true) y abre su ficha.
+- Cada grafica: <svg role="img" aria-labelledby=titulo+descripcion> (los ids existen), <title>/<desc>, y <details> con tabla de texto equivalente (cabeceras scope=col/row). La tabla principal: region desplazable con tabindex=0, <th scope=col aria-sort>, <caption>, botones nativos.
+- Regiones role=status/aria-live para el contador, el resumen de la tabla y los avisos; role=alert para errores. Ningun texto de la API se inserta como HTML (interpolacion de Angular y textContent en la ficha).
+
+## 7. Comparacion con 2025: avisos
+La tarjeta muestra cada cifra con su fuente («Feed en vivo (live)» / «Historico de 2025 (historico)»), la magnitud efectiva (≥4 elevada, indicado), «Periodo reciente posiblemente incompleto» con los motivos (hasta ahora; despues de la ultima lectura; antes de la cobertura en el periodo de 48 dias),
+y SIEMPRE el recuadro azul «Esta diferencia no demuestra por si sola un cambio real de actividad» con la advertencia de cobertura distinta del feed en vivo y del historico (y, por debajo de M4,5, el aviso adicional). La variacion se escribe como diferencia con signo («−68 %»), sin las palabras «descenso» o «aumento»; con media 0 → «no definida».
+
+## 8. Modo demo (config.json temporalmente con mode demo; restaurado, sha256 identico)
+«DEMOSTRACION · datos ficticios», 4 eventos dibujados, 0 componentes de filtros/tabla/graficas/comparacion y 0 peticiones a 127.0.0.1:8000. La ficha del marcador incluye ahora «Tipo de magnitud: ND» y «Actualizado UTC» (ampliacion de la ficha); lo demas es igual que en la linea base.
+
+## Limites
+Una sola ventana (navegador integrado), sin probar otros navegadores ni movil; las capturas se vieron en el panel pero no se guardan en el repositorio. El clic con el raton sobre marcadores se probo con un evento de raton real despachado en las coordenadas del marcador; con marcadores superpuestos se selecciona el superior (los demas se alcanzan desde la tabla).

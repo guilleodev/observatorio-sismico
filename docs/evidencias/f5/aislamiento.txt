@@ -1,0 +1,53 @@
+# 5 T056 - aislamiento e invariantes finales 2026-11-08T08:58:08Z
+## Datos: live / historico / sintetico
+  OK    live.evento_actual con mode distinto de live (0)
+  OK    live.evento_actual con source fuera del contrato (0)
+  OK    ids de historico en live.evento_actual (0)
+  OK    ids de historico en live.evento_version (0)
+  OK    filas históricas, sintéticas o de prueba en live (0)
+  OK    filas de prueba en historico (0)
+  OK    sintetico.evento_actual intacto (filas y md5) (18 5b9d041e8ff21ee9822d336b53ee8aff)
+  OK    historico.evento intacto (md5) (057f8f4ebaaf142ebe3eda20346c65f7)
+  OK    filas del histórico de 2025 (18302)
+  OK    bases temporales sin eliminar (0)
+  OK    modos presentes en /api/eventos ("mode":"live" )
+  OK    eventos de /api/eventos que están en historico (0)
+## Código (la API solo lee; solo comparacion.py toca historico)
+  OK    archivos de backend/src que mencionan synthetic o sintetico (0)
+  OK    módulos de la API que mencionan historico (backend/src/observatorio/api/comparacion.py )
+  OK    consumidor y productor que mencionan historico (0)
+  OK    módulos de la API con sentencias de escritura o DDL (0)
+## Servicios y puertos
+  OK    servicios de compose.yaml (FR-023) (api consumer kafka postgres producer )
+  OK    puerto publicado y dirección (solo la API, solo 127.0.0.1) (api=127.0.0.1:8000->8000/tcp)
+  OK    servicios healthy (5)
+  OK    contenedores temporales de F5 sin eliminar (0)
+  OK    volúmenes (sin borrar ni añadir) (observatorio_kafkadata observatorio_pgdata )
+  OK    POST a /api/eventos rechazado (405)
+  OK    CORS limitado a los orígenes configurados (API_CORS_ORIGINS) (1)
+## Archivos que no deben cambiar
+  OK    cambios en docs/referencias, specs/001, specs/002 y specs/003 (0)
+  OK    huella del catálogo de países entregado (d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c)
+  OK    config.json, catálogo, package*.json, angular.json y tsconfig sin cambios (0)
+  OK    .env real versionado (0)
+  OK    .env real entre los cambios pendientes (0)
+  OK    data/historico ignorado por Git (1)
+  OK    archivos de data/ versionados (0)
+
+RESULTADO: OK - aislamiento verificado
+
+== invariantes [F5 cierre] 2026-11-08T08:58:18Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=793 versiones=777 cuarentena=16 | offset/final/lag=803/803/0
+geo: reparto live=interior=446, sin_pais=95 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+## Contenedores (mismos ids que en 5.6; el equipo se reinició y Docker Desktop volvió a arrancar los existentes sin recrearlos)
+api Up 3 minutes (healthy) 4ac7520a35a0
+consumer Up 3 minutes (healthy) 1bd149cce180
+kafka Up 3 minutes (healthy) 8334b55b327c
+postgres Up 3 minutes (healthy) 046081f539aa
+producer Up 3 minutes (healthy) 8e645f8153e2

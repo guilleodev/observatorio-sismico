@@ -1,0 +1,34 @@
+# 5.7 T049 - tiempos HTTP (real) 2026-11-07T18:19:54Z  (http://api:8000)
+Medido desde un contenedor en la red de Compose (Windows 11 / Docker Desktop, PostgreSQL 17 local); tiempo hasta leer todo el cuerpo. Son mediciones de ESTA máquina y de este volumen, no umbrales.
+
+caso                                              n  err      KB     mín  mediana     p95     p99     máx   (ms)
+GET /api/salud                                  120    0     0.2     1.5      1.6     1.8     1.8     1.9
+eventos · 24 h                                  120    0    48.7     5.0      5.4     6.2     6.3     6.4
+eventos · 24 h · país USA                       120    0    38.4     4.5      4.8     5.4     5.7     5.8
+eventos · 24 h · M ≥ 4,5                        120    0     3.2     2.1      2.3     2.6     2.7     2.7
+eventos · cobertura completa                    120    0   109.9     9.2      9.9    10.6    11.9    21.9
+eventos · cobertura · sin_pais                  120    0    17.6     3.1      3.3     3.6     3.7     3.8
+estadísticas · 24 h                             120    0     2.8    21.5     23.4    26.4    27.5    27.7
+estadísticas · 24 h · país USA                  120    0     2.3    18.2     20.4    24.1    24.5    24.9
+estadísticas · 24 h · M ≥ 4,5                   120    0     2.5    14.0     16.1    19.8    20.5    20.7
+estadísticas · cobertura completa               120    0     3.9    22.0     24.2    26.8    27.9    28.4
+estadísticas · cobertura · sin_pais             120    0     3.2    22.0     25.5    28.0    29.5    29.6
+
+== 4 clientes concurrentes (el panel pide eventos y estadísticas a la vez; pool de la API = 4 conexiones) ==
+120 peticiones en 0.9 s con 4 hilos; errores: 0
+  eventos · 24 h                                 n= 60 mediana    10.0 | p95    17.0 | máx    19.1 ms
+  estadísticas · 24 h                            n= 60 mediana    23.9 | p95    45.8 | máx    62.6 ms
+
+## Lectura y propuesta de umbrales (SC-010: «medido, umbral pendiente de confirmacion»)
+Medido en esta maquina (secuencial, ≥ 100 peticiones por caso, sin errores; p95 en ms):
+- Volumen REAL actual (≈ 400 eventos en live): /api/salud 1,8 · /api/eventos 2,6-6,2 (24 h) y 10,6 (cobertura completa) · /api/estadisticas 19,8-28,0 (incluye la comparacion con 2025 sobre 18 302 filas, que domina el tiempo: ≈ 9-15 ms de EXPLAIN). Con 4 clientes concurrentes: eventos p95 17,0, estadisticas p95 45,8 (sin errores).
+- Escala sintetica de ≈ 183 000 filas (base temporal, API temporal): /api/salud 15,2 · eventos de 24 h 24,6 · eventos «todo 2025» con 5 000 puntos y 1,3 MB 198,7 · estadisticas de 24 h 39,5, de 30 dias 94,0 y de todo el periodo 380,5; concurrente (4 hilos) p95 hasta 358,9.
+- El tiempo del navegador con 5 000 eventos (carga 0,5-1,5 s, desplazamiento del mapa a ≈ 5,6 ms por fotograma, ordenar y buscar 5 000 filas ≈ 11 ms tras corregir un cuello de botella) esta en 5.7-escenarios.md.
+PROPUESTA (pendiente de tu confirmacion; no se da ninguna por cumplida): p95 por peticion, con el volumen actual y hasta ≈ 20 000 filas de live: /api/salud ≤ 50 ms · /api/eventos ≤ 100 ms · /api/estadisticas ≤ 250 ms, y en la escala de ≈ 183 000 filas ≤ 500 ms.
+Razon: entre 5 y 25 veces el p95 medido (margen para otra maquina y para la carga concurrente), muy por debajo del tiempo de espera del panel (15 s) y del ciclo de actualizacion (60 s). Son valores de esta maquina: la verificacion sobre otro equipo (por ejemplo el de la defensa) puede dar otros numeros.
+
+## Umbrales CONFIRMADOS por la persona estudiante el 2026-11-08 (fijados DESPUÉS de estas mediciones, no son predicciones previas)
+p95 por petición: /api/salud <= 50 ms | /api/eventos <= 100 ms | /api/estadisticas <= 250 ms | prueba a gran escala (≈ 183 000 filas) <= 500 ms.
+Criterio para incorporar indices nuevos: mejora minima de 2x y de al menos 1 ms (el mismo que se aplico en 5.7-explain.txt).
+Comparacion con lo medido (p95 maximo): salud 1,8 ms | eventos 10,6 ms | estadisticas 28,0 ms (45,8 ms con 4 clientes concurrentes) | gran escala 380,5 ms -> todos dentro del umbral.
+Reserva: son mediciones de esta maquina (Windows 11, Docker Desktop, PostgreSQL 17 local, un solo cliente salvo la prueba concurrente) y de este volumen; no se extrapolan a Netlify/ngrok (F6-F7).

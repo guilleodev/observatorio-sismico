@@ -1,0 +1,215 @@
+# 5.7 T047 - EXPLAIN ANALYZE con y sin índices 2026-11-07T18:18:48Z
+Base temporal obs_escala_f5; datos de escala = réplica de datos reales tratada como SINTÉTICA, solo para medir. Mediana de 7 ejecuciones de EXPLAIN ANALYZE (tiempo de ejecución del servidor, sin red).
+Entorno: contenedor Docker en Windows 11 / Docker Desktop, PostgreSQL 17 local; los tiempos son de esta máquina y de este volumen y no son umbrales de rendimiento.
+ventanas: «24 h en vivo» [2026-11-06T18:10Z, 2026-11-07T18:10Z) | «3 días en vivo» | «24 h de 2025» (2025-07-15) | «todo» (2025-01-01 a 2027-01-01)
+
+## Escala 1 — datos REALES de live (volumen actual): live.evento_actual = 400 filas (historico.evento = 18302)
+consulta                                                          V0 ms    V1 ms    V2 ms  acceso V1  →  acceso V2
+eventos (página 5000) · 24 h vivo · sin filtro                     0.18     0.13     0.14  Seq@evento_actual  →  Seq@evento_actual
+total · 24 h vivo · sin filtro                                     0.05     0.05     0.05  Seq@evento_actual  →  Seq@evento_actual
+por país · 24 h vivo · sin filtro                                  0.09     0.09     0.08  Seq@evento_actual  →  Seq@evento_actual
+magnitud · 24 h vivo · sin filtro                                  0.08     0.07     0.07  Seq@evento_actual  →  Seq@evento_actual
+por hora · 24 h vivo · sin filtro                                  0.10     0.10     0.10  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 24 h vivo · país USA                       0.14     0.11     0.12  Seq@evento_actual  →  Seq@evento_actual
+total · 24 h vivo · país USA                                       0.05     0.05     0.05  Seq@evento_actual  →  Seq@evento_actual
+por país · 24 h vivo · país USA                                    0.10     0.08     0.08  Seq@evento_actual  →  Seq@evento_actual
+magnitud · 24 h vivo · país USA                                    0.07     0.07     0.07  Seq@evento_actual  →  Seq@evento_actual
+por hora · 24 h vivo · país USA                                    0.11     0.09     0.09  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 24 h vivo · sin_pais                       0.07     0.07     0.04  Seq@evento_actual  →  Bitmap(f5_geo_tiempo)@evento_actual
+total · 24 h vivo · sin_pais                                       0.05     0.04     0.02  Seq@evento_actual  →  Bitmap(f5_geo_tiempo)@evento_actual
+por país · 24 h vivo · sin_pais                                    0.07     0.07     0.04  Seq@evento_actual  →  Bitmap(f5_geo_tiempo)@evento_actual
+magnitud · 24 h vivo · sin_pais                                    0.06     0.05     0.03  Seq@evento_actual  →  Bitmap(f5_geo_tiempo)@evento_actual
+por hora · 24 h vivo · sin_pais                                    0.07     0.06     0.04  Seq@evento_actual  →  Bitmap(f5_geo_tiempo)@evento_actual
+eventos (página 5000) · 3 días vivo · sin filtro                   0.29     0.25     0.25  Seq@evento_actual  →  Seq@evento_actual
+total · 3 días vivo · sin filtro                                   0.06     0.06     0.06  Seq@evento_actual  →  Seq@evento_actual
+por país · 3 días vivo · sin filtro                                0.12     0.13     0.12  Seq@evento_actual  →  Seq@evento_actual
+magnitud · 3 días vivo · sin filtro                                0.12     0.11     0.11  Seq@evento_actual  →  Seq@evento_actual
+por hora · 3 días vivo · sin filtro                                0.18     0.17     0.17  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 3 días vivo · país USA                     0.24     0.21     0.23  Seq@evento_actual  →  Seq@evento_actual
+total · 3 días vivo · país USA                                     0.06     0.06     0.06  Seq@evento_actual  →  Seq@evento_actual
+por país · 3 días vivo · país USA                                  0.11     0.10     0.12  Seq@evento_actual  →  Seq@evento_actual
+magnitud · 3 días vivo · país USA                                  0.10     0.10     0.10  Seq@evento_actual  →  Seq@evento_actual
+por hora · 3 días vivo · país USA                                  0.20     0.16     0.15  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 3 días vivo · sin_pais                     0.09     0.09     0.11  Seq@evento_actual  →  Seq@evento_actual
+total · 3 días vivo · sin_pais                                     0.05     0.05     0.05  Seq@evento_actual  →  Seq@evento_actual
+por país · 3 días vivo · sin_pais                                  0.08     0.07     0.07  Seq@evento_actual  →  Seq@evento_actual
+magnitud · 3 días vivo · sin_pais                                  0.07     0.07     0.07  Seq@evento_actual  →  Seq@evento_actual
+por hora · 3 días vivo · sin_pais                                  0.10     0.08     0.08  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · todo · sin filtro                          0.26     0.24     0.28  Seq@evento_actual  →  Seq@evento_actual
+total · todo · sin filtro                                          0.08     0.06     0.06  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin filtro                                       0.12     0.12     0.12  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin filtro                                       0.14     0.11     0.12  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · todo · país USA                            0.23     0.21     0.21  Seq@evento_actual  →  Seq@evento_actual
+total · todo · país USA                                            0.06     0.07     0.07  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · país USA                                         0.10     0.10     0.10  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · país USA                                         0.12     0.10     0.12  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · todo · sin_pais                            0.09     0.09     0.09  Seq@evento_actual  →  Seq@evento_actual
+total · todo · sin_pais                                            0.05     0.05     0.05  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin_pais                                         0.08     0.08     0.08  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin_pais                                         0.07     0.06     0.07  Seq@evento_actual  →  Seq@evento_actual
+comparación 2025 total · global                                    9.58     8.77     9.36  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 mediana · global                                 15.32    12.61    13.91  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 total · pais                                      0.07     0.04     0.07  Index(historico_evento_pais)@evento  →  Index(historico_evento_pais)@evento
+comparación 2025 mediana · pais                                    0.13     0.13     0.14  Index(historico_evento_pais)@evento  →  Index(historico_evento_pais)@evento
+comparación 2025 total · sin_pais                                  7.93     7.48     7.94  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 mediana · sin_pais                               11.37    11.24    10.94  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+cobertura (min ingested_at)                                        0.06     0.07     0.06  Seq@evento_actual  →  Seq@evento_actual
+  máximo por variante (ms): V0 15.32 | V1 12.61 | V2 13.91 ; suma (ms): V0 49.0 | V1 44.5 | V2 46.6
+  consultas donde V2 mejora a V1 al menos 2× y ≥ 1 ms: 0 de 49
+  consultas donde V1 (índice actual) mejora a V0 al menos 2× y ≥ 1 ms: 0 de 49
+
+## Escala 2 — live real + 18 302 filas de escala (≈ 1 año de histórico como estado actual): live.evento_actual = 18702 filas (historico.evento = 18302)
+consulta                                                          V0 ms    V1 ms    V2 ms  acceso V1  →  acceso V2
+eventos (página 5000) · 24 h vivo · sin filtro                     1.59     0.12     0.16  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h vivo · sin filtro                                     1.33     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h vivo · sin filtro                                  1.48     0.09     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h vivo · sin filtro                                  1.37     0.06     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h vivo · sin filtro                                  1.36     0.10     0.12  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 24 h vivo · país USA                       1.37     0.11     0.11  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+total · 24 h vivo · país USA                                       1.32     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por país · 24 h vivo · país USA                                    1.46     0.07     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+magnitud · 24 h vivo · país USA                                    1.39     0.06     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por hora · 24 h vivo · país USA                                    1.36     0.10     0.10  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 24 h vivo · sin_pais                       1.43     0.05     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h vivo · sin_pais                                       1.39     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h vivo · sin_pais                                    1.33     0.08     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h vivo · sin_pais                                    1.58     0.04     0.05  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h vivo · sin_pais                                    1.60     0.05     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 3 días vivo · sin filtro                   1.55     0.29     0.28  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 3 días vivo · sin filtro                                   1.35     0.08     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 3 días vivo · sin filtro                                1.59     0.14     0.14  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 3 días vivo · sin filtro                                1.48     0.13     0.13  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 3 días vivo · sin filtro                                1.46     0.20     0.20  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 3 días vivo · país USA                     1.52     0.25     0.22  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+total · 3 días vivo · país USA                                     1.40     0.08     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por país · 3 días vivo · país USA                                  1.35     0.16     0.12  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+magnitud · 3 días vivo · país USA                                  1.40     0.12     0.11  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por hora · 3 días vivo · país USA                                  1.50     0.18     0.20  Index(live_evento_actual_event_time)@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 3 días vivo · sin_pais                     1.37     0.11     0.11  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 3 días vivo · sin_pais                                     1.41     0.07     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 3 días vivo · sin_pais                                  1.36     0.10     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 3 días vivo · sin_pais                                  1.36     0.08     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 3 días vivo · sin_pais                                  1.41     0.13     0.10  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · todo · sin filtro                         11.41     3.30     3.12  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · todo · sin filtro                                          3.90     4.03     3.20  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin filtro                                       5.50     5.99     3.89  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin filtro                                       5.40     6.73     5.70  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · todo · país USA                            2.47     3.15     0.31  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+total · todo · país USA                                            2.57     2.34     0.09  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por país · todo · país USA                                         2.37     1.62     0.12  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+magnitud · todo · país USA                                         2.21     1.69     0.18  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · todo · sin_pais                           10.78     3.45     3.30  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · todo · sin_pais                                            3.57     2.89     2.77  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin_pais                                         3.56     3.79     2.99  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin_pais                                         4.99     5.74     6.10  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 24 h 2025 · sin filtro                     1.66     0.05     0.05  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h 2025 · sin filtro                                     1.57     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h 2025 · sin filtro                                  1.71     0.04     0.05  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h 2025 · sin filtro                                  1.66     0.03     0.03  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h 2025 · sin filtro                                  1.54     0.03     0.03  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 24 h 2025 · país USA                       1.45     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+total · 24 h 2025 · país USA                                       1.52     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por país · 24 h 2025 · país USA                                    1.46     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+magnitud · 24 h 2025 · país USA                                    2.41     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por hora · 24 h 2025 · país USA                                    2.11     0.02     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 24 h 2025 · sin_pais                       1.57     0.04     0.03  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h 2025 · sin_pais                                       1.57     0.02     0.02  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h 2025 · sin_pais                                    1.54     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h 2025 · sin_pais                                    1.50     0.02     0.03  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h 2025 · sin_pais                                    1.59     0.03     0.03  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+comparación 2025 total · global                                    8.91     8.65     8.87  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 mediana · global                                 13.10    13.30    13.44  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 total · pais                                      0.04     0.04     0.05  Index(historico_evento_pais)@evento  →  Index(historico_evento_pais)@evento
+comparación 2025 mediana · pais                                    0.14     0.15     0.13  Index(historico_evento_pais)@evento  →  Index(historico_evento_pais)@evento
+comparación 2025 total · sin_pais                                  7.48     7.44     7.70  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+comparación 2025 mediana · sin_pais                               11.01    10.41    11.19  Bitmap(historico_evento_time)@evento  →  Bitmap(historico_evento_time)@evento
+cobertura (min ingested_at)                                        2.53     2.07     2.31  Seq@evento_actual  →  Seq@evento_actual
+  máximo por variante (ms): V0 13.10 | V1 13.30 | V2 13.44 ; suma (ms): V0 169.7 | V1 90.3 | V2 79.0
+  consultas donde V2 mejora a V1 al menos 2× y ≥ 1 ms: 4 de 64: eventos (página 5000) · todo · país USA (3.1→0.3 ms); total · todo · país USA (2.3→0.1 ms); por país · todo · país USA (1.6→0.1 ms); magnitud · todo · país USA (1.7→0.2 ms)
+  consultas donde V1 (índice actual) mejora a V0 al menos 2× y ≥ 1 ms: 47 de 64
+
+## Escala 3 — ≈ 10 años de actividad equivalente (réplicas, ≈ 183 000 filas): live.evento_actual = 183420 filas (historico.evento = 18302)
+consulta                                                          V0 ms    V1 ms    V2 ms  acceso V1  →  acceso V2
+eventos (página 5000) · 24 h vivo · sin filtro                    18.52     0.13     0.16  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h vivo · sin filtro                                    18.00     0.05     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h vivo · sin filtro                                 15.21     0.08     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h vivo · sin filtro                                 14.52     0.07     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h vivo · sin filtro                                 14.96     0.10     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 24 h vivo · país USA                      14.90     0.11     0.12  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+total · 24 h vivo · país USA                                      15.51     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por país · 24 h vivo · país USA                                   15.72     0.06     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+magnitud · 24 h vivo · país USA                                   14.68     0.07     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por hora · 24 h vivo · país USA                                   14.62     0.09     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 24 h vivo · sin_pais                      15.10     0.06     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h vivo · sin_pais                                      15.03     0.04     0.04  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h vivo · sin_pais                                   15.27     0.06     0.06  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h vivo · sin_pais                                   15.28     0.05     0.05  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h vivo · sin_pais                                   15.13     0.06     0.05  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 3 días vivo · sin filtro                  14.65     0.36     0.33  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 3 días vivo · sin filtro                                  15.30     0.09     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 3 días vivo · sin filtro                               15.40     0.14     0.17  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 3 días vivo · sin filtro                               14.83     0.13     0.13  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 3 días vivo · sin filtro                               14.73     0.20     0.20  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 3 días vivo · país USA                    14.73     0.24     0.26  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+total · 3 días vivo · país USA                                    14.51     0.08     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por país · 3 días vivo · país USA                                 15.02     0.12     0.15  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+magnitud · 3 días vivo · país USA                                 15.11     0.15     0.13  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por hora · 3 días vivo · país USA                                 15.59     0.23     0.17  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 3 días vivo · sin_pais                    15.89     0.11     0.13  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 3 días vivo · sin_pais                                    16.99     0.09     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 3 días vivo · sin_pais                                 16.59     0.10     0.10  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 3 días vivo · sin_pais                                 15.83     0.11     0.09  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 3 días vivo · sin_pais                                 15.36     0.10     0.10  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · todo · sin filtro                         57.10     4.99     4.98  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · todo · sin filtro                                         17.73    20.27    21.04  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin filtro                                      23.98    24.07    28.41  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin filtro                                      27.37    32.26    31.55  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · todo · país USA                           15.82    18.25     0.83  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+total · todo · país USA                                           15.32    17.46     0.20  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+por país · todo · país USA                                        16.30    17.77     0.27  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+magnitud · todo · país USA                                        15.63    16.98     0.33  Seq@evento_actual  →  Bitmap(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · todo · sin_pais                           62.72     5.27     5.34  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · todo · sin_pais                                           22.45    21.55    20.75  Seq@evento_actual  →  Seq@evento_actual
+por país · todo · sin_pais                                        21.34    21.45    22.02  Seq@evento_actual  →  Seq@evento_actual
+magnitud · todo · sin_pais                                        27.01    30.82    26.52  Seq@evento_actual  →  Seq@evento_actual
+eventos (página 5000) · 24 h 2025 · sin filtro                    14.96     0.41     0.37  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h 2025 · sin filtro                                    14.98     0.07     0.07  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h 2025 · sin filtro                                 15.13     0.16     0.12  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h 2025 · sin filtro                                 14.69     0.19     0.12  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h 2025 · sin filtro                                 15.54     0.29     0.19  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+eventos (página 5000) · 24 h 2025 · país USA                      15.60     0.08     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+total · 24 h 2025 · país USA                                      15.14     0.08     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por país · 24 h 2025 · país USA                                   14.78     0.07     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+magnitud · 24 h 2025 · país USA                                   14.80     0.09     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+por hora · 24 h 2025 · país USA                                   14.86     0.06     0.01  Index(live_evento_actual_event_time)@evento_actual  →  Index(f5_pais_tiempo)@evento_actual
+eventos (página 5000) · 24 h 2025 · sin_pais                      14.82     0.27     0.26  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+total · 24 h 2025 · sin_pais                                      14.96     0.07     0.08  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por país · 24 h 2025 · sin_pais                                   14.85     0.11     0.11  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+magnitud · 24 h 2025 · sin_pais                                   14.61     0.12     0.11  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+por hora · 24 h 2025 · sin_pais                                   15.10     0.16     0.18  Index(live_evento_actual_event_time)@evento_actual  →  Index(live_evento_actual_event_time)@evento_actual
+comparación 2025 total · global                                    7.67     8.20     8.25  -  →  -
+comparación 2025 mediana · global                                 12.88    12.70    12.21  -  →  -
+comparación 2025 total · pais                                      0.04     0.06     0.06  Bitmap(historico_evento_pais)@evento  →  Bitmap(historico_evento_pais)@evento
+comparación 2025 mediana · pais                                    0.13     0.15     0.13  Bitmap(historico_evento_pais)@evento  →  Bitmap(historico_evento_pais)@evento
+comparación 2025 total · sin_pais                                  6.71     6.97     6.28  -  →  -
+comparación 2025 mediana · sin_pais                                9.87    10.22    10.76  -  →  -
+cobertura (min ingested_at)                                       14.69    13.75    14.20  Seq@evento_actual  →  Seq@evento_actual
+  máximo por variante (ms): V0 62.72 | V1 32.26 | V2 31.55 ; suma (ms): V0 1062.6 | V1 288.7 | V2 219.1
+  consultas donde V2 mejora a V1 al menos 2× y ≥ 1 ms: 4 de 64: eventos (página 5000) · todo · país USA (18.2→0.8 ms); total · todo · país USA (17.5→0.2 ms); por país · todo · país USA (17.8→0.3 ms); magnitud · todo · país USA (17.0→0.3 ms)
+  consultas donde V1 (índice actual) mejora a V0 al menos 2× y ≥ 1 ms: 47 de 64
+
+Duración total de la medición: 20 s. Los índices de la variante V2 quedan creados en la base temporal.
+La base temporal obs_escala_f5 se MANTIENE para las pruebas de tiempos y del navegador (se elimina con --eliminar).
+fin rc=0
+
+## Lectura y decisión de índices (T048)
+Criterio aplicado (el de la hoja de ruta y de F3: un índice solo se mantiene si mejora de forma apreciable; aquí «al menos 2× y ≥ 1 ms» en alguna consulta): NO es un umbral de rendimiento de la API, solo la regla para decidir si un índice compensa.
+- Volumen REAL actual (400 filas en live): todas las consultas sobre live tardan 0,05–0,28 ms con o sin índices (acceso secuencial, como en F3). Ningún índice mejora ≥ 2× y ≥ 1 ms (0 de 49).
+- Con ≈ 18 700 filas (un año de datos como estado actual): el índice YA EXISTENTE `idx_live_evento_actual_event_time` (F3) mejora 47 de 64 consultas (p. ej. eventos de 24 h: 1,59 → 0,12 ms; todo el periodo: 11,4 → 3,3 ms). Los candidatos nuevos solo ayudan a 4 consultas de periodo
+  largo con filtro de país (3,1 → 0,3 ms): ganancia absoluta ≤ 3 ms.
+- Con ≈ 183 000 filas (≈ 10 años de actividad al ritmo actual): el índice existente baja el peor caso de 62,7 a 32,3 ms; `(country_id, event_time)` y `(geo_resultado, event_time)` mejoran las mismas 4 consultas (17-18 → 0,2-0,8 ms) y `por país · todo` sigue siendo un recorrido secuencial en las tres variantes
+  (agrega todo el periodo: ningún índice lo evita).
+- Las consultas más lentas a volumen real NO son las de `live` sino las de la comparación con 2025 sobre `historico.evento` (8-15 ms, `Bitmap` sobre su índice por fecha y filtro del tipo en `raw`), independientes de los índices de live.
+- Aparte (medido en la base de escala): `min(ingested_at)` de la cobertura (se ejecuta en `/api/salud` y en cada petición de eventos) es un recorrido secuencial: 0,06 ms con 400 filas, 2,5 con 18 700 y 12,7-14,7 ms con 183 000; un índice `(ingested_at)` lo deja en 0,024 ms. No compensa hoy.
+DECISIÓN: no se añade ningún índice ni se crea `sql/004_esquema_f5.sql`. Se mantiene el de F3. Se reevaluaría (volviendo a ejecutar `scripts/f5/escala_57.py`) si `live` se acerca a las ~183 000 filas (a ~200-280 eventos/día serían más de dos años), empezando por `(ingested_at)` y `(country_id, event_time)`.
+Datos de escala: réplica de datos reales tratada como sintética, solo en la base temporal obs_escala_f5; nunca en la base real ni en el análisis de sismicidad.

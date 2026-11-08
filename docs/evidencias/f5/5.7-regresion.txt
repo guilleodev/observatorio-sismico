@@ -1,0 +1,88 @@
+# 5.7 T052 - regresion completa y aislamiento 2026-11-07T18:32:49Z
+
+## Frontend: node --test + build
+ℹ tests 87
+ℹ pass 87
+ℹ fail 0
+main-NSAXL64E.js      | main          | 334.37 kB |                91.22 kB
+                      | Initial total | 380.18 kB |               104.92 kB
+Application bundle generation complete. [1.777 seconds]
+▲ [WARNING] Module 'leaflet' used by 'src/app/app.component.ts' is not ESM
+sha256 de lo no modificado (deben coincidir con 5.4-linea-base.txt):
+d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c  public/datos/paises.geojson
+3462cabfe534ea55ae5935bdbf5d72b9874b5b005f0eef5dd9fab5b6d8e5848d  public/datos/terremotos-demo.geojson
+6036983e5fc00f0169c9e939b1816ed771eee00e27f2fcc517b819041460b9ef  public/_redirects
+af4a88eb8a92a9dc6205e086b7ef5578ab41c34610fc5048a88bf4e1f9d1b827  netlify.toml
+934e0c913b10a3273a65de5430d0d5defaf54c9271ba345d2736afd99246e1d9  package.json
+0185b54a7ebe69b3452fdf38e1a024183cf5b3116d35e7c57efa269fcd61e339  package-lock.json
+d42a020876ef636cb993c7c35e2738ce0a095243d714f9eae7fd02e4e399f87d  tsconfig.json
+caa84e8abdba5afa155da8dc22276ae5144efe50508f6c346ecf99e7ad5015f3  tsconfig.app.json
+4e288bfc5cb983e004a192db4266597d0fee3c7f5b14478618fd9589ec5108b9  angular.json
+767e582c024e7bce6f13c70671cac1d2e579b613c23105c71fb60bbccee17d1e  src/index.html
+7fdacdc1b9222f58b1a113cc1bfdca1c273b0e4218d4dc57b329893655e38d7b  src/main.ts
+d591842774733399c438f0b1d9f1aeca708a0a62790b3cf2fceee1be700f9038  src/styles.css
+27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525  public/config.json
+
+## Backend: suite completa (incluye test_aislamiento.py y test_aislamiento_api.py)
+661 passed in 48.51s
+
+## Servicios y contenedores
+api Up 27 minutes (healthy) 4ac7520a35a0
+consumer Up 9 hours (healthy) 1bd149cce180
+kafka Up 10 hours (healthy) 8334b55b327c
+postgres Up 10 hours (healthy) 046081f539aa
+producer Up 9 hours (healthy) 8e645f8153e2
+contenedores temporales api-f5*: 0
+bases temporales obs_* (excluida la real «observatorio»; el patron LIKE 'obs_%' la contaba): 0
+puertos publicados:
+api: 127.0.0.1:8000->8000/tcp
+consumer: 
+kafka: 9092/tcp
+postgres: 5432/tcp
+producer: 
+volumenes: observatorio_kafkadata observatorio_pgdata 
+
+## Invariantes de Kafka y PostgreSQL
+== invariantes [5.7] 2026-11-07T18:33:55Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=621 versiones=605 cuarentena=16 | offset/final/lag=631/631/0
+geo: reparto live=interior=337, sin_pais=66 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+## Recuentos de las tablas definitivas (T001 -> ahora)
+live.evento_actual: 403
+live.evento_version: 606
+live.version_publicada: 622
+live.cuarentena: 16
+live.consulta_extraccion: 902
+live.respuesta_original: 378
+live.hueco: 0
+geo.pais: 177
+geo.catalogo: 1
+historico.consulta: 12
+historico.archivo: 12
+historico.evento: 18302
+historico.cuarentena: 0
+sintetico.evento_actual: 18
+historico md5(eventos) esperado 057f8f4ebaaf142ebe3eda20346c65f7 | sintetico md5 esperado 5b9d041e8ff21ee9822d336b53ee8aff (iguales a 5.1-entorno.txt; ver arriba)
+live: solo crece por la ingesta normal; 0 datos de prueba: filas 'esc-%' en live.evento_actual = 0, ids de prueba (prueba-/h0/q0) = 0
+
+## Documentos del profesor y SDD anteriores
+cambios en docs/referencias, specs 001-003, catalogo: 0
+
+## Git (modificados)
+ M .env.example
+ M backend/src/observatorio/api/main.py
+ M backend/src/observatorio/api/repositorio.py
+ M backend/src/observatorio/config.py
+ M backend/tests/unit/test_api_eventos.py
+ M backend/tests/unit/test_config.py
+ M backend/tests/unit/test_last_ingestion.py
+ M compose.yaml
+ M docs/HOJA-DE-RUTA.md
+ M frontend/src/app/app.component.css
+ M frontend/src/app/app.component.html
+ M frontend/src/app/app.component.ts

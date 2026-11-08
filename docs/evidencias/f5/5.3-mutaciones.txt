@@ -1,0 +1,28 @@
+# 5.3 T017-T021 - mutaciones del paso 5.3
+Base sin mutar: OK (101 passed, 1 warning in 6.43s)
+
+  DETECTADA  casillas horarias por defecto (floor en vez de techo)  [FAILED tests/unit/test_api_horas.py::test_end_exclusivo_en_hh00_no_crea_casilla_extra_y_un_milisegundo_mas_si]
+  DETECTADA  hora del evento redondeada en vez de truncada  [FAILED tests/unit/test_api_horas.py::test_horas_sin_eventos_aparecen_con_cero_y_los_bordes_van_a_la_hora_corre]
+  DETECTADA  las horas sin eventos no valen 0  [FAILED tests/unit/test_api_horas.py::test_horas_sin_eventos_aparecen_con_cero_y_los_bordes_van_a_la_hora_corre]
+  DETECTADA  el límite de casillas se aplica con >=  [FAILED tests/unit/test_api_horas.py::test_limite_de_744_casillas[744 casillas justas (31 d\xedas desde hh:00)-]
+  DETECTADA  la serie omitida devuelve una lista vacía y no null  [FAILED tests/unit/test_api_horas.py::test_limite_de_744_casillas[745 casillas: un milisegundo m\xe1s-179310960]
+  DETECTADA  el límite de casillas se ignora  [FAILED tests/unit/test_api_horas.py::test_limite_de_744_casillas[745 casillas: un milisegundo m\xe1s-179310960]
+  DETECTADA  2025 con 364 días  [FAILED tests/unit/test_api_comparacion.py::test_estructura_fuentes_y_ventana_completa_sin_motivos]
+  DETECTADA  la magnitud mínima efectiva no se eleva a 4  [FAILED tests/unit/test_api_comparacion.py::test_la_magnitud_minima_efectiva_es_al_menos_4_en_ambos_periodos_y_]
+  DETECTADA  el esperado no se multiplica por los días de la ventana  [E             comparison failed]
+  DETECTADA  la variación con media 0 se calcula igualmente  [FAILED tests/unit/test_api_comparacion.py::test_cifras_a_mano_media_sobre_365_y_variacion[ZC1 (sin hist\xf3ric]
+  DETECTADA  el histórico incluye otros tipos de evento  [FAILED tests/unit/test_api_comparacion.py::test_cifras_a_mano_media_sobre_365_y_variacion[global \u2265 4]]
+  DETECTADA  el histórico usa magnitud > en vez de >=  [FAILED tests/unit/test_api_comparacion.py::test_cifras_a_mano_media_sobre_365_y_variacion[global \u2265 4]]
+  DETECTADA  el histórico ignora el ámbito geográfico  [FAILED tests/unit/test_api_comparacion.py::test_cifras_a_mano_media_sobre_365_y_variacion[ZA1]]
+  DETECTADA  la mediana se sustituye por la media  [FAILED tests/unit/test_api_comparacion.py::test_la_mediana_diaria_es_la_de_la_serie_con_los_dias_de_cero]
+  DETECTADA  sin histórico se inventan ceros  [FAILED tests/unit/test_api_comparacion.py::test_sin_historico_cargado_no_se_inventan_ceros]
+  DETECTADA  hueco con límites inclusivos  [FAILED tests/unit/test_api_comparacion.py::test_un_hueco_recuperado_o_fuera_de_la_ventana_no_cuenta]
+  DETECTADA  los huecos recuperados también marcan  [FAILED tests/unit/test_api_comparacion.py::test_un_hueco_recuperado_o_fuera_de_la_ventana_no_cuenta]
+  DETECTADA  cobertura con <= en vez de <  [FAILED tests/unit/test_api_comparacion.py::test_ventana_que_empieza_antes_de_la_cobertura_en_vivo]
+  DETECTADA  hasta_ahora con >=  [FAILED tests/unit/test_api_comparacion.py::test_ventana_que_llega_hasta_ahora_por_el_retraso_de_publicacion]
+  DETECTADA  última lectura con >=  [FAILED tests/unit/test_api_comparacion.py::test_la_ventana_que_termina_justo_en_la_ultima_lectura_correcta_est]
+  DETECTADA  el margen de publicación se ignora  [FAILED tests/unit/test_api_comparacion.py::test_ventana_que_llega_hasta_ahora_por_el_retraso_de_publicacion]
+  DETECTADA  el histórico cuenta eventos del estado en vivo  [FAILED tests/unit/test_api_comparacion.py::test_cifras_a_mano_media_sobre_365_y_variacion[global \u2265 4]]
+
+Restaurado: OK (101 passed, 1 warning in 6.26s)
+Mutaciones: 22 | detectadas: 22 | supervivientes: ninguna

@@ -1,0 +1,72 @@
+# 5.4 T030 - pruebas, compilacion y comprobacion en navegador 2026-11-07T17:39:58Z
+
+## node --test (Node v24.11.1), sin dependencias nuevas
+✔ construye la URL sin barra doble, codifica los parámetros y envía la cabecera de ngrok (13.1382ms)
+✔ sin omitirAvisoNgrok no se envía la cabecera y /api/salud no lleva parámetros (0.5972ms)
+✔ un 422 es un error de validación con el detalle de la API (0.53ms)
+✔ un 503 y otros códigos HTTP son errores de servidor; nunca se tratan como cero eventos (1.1915ms)
+✔ fallo de red, tiempo agotado y petición cancelada se distinguen (0.4455ms)
+✔ el tiempo de espera es el configurado (15 s por defecto) y expira de verdad (38.8728ms)
+✔ JSON inválido o forma inesperada es un error de formato (0.7627ms)
+✔ todasLasPaginas sigue next_offset con el MISMO periodo y no repite eventos (0.6549ms)
+✔ la guarda de páginas marca el resultado como incompleto y nunca finge que está completo (0.3829ms)
+✔ un error en una página posterior se propaga (no se devuelve un resultado parcial como completo) (0.3192ms)
+✔ una respuesta sin eventos es válida (features vacío), no un error (0.1829ms)
+✔ UltimaPeticion: la nueva cancela a la anterior y la respuesta tardía deja de ser vigente (0.1047ms)
+✔ simulación de respuestas fuera de orden: solo la última actualiza el estado (43.4545ms)
+✔ instanteApi usa generated de /api/salud cuando existe (una sola petición por refresco) (0.4301ms)
+✔ instanteApi recurre a metadata.generated de /api/eventos?limit=1 si /api/salud aún no lo trae, y no repite la sonda (0.3302ms)
+✔ instanteApi propaga los errores de la API (un 503 no se disfraza de reloj local) (0.1458ms)
+✔ el estado inicial son las últimas 24 h sin magnitud ni país (0.7888ms)
+✔ las últimas 24 h y los últimos 7 días se resuelven desde generated con start y end explícitos (0.7956ms)
+✔ con un reloj de cliente desfasado la ventana no se desplaza: solo cuenta generated de la API (0.1199ms)
+✔ periodo personalizado: fechas UTC, fin exclusivo y reglas de la API para los extremos que faltan (0.1927ms)
+✔ validación: periodo personalizado incompleto, ilegible o invertido (0.187ms)
+✔ validación de la magnitud mínima (0.168ms)
+✔ analizarMagnitud y analizarFechaUtc (0.1263ms)
+✔ parámetros: min_mag, country_id normalizado y sin_pais reservado (0.1098ms)
+✔ los mismos filtros dan los mismos parámetros para eventos y estadísticas (un único estado) (0.0886ms)
+✔ resumen de los filtros activos y aviso de cobertura (0.1553ms)
+✔ aCampoFecha rellena los campos de fecha en UTC (0.1075ms)
+✔ la lista de países sale del catálogo entregado, sin duplicados ni identificadores vacíos y ordenada por nombre (5.5043ms)
+✔ fecha UTC ISO o ND (1.3333ms)
+✔ color por profundidad con los cortes del mapa (70 y 300 km) y gris sin dato (0.1055ms)
+✔ radio por magnitud: creciente, acotado entre 3 y 18 y 4 sin magnitud (el nulo no es 0) (0.1238ms)
+✔ ficha del evento como texto, con ND y «Sin país asignado» (0.1743ms)
+✔ numeroFinito y texto «sin valor» (0.0981ms)
+ℹ tests 33
+ℹ pass 33
+ℹ fail 0
+
+## npm run build (sin tocar tsconfig.json: los modulos puros solo usan import type y rutas sin extension; NO hizo falta allowImportingTsExtensions)
+main-EXHCHLQS.js      | main          | 285.54 kB |                78.50 kB
+                      | Initial total | 331.34 kB |                92.21 kB
+Application bundle generation complete. [1.522 seconds]
+▲ [WARNING] Module 'leaflet' used by 'src/app/app.component.ts' is not ESM
+
+## sha256 tras 5.4 (los no modificados deben coincidir con 5.4-linea-base.txt)
+d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c  public/datos/paises.geojson
+3462cabfe534ea55ae5935bdbf5d72b9874b5b005f0eef5dd9fab5b6d8e5848d  public/datos/terremotos-demo.geojson
+6036983e5fc00f0169c9e939b1816ed771eee00e27f2fcc517b819041460b9ef  public/_redirects
+af4a88eb8a92a9dc6205e086b7ef5578ab41c34610fc5048a88bf4e1f9d1b827  netlify.toml
+934e0c913b10a3273a65de5430d0d5defaf54c9271ba345d2736afd99246e1d9  package.json
+0185b54a7ebe69b3452fdf38e1a024183cf5b3116d35e7c57efa269fcd61e339  package-lock.json
+d42a020876ef636cb993c7c35e2738ce0a095243d714f9eae7fd02e4e399f87d  tsconfig.json
+caa84e8abdba5afa155da8dc22276ae5144efe50508f6c346ecf99e7ad5015f3  tsconfig.app.json
+4e288bfc5cb983e004a192db4266597d0fee3c7f5b14478618fd9589ec5108b9  angular.json
+767e582c024e7bce6f13c70671cac1d2e579b613c23105c71fb60bbccee17d1e  src/index.html
+7fdacdc1b9222f58b1a113cc1bfdca1c273b0e4218d4dc57b329893655e38d7b  src/main.ts
+d591842774733399c438f0b1d9f1aeca708a0a62790b3cf2fceee1be700f9038  src/styles.css
+27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525  public/config.json
+# modificados: src/app/app.component.ts y app.component.html; app.component.css SIN cambios:
+aa14c5d4b410876aa2ebfe9bc675c98f8b37029b7b33aee41d9bc72c725c7df4  src/app/app.component.css
+
+## Archivos nuevos del frontend
+ M frontend/src/app/app.component.html
+ M frontend/src/app/app.component.ts
+?? frontend/src/app/api.service.ts
+?? frontend/src/app/filtros.ts
+?? frontend/src/app/filtros/
+?? frontend/src/app/formato.ts
+?? frontend/src/app/modelos.ts
+?? frontend/tests/

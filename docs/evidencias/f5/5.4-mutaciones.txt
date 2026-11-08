@@ -1,0 +1,28 @@
+# 5.4 T025-T027 - mutaciones del frontend
+Base sin mutar: OK (ℹ pass 33 | ℹ fail 0)
+
+  DETECTADA  la ventana usa el reloj del navegador y no generated  [✖ las últimas 24 h y los últimos 7 días se resuelven desde generated con start y end explícitos (0.6]
+  DETECTADA  los últimos 7 días son 6  [✖ las últimas 24 h y los últimos 7 días se resuelven desde generated con start y end explícitos (0.7]
+  DETECTADA  «desde = hasta» se acepta  [✖ validación: periodo personalizado incompleto, ilegible o invertido (0.4662ms) | ℹ pass 32]
+  DETECTADA  el periodo personalizado sin fechas se acepta  [✖ validación: periodo personalizado incompleto, ilegible o invertido (0.4594ms) | ℹ pass 32]
+  DETECTADA  min_mag no viaja a la API  [✖ parámetros: min_mag, country_id normalizado y sin_pais reservado (0.7063ms) | ℹ pass 32]
+  DETECTADA  sin_pais se pasa a mayúsculas  [✖ parámetros: min_mag, country_id normalizado y sin_pais reservado (0.5307ms) | ℹ pass 32]
+  DETECTADA  el país en minúsculas no se normaliza  [✖ parámetros: min_mag, country_id normalizado y sin_pais reservado (0.7019ms) | ℹ pass 32]
+  DETECTADA  el 31 de febrero se acepta  [✖ validación: periodo personalizado incompleto, ilegible o invertido (0.5043ms) | ✖ analizarMagnitud]
+  DETECTADA  una magnitud infinita se acepta  [✖ validación de la magnitud mínima (0.5761ms) | ℹ pass 32]
+  DETECTADA  start sin zona horaria  [✖ las últimas 24 h y los últimos 7 días se resuelven desde generated con start y end explícitos (1.2]
+  DETECTADA  el catálogo no se ordena por nombre  [✖ la lista de países sale del catálogo entregado, sin duplicados ni identificadores vacíos y ordenad]
+  DETECTADA  un 422 se trata como error de servidor  [✖ un 422 es un error de validación con el detalle de la API (0.763ms) | ℹ pass 32]
+  DETECTADA  las páginas siguientes no llevan offset (repiten la primera)  [✖ todasLasPaginas sigue next_offset con el MISMO periodo y no repite eventos (3.0684ms) | ✖ un error]
+  DETECTADA  la guarda de páginas corta una página más tarde  [✖ la guarda de páginas marca el resultado como incompleto y nunca finge que está completo (0.8745ms)]
+  DETECTADA  la guarda de páginas finge que está completo  [✖ la guarda de páginas marca el resultado como incompleto y nunca finge que está completo (0.7772ms)]
+  DETECTADA  una petición nueva no cancela a la anterior  [✖ UltimaPeticion: la nueva cancela a la anterior y la respuesta tardía deja de ser vigente (0.4634ms]
+  DETECTADA  toda respuesta tardía es vigente  [✖ UltimaPeticion: la nueva cancela a la anterior y la respuesta tardía deja de ser vigente (0.4787ms]
+  DETECTADA  la cabecera de ngrok nunca se envía  [✖ construye la URL sin barra doble, codifica los parámetros y envía la cabecera de ngrok (16.8919ms)]
+  DETECTADA  no hay respaldo si /api/salud no trae generated  [✖ instanteApi recurre a metadata.generated de /api/eventos?limit=1 si /api/salud aún no lo trae, y n]
+  DETECTADA  el tiempo agotado se confunde con fallo de red  [✖ fallo de red, tiempo agotado y petición cancelada se distinguen (0.7688ms) | ✖ el tiempo de espera]
+  DETECTADA  el corte de color a 70 km es inclusivo  [✖ color por profundidad con los cortes del mapa (70 y 300 km) y gris sin dato (0.5522ms) | ℹ pass 32]
+  DETECTADA  sin magnitud el radio es 0  [✖ radio por magnitud: creciente, acotado entre 3 y 18 y 4 sin magnitud (el nulo no es 0) (0.4757ms) ]
+
+Restaurado: OK (ℹ pass 33 | ℹ fail 0)
+Mutaciones: 22 | detectadas: 22 | supervivientes: ninguna

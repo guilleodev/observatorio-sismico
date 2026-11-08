@@ -1,0 +1,61 @@
+# 5.1 T009 - matriz contra la API real 2026-11-07T15:48:14Z  (http://api:8000)
+filas en live.evento_actual: 382 (retiradas: 3) | ventana fija: [2026-11-06T02:35:03+00:00, 2026-11-07T14:35:03+00:00)
+
+== 1. Filtros válidos: la API (todas las páginas, limit=50) frente al oráculo independiente ==
+  OK    ventana fija: 279 eventos en 6 páginas = oráculo (279), total=279, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    min_mag=4: 19 eventos en 1 páginas = oráculo (19), total=19, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    min_mag=5.5: 2 eventos en 1 páginas = oráculo (2), total=2, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    country_id=USA: 223 eventos en 5 páginas = oráculo (223), total=223, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    country_id en minúsculas: 223 eventos en 5 páginas = oráculo (223), total=223, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    country_id=sin_pais: 49 eventos en 1 páginas = oráculo (49), total=49, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    USA + min_mag=3: 3 eventos en 1 páginas = oráculo (3), total=3, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    sin_pais + min_mag=4: 16 eventos en 1 páginas = oráculo (16), total=16, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    ventana de 6 h: 48 eventos en 1 páginas = oráculo (48), total=48, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    solo end (start = end − 24 h): 174 eventos en 4 páginas = oráculo (174), total=174, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    min_mag=10 (sin resultados): 0 eventos en 1 páginas = oráculo (0), total=0, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    periodo pasado sin datos: 0 eventos en 1 páginas = oráculo (0), total=0, sin_magnitud=0 (oráculo 0), 0 duplicados
+  OK    periodo futuro: 0 eventos en 1 páginas = oráculo (0), total=0, sin_magnitud=0 (oráculo 0), 0 duplicados
+
+== 2. Paginación con límite pequeño y estabilidad con la ventana resuelta ==
+  OK    primera página: count=25 truncated=true next_offset=25 total=170
+  OK    recorrido con el period resuelto: 170 eventos únicos en 7 páginas = total 170
+  OK    última página: truncated=false, next_offset=null
+  OK    offset fuera de rango: 200 con página vacía (no es error)
+
+== 3. Contrato: sin parámetros ==
+  OK    200, application/json, FeatureCollection
+  OK    metadata conserva generated, last_ingestion, mode, count y truncated (mode=live)
+  OK    campos nuevos aditivos: ['coverage', 'limit', 'next_offset', 'offset', 'period', 'sin_magnitud', 'total']
+  OK    periodo resuelto = últimas 24 h hasta generated
+  OK    límite máximo 5000; 170 eventos de las últimas 24 h, sin truncado
+  OK    propiedades de cada Feature intactas
+  OK    sin NaN/Infinity, sin histórico ni sintético en la respuesta
+  OK    coverage.live_since = min(ingested_at) − 24 h = 1793897694423
+  OK    last_ingestion = última consulta correcta a USGS (±2 min por la ingesta en curso)
+
+== 4. Parámetros inválidos: 422 con {error, detail}; nunca una lista vacía ==
+  OK    {'start': 'ayer'} -> 422 parametro_invalido: start debe ser una fecha ISO 8601 (p. ej. 2026-11-01T00:00:00Z); recibido 'ayer'. Si lleva
+  OK    {'end': ''} -> 422 parametro_invalido: end no puede estar vacío
+  OK    {'start': '2026-11-02', 'end': '2026-11-01'} -> 422 parametro_invalido: start debe ser anterior a end (start=2026-11-02T00:00:00+00:00, end=2026-11-01T00:00:00+00
+  OK    {'min_mag': 'abc'} -> 422 parametro_invalido: min_mag debe ser un número finito, no 'abc'
+  OK    {'min_mag': 'NaN'} -> 422 parametro_invalido: min_mag debe ser un número finito, no 'NaN'
+  OK    {'min_mag': 'inf'} -> 422 parametro_invalido: min_mag debe ser un número finito, no 'inf'
+  OK    {'country_id': 'ATLANTIDA'} -> 422 parametro_invalido: country_id desconocido: 'ATLANTIDA' no está en el catálogo de países (use «sin_pais» para 
+  OK    {'limit': '5001'} -> 422 parametro_invalido: limit debe estar entre 1 y 5000 (máximo documentado de la API), no 5001
+  OK    {'limit': '0'} -> 422 parametro_invalido: limit debe estar entre 1 y 5000 (máximo documentado de la API), no 0
+  OK    {'limit': 'x'} -> 422 parametro_invalido: limit debe ser un entero, no 'x'
+  OK    {'offset': '-1'} -> 422 parametro_invalido: offset debe estar entre 0 y 2000000000, no -1
+  OK    {'min_magnitud': '4'} -> 422 parametro_invalido: parámetro desconocido: 'min_magnitud'; admitidos: start, end, min_mag, country_id, limit, 
+  OK    {'start': '2026-11-01T00:00:00 02:00'} -> 422 parametro_invalido: start debe ser una fecha ISO 8601 (p. ej. 2026-11-01T00:00:00Z); recibido '2026-11-01T00:0
+  OK    parámetro repetido -> 422: parámetro repetido: 'start'
+  OK    desplazamiento con %2B codificado -> 200
+
+== 5. CORS, métodos y salud ==
+  OK    preflight OPTIONS con ngrok-skip-browser-warning: origen de desarrollo permitido
+  OK    POST -> 405 (la API solo lee)
+  OK    /api/salud sin cambios en 5.1: {'status': 'ok', 'database': 'ok', 'last_ingestion': 1794066473081}
+
+== 6. Idempotencia: dos lecturas idénticas de una ventana fija ==
+  OK    mismas features y metadata (salvo generated y last_ingestion) en dos lecturas
+
+RESULTADO: OK

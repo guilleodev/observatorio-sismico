@@ -1,0 +1,51 @@
+# 5.3 T022 - matriz contra la API real 2026-11-07T17:27:06Z  (http://api:8000)
+live.evento_actual: 392 filas | historico.evento: 18302 | huecos pendientes: 0 | última lectura correcta: 2026-11-07 17:26:55Z | ventana fija termina en 2026-11-07T16:09:37Z
+
+== 1. Serie por hora UTC frente al oráculo (cuentas con división entera de milisegundos) ==
+  OK    36 h: 37 casillas (0 a cero), Σ = total = 276 = oráculo 276
+  OK    36 h país USA: 37 casillas (1 a cero), Σ = total = 220 = oráculo 220
+  OK    36 h sin_pais: 37 casillas (12 a cero), Σ = total = 48 = oráculo 48
+  OK    36 h min_mag 3: 37 casillas (16 a cero), Σ = total = 29 = oráculo 29
+  OK    6 h parcial (mitad de hora): 8 casillas (1 a cero), Σ = total = 46 = oráculo 46
+  OK    1 hora: 2 casillas (0 a cero), Σ = total = 6 = oráculo 6
+  OK    periodo sin eventos: 6 casillas (6 a cero), Σ = total = 0 = oráculo 0
+  OK    periodo por defecto: 25 casillas, la última es la hora UTC en curso
+
+== 2. Límite de 744 casillas: se omite SOLO la serie ==
+  OK    744 casillas justas: serie completa
+  OK    745 casillas (un segundo más): serie omitida con motivo
+  OK    el resto de bloques sigue válido (total=382, por_pais, magnitud, profundidad, comparación)
+
+== 3. Comparación con 2025 frente a un oráculo independiente y a la implementación de F4 ==
+  OK    1 d · global: reciente=15 (nulos 0), 2025=18302 → media 50.1425/día, esperado 50.1425, mediana 43, variación -0.70, incompleto=False []
+  OK    1 d · USA: reciente=0 (nulos 0), 2025=71 → media 0.1945/día, esperado 0.1945, mediana 0, variación -1.00, incompleto=False []
+  OK    1 d · sin_pais: reciente=10 (nulos 0), 2025=14350 → media 39.3151/día, esperado 39.3151, mediana 32, variación -0.75, incompleto=False []
+  OK    1 d · global min_mag 2 (se eleva a 4): reciente=15 (nulos 0), 2025=18302 → media 50.1425/día, esperado 50.1425, mediana 43, variación -0.70, incompleto=False []
+  OK    1 d · global min_mag 5: reciente=2 (nulos 0), 2025=2129 → media 5.8329/día, esperado 5.8329, mediana 5, variación -0.66, incompleto=False []
+  OK    1 d · AGO (sin eventos en 2025): reciente=0 (nulos 0), 2025=0 → media 0.0000/día, esperado 0.0000, mediana 0, variación no definida, incompleto=False []
+  OK    3 d · global: reciente=31 (nulos 0), 2025=18302 → media 50.1425/día, esperado 150.4274, mediana 43, variación -0.79, incompleto=True ['antes_de_cobertura']
+  OK    3 d · USA: reciente=0 (nulos 0), 2025=71 → media 0.1945/día, esperado 0.5836, mediana 0, variación -1.00, incompleto=True ['antes_de_cobertura']
+  OK    3 d · sin_pais: reciente=23 (nulos 0), 2025=14350 → media 39.3151/día, esperado 117.9452, mediana 32, variación -0.80, incompleto=True ['antes_de_cobertura']
+  OK    3 d · global min_mag 2 (se eleva a 4): reciente=31 (nulos 0), 2025=18302 → media 50.1425/día, esperado 150.4274, mediana 43, variación -0.79, incompleto=True ['antes_de_cobertura']
+  OK    3 d · global min_mag 5: reciente=5 (nulos 0), 2025=2129 → media 5.8329/día, esperado 17.4986, mediana 5, variación -0.71, incompleto=True ['antes_de_cobertura']
+  OK    3 d · AGO (sin eventos en 2025): reciente=0 (nulos 0), 2025=0 → media 0.0000/día, esperado 0.0000, mediana 0, variación no definida, incompleto=True ['antes_de_cobertura']
+
+== 4. Periodo reciente incompleto con datos reales ==
+  OK    ventana de 24 h que termina 1 h antes del último evento: completa (sin huecos, dentro de la cobertura, anterior a la última lectura)
+  OK    ventana por defecto (hasta generated): incompleta ['hasta_ahora', 'despues_de_ultima_lectura']
+  OK    ventana que empieza 2 h antes de la cobertura (2026-11-05 16:54Z): ['antes_de_cobertura']
+  OK    no hay huecos pendientes reales: el motivo hueco_pendiente se verifica en la base temporal (test_api_comparacion.py)
+
+== 5. Contrato y errores ==
+  OK    claves: ['comparacion', 'filters', 'generated', 'magnitud', 'period', 'por_hora', 'por_pais', 'profundidad', 'sin_magnitud', 'total']
+  OK    sin NaN/Infinity ni sintético
+  OK    {'country_id': 'ATLANTIDA'} -> 422
+  OK    {'min_mag': 'abc'} -> 422
+  OK    {'limit': '5'} -> 422
+
+RESULTADO: OK
+
+== 6. Observación de cobertura (NO es un fallo del cálculo; limitación a documentar) ==
+  Eventos por día: 2025 histórico [4,4.5) = 26.69 y >= 4.5 = 23.45 | feed en vivo (últimos 3 días) [4,4.5) = 3.00 y >= 4.5 = 7.33
+  El feed all_day de USGS no garantiza cobertura completa fuera de EE. UU. por debajo de M4.5: comparar a >= 4 mezcla distinta cobertura de detección (ENUNCIADO §8: la cobertura de detección puede variar).
+  Para una comparación más justa conviene usar min_mag=4.5 en el panel; el cálculo ya lo permite (min_mag_efectiva). Decisión pendiente de la persona estudiante (paso 5.5).

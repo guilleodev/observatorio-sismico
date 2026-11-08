@@ -1,0 +1,23 @@
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 33%]
+........................................................................ [ 44%]
+........................................................................ [ 55%]
+........................................................................ [ 67%]
+........................................................................ [ 78%]
+........................................................................ [ 89%]
+...................................................................      [100%]
+643 passed in 45.05s
+== invariantes [5.4] 2026-11-07T17:41:14Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=583 versiones=567 cuarentena=16 | offset/final/lag=593/593/0
+geo: reparto live=interior=328, sin_pais=65 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+api Up 14 minutes (healthy) 9c2772e53df7
+consumer Up 8 hours (healthy) 1bd149cce180
+kafka Up 9 hours (healthy) 8334b55b327c
+postgres Up 9 hours (healthy) 046081f539aa
+producer Up 8 hours (healthy) 8e645f8153e2
