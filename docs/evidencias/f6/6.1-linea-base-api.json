@@ -1,0 +1,59 @@
+{
+  "ventana": [
+    "2026-11-06T00:00:00Z",
+    "2026-11-07T00:00:00Z"
+  ],
+  "ignorados": [
+    "generated",
+    "ingestion_age_s",
+    "last_ingestion"
+  ],
+  "oraculo_sql": {
+    "eventos_en_ventana": 203,
+    "md5_ids_y_updated": "a5a82d5c7770823ae4e4fb9b33f80cd8"
+  },
+  "consultas": [
+    {
+      "url": "/api/eventos?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&limit=5000",
+      "estado": 200,
+      "total": 203,
+      "sha256": "44790ba54efb0b77551e2a55fce312e37bb0cd1fc22affb18f825e91f26f0728"
+    },
+    {
+      "url": "/api/eventos?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&min_mag=4.5&limit=5000",
+      "estado": 200,
+      "total": 9,
+      "sha256": "e6f68b64a61ad2541b9a9389091f22db377e1b907c3f0696153eaf4cc77bb731"
+    },
+    {
+      "url": "/api/eventos?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&country_id=sin_pais&limit=5000",
+      "estado": 200,
+      "total": 40,
+      "sha256": "597bb7e1856c0433f453d9ddb964df293622bd115d519d0be08c8bb01167bada"
+    },
+    {
+      "url": "/api/eventos?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&country_id=USA&limit=50&offset=10",
+      "estado": 200,
+      "total": 160,
+      "sha256": "9dae39a6d32e6da447edd255b6b1ac6ba1a29649cc6f6ea165c1b97083ffa62d"
+    },
+    {
+      "url": "/api/estadisticas?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z",
+      "estado": 200,
+      "total": 203,
+      "sha256": "14ac78d768e4df293624e8c3cc000a5c87f6c9e573203b426e2d494398815777"
+    },
+    {
+      "url": "/api/estadisticas?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&min_mag=4.5",
+      "estado": 200,
+      "total": 9,
+      "sha256": "88d480acef3b65804ebab55e88683d12b9bb909791c60d761966d683ec434092"
+    },
+    {
+      "url": "/api/estadisticas?start=2026-11-06T00%3A00%3A00Z&end=2026-11-07T00%3A00%3A00Z&country_id=sin_pais",
+      "estado": 200,
+      "total": 40,
+      "sha256": "03073fc8150148dfd0fdc47ae16b5882091129a468b93fa887af3a624c2e92fe"
+    }
+  ]
+}

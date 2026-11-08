@@ -1,0 +1,75 @@
+# 6.2 T026 [PA-3] recreación de api 2026-11-08T15:46:22Z
+## rollback
+observatorio-backend:latest 2721dbf27699
+observatorio-backend:previo-f6-api d1a568b553a7
+observatorio-backend:previo-f6-consumer d1a568b553a7
+observatorio-backend:previo-f6-producer d1a568b553a7
+api en marcha usa: sha256:d1a568b553a7
+# imagen observatorio-backend:previo-f6-api frente a HEAD (31 archivos en la imagen, 31 en Git; se ignoran los saltos de línea CRLF)
+RESULTADO: IDÉNTICOS - la imagen lleva exactamente el código de HEAD
+## ANTES
+== invariantes [antes-6.2] 2026-11-08T15:46:27Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=888 versiones=872 cuarentena=16 | offset/final/lag=898/898/0
+geo: reparto live=interior=489, sin_pais=105 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+== estado del sistema [antes-6.2] 2026-11-08T15:46:36Z ==
+contenedores (servicio=id): api=4ac7520a35a0 consumer=b52f396fff3c kafka=8334b55b327c postgres=046081f539aa producer=4f0f75f00a36 
+imágenes en uso (contenedor=imagen): api=sha256:d1a568b553a7932fb2ee6223f9d8d729a53163c549b74756b9177df835a30b34 consumer=sha256:2721dbf2769972df3f4c5766c67f9c27e9034a2dfc8a43502a755b3433eefa57 kafka=sha256:852a0d49fc4e656b022e7f23785411802c9a088c78a7c5e39f33969de9c227a7 postgres=sha256:3b0cda93be7c8dba2ed484d19393d93845dc3dafb88973e248ba8e6d99d784e1 producer=sha256:2721dbf2769972df3f4c5766c67f9c27e9034a2dfc8a43502a755b3433eefa57 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+puertos publicados en el equipo: api=127.0.0.1:8000->8000/tcp 
+esquemas presentes: geo,historico,live,replay,sintetico
+live: eventos actuales=594 | versiones=872 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+topics distintos de los permanentes: 
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live terremotos.replay 
+
+## RECREAR api
+
+
+
+ Image observatorio-backend Built 
+ Container observatorio-api-1 Recreate 
+ Container observatorio-api-1 Recreated 
+ Container observatorio-api-1 Starting 
+ Container observatorio-api-1 Started 
+api=Up 7 seconds (healthy)
+api d77fa7b0cebd Up 7 seconds (healthy)
+consumer b52f396fff3c Up 5 hours (healthy)
+kafka 8334b55b327c Up 7 hours (healthy)
+postgres 046081f539aa Up 7 hours (healthy)
+producer 4f0f75f00a36 Up 5 hours (healthy)
+observatorio-backend:latest 731587892449
+observatorio-backend:previo-f6-api d1a568b553a7
+observatorio-backend:previo-f6-consumer d1a568b553a7
+observatorio-backend:previo-f6-producer d1a568b553a7
+## DESPUÉS
+== invariantes [despues-6.2] 2026-11-08T15:47:08Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=888 versiones=872 cuarentena=16 | offset/final/lag=898/898/0
+geo: reparto live=interior=489, sin_pais=105 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+== estado del sistema [despues-6.2] 2026-11-08T15:47:17Z ==
+contenedores (servicio=id): api=d77fa7b0cebd consumer=b52f396fff3c kafka=8334b55b327c postgres=046081f539aa producer=4f0f75f00a36 
+imágenes en uso (contenedor=imagen): api=sha256:7315878924492e3a28ec6882ed019b0c7597a3322411e02a7d6ba32b47b5591e consumer=sha256:2721dbf2769972df3f4c5766c67f9c27e9034a2dfc8a43502a755b3433eefa57 kafka
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+puertos publicados en el equipo: api=127.0.0.1:8000->8000/tcp 
+esquemas presentes: geo,historico,live,replay,sintetico
+live: eventos actuales=594 | versiones=872 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+topics distintos de los permanentes: 
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live terremotos.replay 

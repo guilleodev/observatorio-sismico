@@ -1,0 +1,63 @@
+# 6.2 T026 - matriz de contratos sobre la API real (http://127.0.0.1:8000)
+
+## 422
+  OK  /api/eventos {'mode': 'otro'} -> 422 
+  OK  /api/eventos {'mode': 'REPLAY'} -> 422 
+  OK  /api/eventos {'mode': 'live', 'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/eventos {'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/eventos {'mode': 'replay', 'run': 'no-existe'} -> 422 
+  OK  /api/eventos {'mode': 'replay', 'run': 'a b'} -> 422 
+  OK  /api/estadisticas {'mode': 'otro'} -> 422 
+  OK  /api/estadisticas {'mode': 'REPLAY'} -> 422 
+  OK  /api/estadisticas {'mode': 'live', 'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/estadisticas {'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/estadisticas {'mode': 'replay', 'run': 'no-existe'} -> 422 
+  OK  /api/estadisticas {'mode': 'replay', 'run': 'a b'} -> 422 
+  OK  /api/salud {'mode': 'otro'} -> 422 
+  OK  /api/salud {'mode': 'REPLAY'} -> 422 
+  OK  /api/salud {'mode': 'live', 'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/salud {'run': 'r-f6-prueba-a'} -> 422 
+  OK  /api/salud {'mode': 'replay', 'run': 'no-existe'} -> 422 
+  OK  /api/salud {'mode': 'replay', 'run': 'a b'} -> 422 
+
+## live: sin mode == mode=live y sin campos de replay
+  OK  eventos sin mode == mode=live (203 eventos)
+  OK  live sin metadata.replay 
+  OK  live sin ids de replay 
+  OK  salud live sin bloque replay 
+  OK  estadisticas live con comparación en vivo 
+  OK  live por defecto: periodo de 24 h 
+
+## replay por ejecución
+  OK  r-f6-prueba-a: 200, mode=replay, run_id estado=terminada vel=31.903 tamano=30
+  OK  r-f6-prueba-a: periodo = intervalo [desde, hasta+1) 
+  OK  r-f6-prueba-a: 35 eventos (30 reales + 5 casos) total=35
+  OK  r-f6-prueba-a: 5 casos controlados ['antigua', 'duplicado', 'magnitud_nula', 'maritimo', 'revision']
+  OK  r-f6-prueba-a: caso y replayed_at en todas las features 
+  OK  r-f6-prueba-a: ids de casos con prefijo propio 
+  OK  r-f6-prueba-a: magnitud nula = null sin_magnitud=1
+  OK  r-f6-prueba-a: estadísticas total == eventos 
+  OK  r-f6-prueba-a: comparación no aplica 
+  OK  r-f6-prueba-a: por_hora/país/mag/prof suman el total 
+  OK  r-f6-prueba-a: salud con bloque replay y last_ingestion en vivo 
+  OK  r-f6-prueba-a: min_mag funciona total=22
+  OK  r-f6-prueba-b: 200, mode=replay, run_id estado=terminada vel=127.611 tamano=30
+  OK  r-f6-prueba-b: periodo = intervalo [desde, hasta+1) 
+  OK  r-f6-prueba-b: 35 eventos (30 reales + 5 casos) total=35
+  OK  r-f6-prueba-b: 5 casos controlados ['antigua', 'duplicado', 'magnitud_nula', 'maritimo', 'revision']
+  OK  r-f6-prueba-b: caso y replayed_at en todas las features 
+  OK  r-f6-prueba-b: ids de casos con prefijo propio 
+  OK  r-f6-prueba-b: magnitud nula = null sin_magnitud=1
+  OK  r-f6-prueba-b: estadísticas total == eventos 
+  OK  r-f6-prueba-b: comparación no aplica 
+  OK  r-f6-prueba-b: por_hora/país/mag/prof suman el total 
+  OK  r-f6-prueba-b: salud con bloque replay y last_ingestion en vivo 
+  OK  r-f6-prueba-b: min_mag funciona total=22
+  OK  replay sin run = ejecución más reciente (r-f6-prueba-b) 
+  OK  paginación en replay 
+
+## separación
+  OK  0 ids de replay en /api/eventos en vivo (live=591, replay=35)
+  OK  replay con periodo de 2026 (fechas de live) no devuelve nada 
+
+RESULTADO: OK

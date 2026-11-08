@@ -4,6 +4,8 @@
 import { Component, computed, input, output } from '@angular/core';
 import { avisos, estadoGeneral, formatoEdad, textoIngesta } from '../estado';
 import type { EntradaEstado } from '../estado';
+import { etiquetaReplay } from '../modo';
+import type { EjecucionReplay } from '../modelos';
 
 @Component({
   selector: 'app-estado',
@@ -16,8 +18,9 @@ import type { EntradaEstado } from '../estado';
         @if (general().nivel === 'sin-conexion' && entrada().edadLecturaMs !== null) { <span> · última lectura válida hace {{ edad() }}</span> }
       </p>
       <dl>
+        @if (entrada().modo === 'replay') { <div class="replay"><dt>Modo</dt><dd><strong>{{ etiquetaReplayTexto() }}</strong></dd></div> }
         <div><dt>Último acceso correcto a la API (UTC)</dt><dd>{{ ultimoAcceso() ?? 'ninguno todavía' }}</dd></div>
-        <div><dt>Última ingesta correcta de USGS</dt><dd>{{ ingesta() }}</dd></div>
+        <div><dt>{{ entrada().modo === 'replay' ? 'Última ingesta correcta de USGS (EN VIVO, no de la reproducción)' : 'Última ingesta correcta de USGS' }}</dt><dd>{{ ingesta() }}</dd></div>
         <div><dt>Periodo consultado (UTC)</dt><dd>{{ periodo() }}</dd></div>
         <div><dt>Filtros activos</dt><dd>{{ filtros() }}</dd></div>
         @if (entrada().salud; as s) {
@@ -47,6 +50,7 @@ import type { EntradaEstado } from '../estado';
     dt { font-weight: 700; color: #42596b; } dd { margin: 0; overflow-wrap: anywhere; }
     .aviso { margin: 10px 0 0; padding: 8px 10px; font-size: .88rem; background: #fff7e0; border-left: 3px solid #e8a317; color: #4a3b0a; }
     .aviso.error { background: #fdecec; border-color: #b91c1c; color: #7f1d1d; }
+    .replay dd { color: #5b21b6; }
     .aviso.info { background: #e9f1fb; border-color: #1d4ed8; color: #17325c; }
     button { font: inherit; margin-left: 10px; padding: 4px 12px; border: 1px solid #176b70; border-radius: 4px; background: #176b70; color: white; cursor: pointer; }
     button:disabled { opacity: .6; cursor: progress; }
@@ -59,8 +63,11 @@ export class EstadoComponent {
   readonly periodo = input<string>('sin consulta');
   readonly filtros = input<string>('');
   readonly cargandoResto = input<boolean>(false);
+  /** F6: ejecución mostrada (solo en reproducción). */
+  readonly ejecucion = input<EjecucionReplay | null>(null);
   readonly cargarResto = output<void>();
 
+  readonly etiquetaReplayTexto = computed(() => etiquetaReplay(this.ejecucion()));
   readonly general = computed(() => estadoGeneral(this.entrada()));
   readonly lista = computed(() => avisos(this.entrada()));
   readonly edad = computed(() => formatoEdad(this.entrada().edadLecturaMs ?? 0));

@@ -2,6 +2,8 @@
 
 Una versión es `(event_id, updated)`. Cada versión distinta va al historial (`evento_version`); el estado actual
 (`evento_actual`) solo avanza si la versión recibida es más reciente que la almacenada.
+
+F6: el mismo repositorio sirve al flujo en vivo (`live`, por defecto) y a la reproducción aislada (`replay`, con `run_id` y `caso`); ver `destino.py`.
 """
 
 import hashlib
@@ -10,53 +12,15 @@ from dataclasses import dataclass
 from psycopg import AsyncConnection
 from psycopg.types.json import Jsonb
 
+from observatorio.consumer.destino import DESTINO_LIVE, Destino, sql_actual, sql_cuarentena, sql_retirar, sql_version
 from observatorio.consumer.mensaje import Clasificacion, EventoRecibido
 
-COLUMNAS = """event_id, event_time, updated_at, mag, mag_type, depth_km, longitude, latitude, place,
-    source, mode, ingested_at, kafka_topic, kafka_partition, kafka_offset, raw"""
-VALORES = """%(event_id)s, to_timestamp(%(event_time)s / 1000.0), to_timestamp(%(updated)s / 1000.0),
-    %(mag)s, %(mag_type)s, %(depth_km)s, %(longitude)s, %(latitude)s, %(place)s,
-    %(source)s, %(mode)s, to_timestamp(%(ingested_at)s / 1000.0),
-    %(topic)s, %(partition)s, %(offset)s, %(raw)s"""
-
-# Historial: una fila por versión distinta. Si ya existe (event_id, updated_at) no hace nada.
-SQL_VERSION = f"""
-INSERT INTO live.evento_version ({COLUMNAS})
-VALUES ({VALORES})
-ON CONFLICT (event_id, updated_at) DO NOTHING
-"""
-
-# Estado actual: se crea o se actualiza SOLO si la versión recibida es más reciente (una antigua no lo sobrescribe).
-# Una versión posterior de terremoto también reactiva un evento retirado. El país (F4) se deriva de las coordenadas de la
-# versión vigente y se guarda en la misma sentencia: si la versión no gana, tampoco cambia el país. El historial no lleva país (A-03).
-SQL_ACTUAL = f"""
-INSERT INTO live.evento_actual ({COLUMNAS}, country_id, country_name, geo_resultado, geo_catalogo, retirado)
-VALUES ({VALORES}, %(country_id)s, %(country_name)s, %(geo_resultado)s, %(geo_catalogo)s, false)
-ON CONFLICT (event_id) DO UPDATE SET
-    event_time = EXCLUDED.event_time, updated_at = EXCLUDED.updated_at, mag = EXCLUDED.mag, mag_type = EXCLUDED.mag_type,
-    depth_km = EXCLUDED.depth_km, longitude = EXCLUDED.longitude, latitude = EXCLUDED.latitude, place = EXCLUDED.place,
-    source = EXCLUDED.source, mode = EXCLUDED.mode, ingested_at = EXCLUDED.ingested_at, kafka_topic = EXCLUDED.kafka_topic,
-    kafka_partition = EXCLUDED.kafka_partition, kafka_offset = EXCLUDED.kafka_offset, raw = EXCLUDED.raw,
-    country_id = EXCLUDED.country_id, country_name = EXCLUDED.country_name,
-    geo_resultado = EXCLUDED.geo_resultado, geo_catalogo = EXCLUDED.geo_catalogo,
-    retirado = false, stored_at = now()
-WHERE EXCLUDED.updated_at > live.evento_actual.updated_at
-"""
-
-# Reclasificación a no sísmico (D2): el evento sale del estado actual sin borrarse. Toma el `updated_at` de la versión que
-# lo retira, de modo que una versión antigua tardía no lo reviva. Un evento nunca visto no crea fila.
-SQL_RETIRAR = """
-UPDATE live.evento_actual SET retirado = true, updated_at = to_timestamp(%(updated)s / 1000.0), stored_at = now()
-WHERE event_id = %(event_id)s AND updated_at < to_timestamp(%(updated)s / 1000.0)
-"""
-
-
-# Cuarentena (R-007): excluidos (no sísmicos) e inválidos, con motivo y referencia al mensaje original.
-SQL_CUARENTENA = """
-INSERT INTO live.cuarentena (categoria, motivo, event_id, updated_ms, kafka_topic, kafka_partition, kafka_offset, clave, payload, huella)
-VALUES (%(categoria)s, %(motivo)s, %(event_id)s, %(updated_ms)s, %(topic)s, %(partition)s, %(offset)s, %(clave)s, %(payload)s, %(huella)s)
-ON CONFLICT (huella) DO NOTHING
-"""
+# El SQL se genera en `destino.py` para el destino `live` (idéntico al de siempre: lo prueba test_destino_sql.py) y para `replay` (F6).
+# Estas constantes son las del flujo en vivo; otras pruebas las sustituyen para provocar fallos, así que `RepositorioEventos` las lee en cada llamada.
+SQL_VERSION = sql_version(DESTINO_LIVE)
+SQL_ACTUAL = sql_actual(DESTINO_LIVE)
+SQL_RETIRAR = sql_retirar(DESTINO_LIVE)
+SQL_CUARENTENA = sql_cuarentena(DESTINO_LIVE)
 
 
 @dataclass(frozen=True)
@@ -84,10 +48,23 @@ def calcular_huella(categoria: str, motivo: str, base_huella: bytes) -> str:
 
 
 class RepositorioEventos:
-    def __init__(self, conexion: AsyncConnection, asignador=None):
+    def __init__(self, conexion: AsyncConnection, asignador=None, destino: Destino = DESTINO_LIVE):
         # `asignador` (F4): asigna el país a cada versión. Sin él (pruebas de F3) el país queda sin asignar (nulo).
         self._conexion = conexion
         self._asignador = asignador
+        self._destino = destino
+        # Solo el destino de replay usa SQL propio; el de `live` lee las constantes del módulo en cada llamada (las pruebas de F3 las parchean).
+        self._sql_replay = ({"version": sql_version(destino), "actual": sql_actual(destino), "retirar": sql_retirar(destino), "cuarentena": sql_cuarentena(destino)}
+                            if destino.con_run else None)
+
+    @property
+    def destino(self) -> Destino:
+        return self._destino
+
+    def _sql(self, nombre: str) -> str:
+        if self._sql_replay is not None:
+            return self._sql_replay[nombre]
+        return {"version": SQL_VERSION, "actual": SQL_ACTUAL, "retirar": SQL_RETIRAR, "cuarentena": SQL_CUARENTENA}[nombre]
 
     async def guardar_version(self, e: EventoRecibido, topic: str, partition: int, offset: int) -> str:
         """Guarda la versión y actualiza el estado actual en UNA transacción.
@@ -106,11 +83,15 @@ class RepositorioEventos:
             "source": e.source, "mode": e.mode, "ingested_at": e.ingested_at_ms,
             "topic": topic, "partition": partition, "offset": offset, "raw": Jsonb(e.raw),
         }
+        if self._destino.con_run:
+            if e.mode != self._destino.modo or not e.run_id:
+                raise ValueError(f"el destino {self._destino.nombre} solo guarda eventos de modo {self._destino.modo} con run_id (recibido modo={e.mode!r}, run_id={e.run_id!r})")
+            parametros.update(run_id=e.run_id, caso=e.caso)
         async with self._conexion.transaction():
-            nueva = (await self._conexion.execute(SQL_VERSION, parametros)).rowcount == 1
+            nueva = (await self._conexion.execute(self._sql("version"), parametros)).rowcount == 1
             if not nueva:
                 return "duplicada"
-            vigente = (await self._conexion.execute(SQL_ACTUAL, parametros)).rowcount == 1
+            vigente = (await self._conexion.execute(self._sql("actual"), parametros)).rowcount == 1
             return "guardada" if vigente else "antigua"
 
     async def poner_en_cuarentena(self, c: Clasificacion, ref: ReferenciaMensaje) -> bool:
@@ -125,7 +106,7 @@ class RepositorioEventos:
         """
         async with self._conexion.transaction():
             nuevo = await self._insertar_cuarentena(c, ref)
-            retirado = c.event_id is not None and c.updated_ms is not None and await self.retirar_evento(c.event_id, c.updated_ms)
+            retirado = c.event_id is not None and c.updated_ms is not None and await self.retirar_evento(c.event_id, c.updated_ms, c.run_id)
             return nuevo, retirado
 
     async def _insertar_cuarentena(self, c: Clasificacion, ref: ReferenciaMensaje) -> bool:
@@ -135,10 +116,19 @@ class RepositorioEventos:
             "clave": _sin_nul(ref.clave.decode("utf-8", errors="replace")) if ref.clave is not None else None,
             "payload": ref.contenido, "huella": calcular_huella(c.estado, c.motivo, c.base_huella),
         }
-        return (await self._conexion.execute(SQL_CUARENTENA, parametros)).rowcount == 1
+        if self._destino.con_run:
+            if not c.run_id:
+                raise ValueError("la cuarentena del destino replay necesita run_id")
+            parametros["run_id"] = c.run_id
+        return (await self._conexion.execute(self._sql("cuarentena"), parametros)).rowcount == 1
 
-    async def retirar_evento(self, event_id: str, updated_ms: int) -> bool:
+    async def retirar_evento(self, event_id: str, updated_ms: int, run_id: str | None = None) -> bool:
         """Marca como retirado un evento ya conocido cuya versión más reciente deja de ser terremoto (D2)."""
+        parametros = {"event_id": event_id, "updated": updated_ms}
+        if self._destino.con_run:
+            if not run_id:
+                raise ValueError("retirar un evento del destino replay necesita run_id")
+            parametros["run_id"] = run_id
         async with self._conexion.transaction():
-            cursor = await self._conexion.execute(SQL_RETIRAR, {"event_id": event_id, "updated": updated_ms})
+            cursor = await self._conexion.execute(self._sql("retirar"), parametros)
             return cursor.rowcount == 1

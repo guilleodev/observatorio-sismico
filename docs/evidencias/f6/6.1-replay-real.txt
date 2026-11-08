@@ -1,0 +1,42 @@
+# T017 - resultado de la ejecución A en PostgreSQL y Kafka REALES 2026-11-08T11:17:06Z
+2026-11-08 11:16:41,786 consumer INFO GUARDADA id=us6000r10l offset=38
+2026-11-08 11:16:51,792 consumer INFO Replay: 39 registros procesados; sin más mensajes, el consumidor termina
+2026-11-08 11:16:51,796 aiokafka.consumer.group_coordinator INFO LeaveGroup request succeeded
+
+## recuentos de r-f6-prueba-a (esperado 35 / 37 / 1)
+actuales=35 versiones=37 cuarentena=1
+ejecución: r-f6-prueba-a estado=terminada tamano=30 mensajes=39 velocidad=31.903 dia=2025-07-30
+
+## casos controlados (id | caso | mag | geo | versiones)
+replay-ctl-antigua | antigua | 5.2 | sin_pais | 2
+replay-ctl-duplicado | duplicado | 5.2 | sin_pais | 1
+replay-ctl-magnitud_nula | magnitud_nula | NULL | sin_pais | 1
+replay-ctl-maritimo | maritimo | 5.1 | sin_pais | 1
+replay-ctl-revision | revision | 4.8 | sin_pais | 2
+cuarentena: invalido | coordenadas fuera de rango | replay-ctl-coordenadas_invalidas
+
+## reales: sin caso, con país y tiempo original; modos
+reales=30 | modos=replay/replay-historico
+reales idénticos a historico.evento (time y updated): 30 de 30
+ingested_at (reproducción) frente a event_time: min dif = 466 days 10:35:12.355
+
+## velocidad real: separación entre instantes de reproducción (s) de los 39 mensajes
+2.11 media, 2.00 mín, 4.01 máx
+
+## topic de replay
+Topic: terremotos.replay	TopicId: MVix75AmQomMeQ06DSl1qw	PartitionCount: 1	ReplicationFactor: 1	Configs: min.insync.replicas=1,retention.bytes=104857600
+	Topic: terremotos.replay	Partition: 0	Leader: 1	Replicas: 1	Isr: 1	Elr: 	LastKnownElr: 
+grupo replay: offset/final/lag=39/39/0
+
+## aislamiento: live, historico y sintetico no cambian; live sin replay
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=828 versiones=812 cuarentena=16 | offset/final/lag=838/838/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+live: eventos actuales=558 | versiones=812 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=1 | actuales=35 | versiones=37 | cuarentena=1
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live terremotos.replay 
+mensajes de replay en live: 0 | ids de replay-ctl en historico: 0

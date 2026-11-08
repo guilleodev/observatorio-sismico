@@ -1,0 +1,56 @@
+# T028 - velocidad, identidad y separación 2026-11-08T11:45:10Z
+
+## 1. cadencia: duración observada (ingested_at de las versiones guardadas) frente a la configurada, y velocidad observada frente a la registrada
+    run_id     | mensajes | intervalo_configurado_s | versiones_guardadas | duracion_prevista_s | duracion_observada_s | observada_sobre_prevista | velocidad_registrada | velocidad_observada 
+---------------+----------+-------------------------+---------------------+---------------------+----------------------+--------------------------+----------------------+---------------------
+ r-f6-prueba-a |       39 |                       2 |                  37 |                76.0 |                 76.1 |                    1.002 |               31.903 |              31.852
+ r-f6-prueba-b |       39 |                     0.5 |                  37 |                19.0 |                 19.1 |                    1.003 |              127.611 |             127.202
+(2 rows)
+
+
+## 1b. separación entre mensajes consecutivos (s) por ejecución: debe ser un múltiplo del intervalo (los saltos mayores son mensajes a cuarentena o duplicados)
+    run_id     | min_s | mediana_s | max_s 
+---------------+-------+-----------+-------
+ r-f6-prueba-a |  2.00 |      2.00 |  4.01
+ r-f6-prueba-b |  0.50 |      0.50 |  1.00
+(2 rows)
+
+
+## 2. identidad: time y updated de los eventos REALES de replay frente a historico.evento (100 % esperado)
+    run_id     | reales | en_historico | time_identico | updated_identico | todo_identico 
+---------------+--------+--------------+---------------+------------------+---------------
+ r-f6-prueba-a |     30 |           30 |            30 |               30 |            30
+ r-f6-prueba-b |     30 |           30 |            30 |               30 |            30
+(2 rows)
+
+
+## 2b. casos controlados: ids propios (replay-ctl-…), ausentes de historico y de live; y su evento base (el id que indica «copiado de …» en el lugar) existe entre los reales con el mismo tiempo original
+    run_id     |     caso      |         event_id         | id_propio | en_historico | en_live | base_real_mismo_tiempo 
+---------------+---------------+--------------------------+-----------+--------------+---------+------------------------
+ r-f6-prueba-a | antigua       | replay-ctl-antigua       | t         | f            | f       | t
+ r-f6-prueba-a | duplicado     | replay-ctl-duplicado     | t         | f            | f       | t
+ r-f6-prueba-a | magnitud_nula | replay-ctl-magnitud_nula | t         | f            | f       | t
+ r-f6-prueba-a | maritimo      | replay-ctl-maritimo      | t         | f            | f       | t
+ r-f6-prueba-a | revision      | replay-ctl-revision      | t         | f            | f       | t
+ r-f6-prueba-b | antigua       | replay-ctl-antigua       | t         | f            | f       | t
+ r-f6-prueba-b | duplicado     | replay-ctl-duplicado     | t         | f            | f       | t
+ r-f6-prueba-b | magnitud_nula | replay-ctl-magnitud_nula | t         | f            | f       | t
+ r-f6-prueba-b | maritimo      | replay-ctl-maritimo      | t         | f            | f       | t
+ r-f6-prueba-b | revision      | replay-ctl-revision      | t         | f            | f       | t
+(10 rows)
+
+
+## 3. coherencia de event_id y run_id con el mensaje guardado (raw), con la fuente y el modo
+    run_id     | filas | id_igual_a_raw | fuente_y_modo_ok | topic_replay | ids_distintos 
+---------------+-------+----------------+------------------+--------------+---------------
+ r-f6-prueba-a |    35 |             35 |               35 |           35 |            35
+ r-f6-prueba-b |    35 |             35 |               35 |           35 |            35
+(2 rows)
+
+
+## 4. separación: ids de replay presentes en live (esperado 0), mensajes de replay en live (0) y datos live en replay (0)
+ ids_replay_en_live_actual | ids_replay_en_live_version | filas_replay_en_live | filas_live_en_replay 
+---------------------------+----------------------------+----------------------+----------------------
+                         0 |                          0 |                    0 |                    0
+(1 row)
+

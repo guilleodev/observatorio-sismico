@@ -6,13 +6,14 @@ import { fechaUtc, textoOSinValor } from '../formato';
 import { COLUMNAS, ORDEN_INICIAL, TAMANO_PAGINA, buscar, filaDe, ordenar, paginaDe, paginar, siguienteOrden } from '../tabla';
 import type { ClaveColumna, Orden } from '../tabla';
 import type { Evento, FilaTabla } from '../modelos';
+import { DISTINTIVO_CASO } from '../modo';
 
 @Component({
   selector: 'app-tabla',
   standalone: true,
   template: `
     <section class="tabla" aria-labelledby="tabla-titulo">
-      <h2 id="tabla-titulo">Tabla de terremotos</h2>
+      <h2 id="tabla-titulo">Tabla de terremotos@if (etiqueta()) { <span class="etiqueta-replay"> · {{ etiqueta() }}</span> }</h2>
       <div class="barra">
         <label>Buscar en la tabla
           <input type="search" autocomplete="off" placeholder="lugar, país, id, tipo de magnitud…" [value]="busqueda()" (input)="buscarTexto($event)" />
@@ -21,7 +22,7 @@ import type { Evento, FilaTabla } from '../modelos';
       </div>
       <div class="desplazable" role="region" aria-label="Tabla de terremotos, desplazable horizontalmente" tabindex="0">
         <table>
-          <caption class="oculto">Terremotos del periodo con los filtros aplicados, ordenados por {{ etiquetaOrden() }}</caption>
+          <caption class="oculto">@if (etiqueta()) { {{ etiqueta() }}. } Terremotos del periodo con los filtros aplicados, ordenados por {{ etiquetaOrden() }}</caption>
           <thead>
             <tr>
               @for (c of columnas; track c.clave) {
@@ -39,7 +40,7 @@ import type { Evento, FilaTabla } from '../modelos';
                 <td>{{ f.magTipo ?? 'sin valor' }}</td>
                 <td class="num">{{ sinValor(f.profundidad, 2) }}</td>
                 <td>{{ f.clase }}</td>
-                <td><button type="button" class="fila" [attr.aria-pressed]="f.id === seleccionado()" title="Seleccionar y ver en el mapa" (click)="elegir(f.id)">{{ f.lugar }}</button></td>
+                <td><button type="button" class="fila" [attr.aria-pressed]="f.id === seleccionado()" title="Seleccionar y ver en el mapa" (click)="elegir(f.id)">{{ f.lugar }}</button>@if (f.caso) { <span class="caso"> {{ distintivo }}: {{ f.caso }}</span> }</td>
                 <td>{{ f.pais }}</td>
                 <td class="num">{{ sinValor(f.lon, 3) }}</td>
                 <td class="num">{{ sinValor(f.lat, 3) }}</td>
@@ -60,6 +61,8 @@ import type { Evento, FilaTabla } from '../modelos';
     </section>
   `,
   styles: `
+    .etiqueta-replay { color: #5b21b6; }
+    .caso { display: inline-block; margin-left: 6px; padding: 1px 6px; font-size: .75rem; font-weight: 700; background: #f3e8ff; color: #3b0764; border: 1px solid #5b21b6; border-radius: 3px; }
     .tabla { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 20px 0; }
     h2 { margin: 0 0 10px; font-size: 1.1rem; }
     .barra { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: end; }
@@ -89,6 +92,9 @@ import type { Evento, FilaTabla } from '../modelos';
 export class TablaComponent {
   readonly eventos = input<Evento[]>([]);
   /** Identificador del ÚNICO evento seleccionado (compartido con el mapa), o `null`. */
+  /** F6: etiqueta de la reproducción («REPRODUCCIÓN · ejecución …»); null en vivo. */
+  readonly etiqueta = input<string | null>(null);
+  readonly distintivo = DISTINTIVO_CASO;
   readonly seleccionado = input<string | null>(null);
   readonly seleccionar = output<string>();
 

@@ -1,0 +1,18 @@
+# 6.3 T032 - matrices de F5 al contrato vigente 2026-11-08T15:52:57Z
+Cambios: matriz_51.py (claves de /api/salud) y matriz_52.py (claves de /api/estadisticas y ausencia de «historico» fuera de comparacion). Nota con fecha en la cabecera de cada script. docs/evidencias/f5/ no se toca.
+warning: in the working copy of 'scripts/f5/matriz_51.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/f5/matriz_52.py', LF will be replaced by CRLF the next time Git touches it
+ scripts/f5/matriz_51.py | 3 ++-
+ scripts/f5/matriz_52.py | 6 ++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+## matriz_51.py contra la API real
+RESULTADO: OK
+
+## matriz_52.py contra la API real
+RESULTADO: OK
+
+## regresión introducida a propósito (copias temporales, borradas): deben FALLAR
+-- _mut51: RESULTADO: FALLAN 1: ["/api/salud: los tres campos de 5.1 y los de F5 (5.6): ['database', 'gaps_pend
+-- _mut52: RESULTADO: FALLAN 1: ['sin NaN/Infinity, sin histórico ni sintético']
+-- _mut52b: RESULTADO: FALLAN 1: ["claves: ['comparacion', 'filters', 'generated', 'magnitud', 'period', 'por_ho

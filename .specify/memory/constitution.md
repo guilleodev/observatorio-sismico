@@ -77,6 +77,9 @@ de defensa. Las explicaciones se dan en español, de forma clara y progresiva.
   del MVP (F2) se retiró en el paso 3.1: el MVP se conserva en Git (commit `0a56f65`), en
   `docs/evidencias/mvp/` y en el esquema archivado `sintetico`, que ningún componente lee. Un dato de
   prueba MUST NOT insertarse en las tablas definitivas (las pruebas usan transacciones que se revierten).
+  Excepción acotada: el esquema `replay` puede contener los casos controlados que exige el enunciado (§11), con ids
+  `replay-ctl-…`, la columna `caso` y el distintivo visible «caso controlado / sintético»; nunca en `live`, `geo` ni
+  `historico`, ni en el análisis de sismicidad real.
 - **Kafka:** la clave del mensaje es el id del evento; el mensaje incluye `source`,
   `ingested_at`, `mode` (`live` o `replay`) y el evento original. El productor confirma con Kafka
   antes de marcar una versión como publicada.
@@ -110,4 +113,4 @@ material una guía, PATCH para aclaraciones. Cada especificación, plan y revisi
 comprobar el cumplimiento de estos principios; cualquier desviación se justifica por escrito.
 La guía operativa diaria está en `CLAUDE.md` y `docs/HOJA-DE-RUTA.md`.
 
-**Versión**: 1.0.3 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-05
+**Versión**: 1.0.4 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-08 (PATCH: aclaración de los casos controlados del replay)

@@ -1,0 +1,10 @@
+# T003-T007 - pruebas nuevas ANTES de implementar (deben fallar) 2026-11-08T10:17:07Z
+ERROR tests/unit/test_destino_sql.py
+ERROR tests/unit/test_replay_mensaje.py
+ERROR tests/unit/test_replay_casos.py
+ERROR tests/unit/test_replay_seleccion.py
+ERROR tests/unit/test_replay_integracion.py
+ERROR tests/unit/test_consumidor_replay_bucle.py
+ERROR tests/unit/test_replay_kafka.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 7 errors during collection !!!!!!!!!!!!!!!!!!!!
+7 errors in 2.03s

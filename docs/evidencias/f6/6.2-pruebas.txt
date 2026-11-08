@@ -1,0 +1,38 @@
+# 6.2 T025 - regresión y huellas 2026-11-08T11:42:24Z
+
+## suite completa de backend (con Kafka real temporal)
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+848 passed, 1 warning in 59.38s
+grupo eliminado: test-f6-grupo-d4bca8add0
+topics que quedan: __consumer_offsets terremotos.live terremotos.replay 
+grupos que quedan: consumidor-live consumidor-replay 
+
+## frontend: node --test
+ℹ tests 108
+ℹ pass 108
+ℹ fail 0
+
+## frontend: npm run build
+Application bundle generation complete. [1.777 seconds]
+
+## sha256 de lo que NO debe cambiar (comparar con git: sin diferencias)
+27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525 *frontend/public/config.json
+934e0c913b10a3273a65de5430d0d5defaf54c9271ba345d2736afd99246e1d9 *frontend/package.json
+d42a020876ef636cb993c7c35e2738ce0a095243d714f9eae7fd02e4e399f87d *frontend/tsconfig.json
+caa84e8abdba5afa155da8dc22276ae5144efe50508f6c346ecf99e7ad5015f3 *frontend/tsconfig.app.json
+4e288bfc5cb983e004a192db4266597d0fee3c7f5b14478618fd9589ec5108b9 *frontend/angular.json
+f63f9510d941f09edebcd5699f8b0970b357dea4c966725b045a4c29c805bc20 *docs/referencias/CONTRATO-API.md
+d19981fa0c8602fdefa5c91ed2834b510d4348d1387ebbcae909f23a765a4ae2 *docs/referencias/ENUNCIADO.md
+88fe0d8e661c342ac66d6f80089edd355c03ef5139d2a85c1da2e8debeb14633 *docs/referencias/FAQ-ALUMNADO.md
+88fe0d8e661c342ac66d6f80089edd355c03ef5139d2a85c1da2e8debeb14633 *docs/referencias/FAQ-observatorio-sismico .md
+38a8fd98b51cf14a684c7fd6ec120c74ed95067e01c92a3cd7c5e685b8ed8656 *docs/referencias/FUENTES-Y-LICENCIAS.md
+e1a0bab3635597baafbf8dd87d6b6f518f07727a95e4a3d34b6fb70eba8572d7 *docs/referencias/Guia-entregables-observatorio-sismico.md
+6045dc5e5f7060f679f667e80393115379912c2af4e2ad29494050df076d1282 *docs/referencias/README-ORIGINAL.md
+4e39dacba0f4671e04ba7c20a631f7ef19cf8ea794aa5fc4253442bc0b75da48 *docs/referencias/VALIDACION.md
+diferencias respecto a HEAD en esos archivos: 0
+
+## aislamiento F5/F6 (API)
+.........................                                                [100%]
+25 passed in 1.19s

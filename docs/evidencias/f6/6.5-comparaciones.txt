@@ -1,0 +1,111 @@
+# 6.4/6.5 - bench_comparaciones.py: mediciones de tiempo y memoria 2026-11-08T16:38:47Z
+
+## Equipo y estado
+docker: CPUs=16 memoria=16269598720 B SO=Docker Desktop núcleo=6.18.54.1-microsoft-standard-WSL2 Docker=29.9.2
+anfitrión: AMD Ryzen 7 7700X 8-Core Processor              | 31.1 GB RAM | Microsoft Windows 11 Home
+servicios reales en marcha durante la medición (ingesta real activa, no se detienen): api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+carga instantánea de los contenedores reales:
+observatorio-api-1 CPU=0.11% MEM=44.95MiB / 15.15GiB
+observatorio-producer-1 CPU=0.00% MEM=34.39MiB / 15.15GiB
+observatorio-consumer-1 CPU=0.12% MEM=41MiB / 15.15GiB
+observatorio-postgres-1 CPU=0.00% MEM=130.5MiB / 15.15GiB
+observatorio-kafka-1 CPU=0.97% MEM=1.031GiB / 15.15GiB
+
+## Datos reales ANTES
+live: actuales=600 versiones=882 (la ingesta real sigue y puede crecer)
+historico: md5=057f8f4ebaaf142ebe3eda20346c65f7
+sintetico: 18 5b9d041e8ff21ee9822d336b53ee8aff
+replay: 2 ejecuciones, 70 actuales, md5=b8ac11985e8f51d43856b8c24f5d8905
+esquemas: geo,historico,live,replay,sintetico | bases obs_*/bench: 0
+
+## Recursos temporales: bench-f6-pg=postgres:17.11  | volúmenes anónimos del temporal: 0 montajes (tmpfs)
+PostgreSQL temporal: PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linu | shared_buffers=128MB
+
+## Versiones: Python 3.13.18, shapely 2.2.0, psycopg 3.3.7, GEOS 3.14.1
+
+## Pruebas del generador (con la base temporal)
+...............                                                          [100%]
+15 passed in 0.67s
+
+## Mediciones (un proceso por tamaño)
+RESULTADO {"n": 1000, "dic_construccion_ms": 0.77, "dic_memoria_tracemalloc_mb": 0.07, "secuencial": {"media": {"n": 200, "mediana_ms": 0.0129, "p95_ms": 0.0146, "max_ms": 0.0499}, "mejor": {"n": 200, "mediana_ms": 0.0129, "p95_ms": 0.0132, "max_ms": 0.0341}, "peor_ausente": {"n": 200, "mediana_ms": 0.013, "p95_ms": 0.0132, "max_ms": 0.0322}}, "diccionario": {"media": {"n": 200, "mediana_ms": 0.0001, "p95_ms": 0.0003, "max_ms": 0.001}, "mejor": {"n": 200, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0001}, "peor_ausente": {"n": 200, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0002}}, "sql_sin_indice": {"media": {"n": 200, "mediana_ms": 0.1613, "p95_ms": 0.2037, "max_ms": 0.3023}, "peor_ausente": {"n": 200, "mediana_ms": 0.1508, "p95_ms": 0.1927, "max_ms": 0.2503}}, "sql_sin_indice_plan": "Seq Scan on sin_clave  (cost=0.00..44.50 rows=1 width=95) | Filter: (event_id = 'bench-0000001'::text)", "indice_btree_creacion_ms": 3.25, "sql_con_indice": {"media": {"n": 200, "mediana_ms": 0.1259, "p95_ms": 0.1647, "max_ms": 0.2769}, "peor_ausente": {"n": 200, "mediana_ms": 0.1166, "p95_ms": 0.1478, "max_ms": 0.2158}}, "sql_con_indice_plan": "Index Scan using idx_sin_clave_event_id on sin_clave  (cost=0.28..8.29 rows=1 width=95) | Index Cond: (event_i", "sql_clave_primaria": {"media": {"n": 200, "mediana_ms": 0.1288, "p95_ms": 0.1714, "max_ms": 0.2393}, "peor_ausente": {"n": 200, "mediana_ms": 0.1153, "p95_ms": 0.1464, "max_ms": 0.2488}}, "sql_clave_primaria_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.28..8.29 rows=1 width=95) | Index Cond: (event", "disco_bytes": {"tabla_heap": 262144, "indice_event_id": 49152, "indice_clave_primaria": 57344, "heap_con_pk": 139264}, "filas": 1000, "eventos_distintos": 667, "rss_maximo_proceso_mb": 40.2}
+RESULTADO {"n": 10000, "dic_construccion_ms": 12.39, "dic_memoria_tracemalloc_mb": 0.79, "secuencial": {"media": {"n": 200, "mediana_ms": 0.1987, "p95_ms": 0.3035, "max_ms": 0.4981}, "mejor": {"n": 200, "mediana_ms": 0.1956, "p95_ms": 0.2511, "max_ms": 0.3097}, "peor_ausente": {"n": 200, "mediana_ms": 0.197, "p95_ms": 0.3027, "max_ms": 0.3687}}, "diccionario": {"media": {"n": 200, "mediana_ms": 0.0003, "p95_ms": 0.0006, "max_ms": 0.0024}, "mejor": {"n": 200, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0002}, "peor_ausente": {"n": 200, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0002}}, "sql_sin_indice": {"media": {"n": 200, "mediana_ms": 0.4882, "p95_ms": 0.6048, "max_ms": 0.7964}, "peor_ausente": {"n": 200, "mediana_ms": 0.4783, "p95_ms": 0.6774, "max_ms": 0.7873}}, "sql_sin_indice_plan": "Seq Scan on sin_clave  (cost=0.00..317.00 rows=1 width=96) | Filter: (event_id = 'bench-0000001'::text)", "indice_btree_creacion_ms": 33.43, "sql_con_indice": {"media": {"n": 200, "mediana_ms": 0.1413, "p95_ms": 0.1811, "max_ms": 0.4513}, "peor_ausente": {"n": 200, "mediana_ms": 0.1244, "p95_ms": 0.1653, "max_ms": 0.2143}}, "sql_con_indice_plan": "Index Scan using idx_sin_clave_event_id on sin_clave  (cost=0.29..8.30 rows=1 width=96) | Index Cond: (event_i", "sql_clave_primaria": {"media": {"n": 200, "mediana_ms": 0.1445, "p95_ms": 0.179, "max_ms": 0.2535}, "peor_ausente": {"n": 200, "mediana_ms": 0.1256, "p95_ms": 0.1657, "max_ms": 0.2585}}, "sql_clave_primaria_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.29..8.30 rows=1 width=96) | Index Cond: (event", "disco_bytes": {"tabla_heap": 1572864, "indice_event_id": 286720, "indice_clave_primaria": 425984, "heap_con_pk": 1343488}, "filas": 10000, "eventos_distintos": 6645, "rss_maximo_proceso_mb": 49.8}
+RESULTADO {"n": 100000, "dic_construccion_ms": 133.69, "dic_memoria_tracemalloc_mb": 7.78, "secuencial": {"media": {"n": 100, "mediana_ms": 10.3868, "p95_ms": 11.5813, "max_ms": 12.5339}, "mejor": {"n": 100, "mediana_ms": 10.3805, "p95_ms": 11.574, "max_ms": 17.9241}, "peor_ausente": {"n": 100, "mediana_ms": 10.346, "p95_ms": 11.3918, "max_ms": 12.6171}}, "diccionario": {"media": {"n": 100, "mediana_ms": 0.0006, "p95_ms": 0.0011, "max_ms": 0.0026}, "mejor": {"n": 100, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0003}, "peor_ausente": {"n": 100, "mediana_ms": 0.0001, "p95_ms": 0.0001, "max_ms": 0.0003}}, "sql_sin_indice": {"media": {"n": 100, "mediana_ms": 3.9833, "p95_ms": 4.3622, "max_ms": 4.7305}, "peor_ausente": {"n": 100, "mediana_ms": 3.8408, "p95_ms": 4.4015, "max_ms": 5.0168}}, "sql_sin_indice_plan": "Seq Scan on sin_clave  (cost=0.00..2914.00 rows=2 width=97) | Filter: (event_id = 'bench-0000001'::text)", "indice_btree_creacion_ms": 151.35, "sql_con_indice": {"media": {"n": 100, "mediana_ms": 0.1422, "p95_ms": 0.1827, "max_ms": 0.3815}, "peor_ausente": {"n": 100, "mediana_ms": 0.1185, "p95_ms": 0.1589, "max_ms": 0.2237}}, "sql_con_indice_plan": "Index Scan using idx_sin_clave_event_id on sin_clave  (cost=0.42..8.45 rows=2 width=97) | Index Cond: (event_i", "sql_clave_primaria": {"media": {"n": 100, "mediana_ms": 0.127, "p95_ms": 0.1778, "max_ms": 0.2751}, "peor_ausente": {"n": 100, "mediana_ms": 0.1166, "p95_ms": 0.1548, "max_ms": 0.2154}}, "sql_clave_primaria_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.42..10.20 rows=2 width=97) | Index Cond: (even", "disco_bytes": {"tabla_heap": 13631488, "indice_event_id": 2719744, "indice_clave_primaria": 4079616, "heap_con_pk": 13434880}, "filas": 100000, "eventos_distintos": 66634, "rss_maximo_proceso_mb": 144.5}
+
+## Datos reales DESPUÉS
+live: actuales=600 versiones=882 (la ingesta real sigue y puede crecer)
+historico: md5=057f8f4ebaaf142ebe3eda20346c65f7
+sintetico: 18 5b9d041e8ff21ee9822d336b53ee8aff
+replay: 2 ejecuciones, 70 actuales, md5=b8ac11985e8f51d43856b8c24f5d8905
+esquemas: geo,historico,live,replay,sintetico | bases obs_*/bench: 0
+
+## Comparación (las líneas de live pueden crecer por la ingesta real; el resto debe ser idéntico)
+historico, sintetico, replay y esquemas: IDÉNTICOS antes y después
+
+## Recursos temporales tras eliminar: contenedores=0 redes=0 volúmenes totales ahora/antes=27/27 | servicios reales: api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+
+################ TABLAS ################
+== Ejecución 1
+tiempo por búsqueda: mediana / p95 (ms)                        N = 1,000          N = 10,000         N = 100,000
+  lista recorrida (secuencial) · media                     0.0133/0.0152       0.1899/0.2102     10.2023/10.9768
+  lista recorrida (secuencial) · mejor                      0.013/0.0135       0.1921/0.2138     10.3141/11.5811
+  lista recorrida (secuencial) · peor_ausente              0.0129/0.0129       0.1908/0.2089     10.3655/11.4985
+  diccionario (hash) · media                               0.0001/0.0002       0.0003/0.0007       0.0005/0.0009
+  diccionario (hash) · mejor                               0.0001/0.0001       0.0001/0.0001       0.0001/0.0001
+  diccionario (hash) · peor_ausente                        0.0001/0.0001       0.0001/0.0001       0.0001/0.0001
+  SQL sin clave ni índice · media                          0.1594/0.2016       0.4904/0.6595       4.0641/4.5544
+  SQL sin clave ni índice · peor_ausente                    0.157/0.1997       0.4811/0.5742        3.8936/4.215
+  SQL con índice B-tree (event_id) · media                  0.1267/0.161       0.1507/0.1725       0.1497/0.1817
+  SQL con índice B-tree (event_id) · peor_ausente           0.119/0.1494       0.1344/0.1568       0.1257/0.1456
+  SQL con clave primaria (event_id, updated_at) · media       0.1248/0.1643       0.1491/0.1854       0.1348/0.1829
+  SQL con clave primaria (event_id, updated_at) · peor_ausente       0.1159/0.1462       0.1392/0.1637       0.1215/0.1468
+estructuras
+  diccionario: construcción (ms)                                    0.83                10.3              132.33
+  diccionario: memoria extra tracemalloc (MB)                       0.07                0.79                7.78
+  creación del índice B-tree (ms)                                   3.29               34.35              151.24
+  disco tabla_heap (KB)                                              256                1536               13312
+  disco indice_event_id (KB)                                          48                 280                2656
+  disco indice_clave_primaria (KB)                                    56                 416                3984
+  bytes por fila: heap / índice event_id / PK            262.1/49.2/57.3     157.3/28.7/42.6     136.3/27.2/40.8
+RSS máximo del proceso (MB)                                         40.0                50.0               144.3
+planes (N=100000):
+  sql_sin_indice_plan: Seq Scan on sin_clave  (cost=0.00..2914.00 rows=2 width=97) | Filter: (event_id = 'bench-0000001'::text)
+  sql_con_indice_plan: Index Scan using idx_sin_clave_event_id on sin_clave  (cost=0.42..8.45 rows=2 width=97) | Index Cond: (event_i
+  sql_clave_primaria_plan: Index Scan using evento_version_pkey on evento_version  (cost=0.42..10.20 rows=2 width=97) | Index Cond: (even
+
+== Ejecución 2 (la salida bruta de arriba)
+tiempo por búsqueda: mediana / p95 (ms)                        N = 1,000          N = 10,000         N = 100,000
+  lista recorrida (secuencial) · media                     0.0129/0.0146       0.1987/0.3035     10.3868/11.5813
+  lista recorrida (secuencial) · mejor                     0.0129/0.0132       0.1956/0.2511      10.3805/11.574
+  lista recorrida (secuencial) · peor_ausente               0.013/0.0132        0.197/0.3027      10.346/11.3918
+  diccionario (hash) · media                               0.0001/0.0003       0.0003/0.0006       0.0006/0.0011
+  diccionario (hash) · mejor                               0.0001/0.0001       0.0001/0.0001       0.0001/0.0001
+  diccionario (hash) · peor_ausente                        0.0001/0.0001       0.0001/0.0001       0.0001/0.0001
+  SQL sin clave ni índice · media                          0.1613/0.2037       0.4882/0.6048       3.9833/4.3622
+  SQL sin clave ni índice · peor_ausente                   0.1508/0.1927       0.4783/0.6774       3.8408/4.4015
+  SQL con índice B-tree (event_id) · media                 0.1259/0.1647       0.1413/0.1811       0.1422/0.1827
+  SQL con índice B-tree (event_id) · peor_ausente          0.1166/0.1478       0.1244/0.1653       0.1185/0.1589
+  SQL con clave primaria (event_id, updated_at) · media       0.1288/0.1714        0.1445/0.179        0.127/0.1778
+  SQL con clave primaria (event_id, updated_at) · peor_ausente       0.1153/0.1464       0.1256/0.1657       0.1166/0.1548
+estructuras
+  diccionario: construcción (ms)                                    0.77               12.39              133.69
+  diccionario: memoria extra tracemalloc (MB)                       0.07                0.79                7.78
+  creación del índice B-tree (ms)                                   3.25               33.43              151.35
+  disco tabla_heap (KB)                                              256                1536               13312
+  disco indice_event_id (KB)                                          48                 280                2656
+  disco indice_clave_primaria (KB)                                    56                 416                3984
+  bytes por fila: heap / índice event_id / PK            262.1/49.2/57.3     157.3/28.7/42.6     136.3/27.2/40.8
+RSS máximo del proceso (MB)                                         40.2                49.8               144.5
+planes (N=100000):
+  sql_sin_indice_plan: Seq Scan on sin_clave  (cost=0.00..2914.00 rows=2 width=97) | Filter: (event_id = 'bench-0000001'::text)
+  sql_con_indice_plan: Index Scan using idx_sin_clave_event_id on sin_clave  (cost=0.42..8.45 rows=2 width=97) | Index Cond: (event_i
+  sql_clave_primaria_plan: Index Scan using evento_version_pkey on evento_version  (cost=0.42..10.20 rows=2 width=97) | Index Cond: (even
+
+################ LECTURA ################
+Mismo procedimiento, entorno y recursos temporales que 6.4 (bash scripts/f6/bench_ejecutar.sh bench_comparaciones.py; PostgreSQL 17.11 propio en tmpfs, datos sintéticos `sintetico-bench`, un proceso por tamaño; historico, sintetico y replay idénticos antes y después; 0 restos).
+Dos ejecuciones completas coinciden (diferencias ≤ 10 %). Búsqueda de TODAS las versiones de un event_id; 200 búsquedas por caso (100 a 10^5). Las cifras son de ESTA máquina y no se extrapolan como mediciones.
+1. Secuencial (lista de tuplas): O(n) medido: 0,013 → 0,19 → 10,2 ms (×15 y ×54 por ×10 de datos: algo peor que lineal por la caché). Media, mejor y peor coinciden porque se buscan todas las versiones y hay que recorrer todo.
+2. Diccionario: O(1) esperado: 0,0001 → 0,0003 → 0,0006 ms; a 10^5 es ≈ 17 000 veces más rápido que la lista. Coste: construirlo (0,8 → 12 → 133 ms) y 7,8 MB extra a 10^5 (≈ 78 B/fila, tracemalloc). El peor caso teórico (colisiones) es O(n) y no se provoca.
+3. SQL sin clave ni índice (Seq Scan): 0,16 → 0,49 → 4,0 ms (O(n)); con índice B-tree sobre event_id (Index Scan): 0,13 → 0,15 → 0,15 ms (O(log n)); con la clave primaria (event_id, updated_at): igual, 0,13 ms. Ganancia del índice: 1,3× → 3,3× → 27×. Crear el índice a 10^5 cuesta ≈ 150 ms y ocupa 2,6 MB (27 B/fila); la clave primaria, 4,0 MB (41 B/fila); la tabla, 13,3 MB (136 B/fila).
+4. Peor caso (id inexistente): idéntico al medio en todas las variantes (la lista y el Seq Scan recorren todo; el B-tree y el diccionario no encuentran la clave con el mismo coste de búsqueda).
+5. Los ~0,12 ms de SQL con índice son sobre todo la ida y vuelta a la base (el diccionario, sin red, es 200 veces más rápido) y no crecen con n: lo que el índice compra es que el tiempo deje de depender del tamaño.

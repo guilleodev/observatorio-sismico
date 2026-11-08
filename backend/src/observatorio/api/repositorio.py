@@ -11,8 +11,9 @@ from psycopg_pool import PoolTimeout
 
 from observatorio.api import estadisticas
 from observatorio.api.comparacion import SQL_COBERTURA, SQL_HUECOS_PENDIENTES, SQL_ULTIMA_INGESTION
-from observatorio.api.filtros import SIN_PAIS, ErrorParametro, Filtros
-from observatorio.modos import MODO_LIVE, MODOS_CONTRACTUALES
+from observatorio.api.filtros import SIN_PAIS, ErrorParametro, Filtros, para_modo
+from observatorio.api.replay import SQL_EJECUCION_POR_ID, SQL_EJECUCION_ULTIMA, SQL_EVENTOS_REPLAY, a_ejecucion
+from observatorio.modos import MODO_LIVE, MODO_REPLAY, MODOS_CONTRACTUALES
 
 # {donde} lo construye Filtros.donde() solo con marcadores %(nombre)s: ningún valor del usuario se concatena en el SQL.
 SQL_EVENTOS = """
@@ -104,24 +105,34 @@ class RepositorioApi:
         except (psycopg.Error, PoolTimeout, OSError) as exc:
             raise BaseDatosNoDisponible(type(exc).__name__) from exc
 
+    async def ejecucion(self, run_id: str | None) -> dict | None:
+        """`metadata.replay` de la ejecución pedida o, sin `run_id`, de la más reciente; None si no existe (o no hay ninguna). Solo lectura."""
+        sql, parametros = (SQL_EJECUCION_ULTIMA, ()) if run_id is None else (SQL_EJECUCION_POR_ID, (run_id,))
+        filas = await self._consultar(sql, parametros)
+        return a_ejecucion(filas[0]) if filas else None
+
     async def pagina_eventos(self, filtros: Filtros, limit: int, offset: int) -> PaginaEventos:
         """Eventos del filtro (página `limit`/`offset`) con total, magnitudes nulas, última ingesta y cobertura, en UNA transacción."""
         donde, parametros = filtros.donde()
         donde_sin_umbral, parametros_sin_umbral = filtros.donde(con_magnitud=False)
+        replay = filtros.modo == MODO_REPLAY
+        sql_eventos = SQL_EVENTOS_REPLAY if replay else SQL_EVENTOS
         try:
             async with self._conexion() as conn:
                 await _validar_pais(conn, filtros)
-                total = (await (await conn.execute(SQL_TOTAL.format(donde=donde), parametros)).fetchone())[0]
-                sin_magnitud = (await (await conn.execute(SQL_SIN_MAGNITUD.format(donde=donde_sin_umbral), parametros_sin_umbral)).fetchone())[0]
-                filas = await (await conn.execute(SQL_EVENTOS.format(donde=donde), {**parametros, "p_limit": limit, "p_offset": offset})).fetchall()
-                cobertura = (await (await conn.execute(SQL_COBERTURA)).fetchone())[0]
-                ingestion = await (await conn.execute(SQL_ULTIMA_INGESTION)).fetchone()
+                total = (await (await conn.execute(para_modo(SQL_TOTAL, filtros.modo).format(donde=donde), parametros)).fetchone())[0]
+                sin_magnitud = (await (await conn.execute(para_modo(SQL_SIN_MAGNITUD, filtros.modo).format(donde=donde_sin_umbral),
+                                                          parametros_sin_umbral)).fetchone())[0]
+                filas = await (await conn.execute(sql_eventos.format(donde=donde), {**parametros, "p_limit": limit, "p_offset": offset})).fetchall()
+                # En replay la cobertura es el intervalo de la ejecución (metadata.replay); la de `live` no se consulta.
+                cobertura = None if replay else (await (await conn.execute(SQL_COBERTURA)).fetchone())[0]
+                ingestion = await (await conn.execute(SQL_ULTIMA_INGESTION)).fetchone()  # la ingesta EN VIVO, también en replay
         except (psycopg.Error, PoolTimeout, OSError) as exc:
             raise BaseDatosNoDisponible(type(exc).__name__) from exc
         eventos = [
             {"id": f[0], "lon": f[1], "lat": f[2], "depth": _numero(f[3]), "mag": _numero(f[4]),
              "mag_type": f[5], "place": f[6], "time": f[7], "updated": f[8],
-             "country_id": f[9], "country_name": f[10]}
+             "country_id": f[9], "country_name": f[10], **({"caso": f[11], "replayed_at": f[12]} if replay else {})}
             for f in filas
         ]
         return PaginaEventos(eventos, total, sin_magnitud, ingestion[0] if ingestion else None, cobertura)
@@ -161,12 +172,13 @@ class RepositorioApi:
 
 def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | None, modo: str = MODO_LIVE, *,
               total: int | None = None, limit: int | None = None, offset: int = 0, sin_magnitud: int = 0,
-              period: dict | None = None, live_since: int | None = None) -> dict:
+              period: dict | None = None, live_since: int | None = None, replay: dict | None = None) -> dict:
     if modo not in MODOS_CONTRACTUALES:
         raise ValueError(f"mode no contractual: {modo!r}")
     total = len(eventos) + offset if total is None else total
     truncado = offset + len(eventos) < total
-    return {
+    es_replay = modo == MODO_REPLAY
+    respuesta = {
         "type": "FeatureCollection",
         "metadata": {
             "generated": generado_ms,
@@ -191,8 +203,13 @@ def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | 
                     "mag": e["mag"], "magType": e["mag_type"], "place": e["place"],
                     "time": e["time"], "updated": e["updated"],
                     "country_id": e["country_id"], "country_name": e["country_name"],
+                    **({"caso": e["caso"], "replayed_at": e["replayed_at"]} if es_replay else {}),
                 },
             }
             for e in eventos
         ],
     }
+    if es_replay:  # contracts/f6.md §2: la cobertura es el intervalo de la ejecución; con live no aparece ningún campo de replay
+        respuesta["metadata"]["replay"] = replay
+        respuesta["metadata"]["coverage"] = {"desde": None, "hasta": None} if replay is None else dict(replay["intervalo"])
+    return respuesta

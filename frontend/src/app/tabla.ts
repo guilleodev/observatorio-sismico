@@ -50,6 +50,7 @@ export function filaDe(evento: Evento, indice: number): FilaTabla {
     id: idDe(evento, indice), tiempo: finito(p?.time), mag: finito(p?.mag), magTipo: typeof p?.magType === 'string' && p.magType !== '' ? p.magType : null,
     profundidad, clase: claseProfundidad(profundidad), lugar: typeof p?.place === 'string' && p.place !== '' ? p.place : 'Sin descripción',
     pais: p?.country_name ?? SIN_PAIS_TEXTO, paisId: p?.country_id ?? null, lon: finito(c[0]), lat: finito(c[1]), actualizado: finito(p?.updated),
+    caso: typeof p?.caso === 'string' && p.caso !== '' ? p.caso : null, // F6: caso controlado (sintético) de una reproducción; null en eventos reales y en vivo
   };
 }
 

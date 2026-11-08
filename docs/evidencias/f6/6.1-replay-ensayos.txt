@@ -1,0 +1,21 @@
+# T017 - ensayos del replay en Kafka/PostgreSQL REALES: repetir la misma ejecución e interrumpir/reanudar 2026-11-08T11:18:15Z
+== repetir r-f6-prueba-a 2026-11-08T11:18:15Z
+recuentos antes: 35 / 37 / 1 (actuales / versiones / cuarentena); offsets distintos en versiones=37 de 37
+  "run_id": "r-f6-prueba-a",
+  "mensajes": 39,
+  "publicados": 39,
+  "estado": "terminada"
+recuentos después: 35 / 37 / 1 (actuales / versiones / cuarentena); offsets distintos en versiones=37 de 37
+lag del grupo consumidor-replay: offset/final/lag=78/78/0
+
+== interrumpir r-f6-prueba-b 2026-11-08T11:18:45Z
+recuentos antes: 0 / 0 / 0 (actuales / versiones / cuarentena); offsets distintos en versiones=0 de 0
+-- matando el consumidor efímero de replay a mitad de la reproducción
+add4e2f47450
+recuentos tras matar el consumidor (parcial): 14 / 16 / 1 (actuales / versiones / cuarentena); offsets distintos en versiones=16 de 16
+  "run_id": "r-f6-prueba-b",
+  "mensajes": 39,
+  "publicados": 39,
+  "estado": "terminada"
+recuentos después: 35 / 37 / 1 (actuales / versiones / cuarentena); offsets distintos en versiones=37 de 37
+lag del grupo consumidor-replay: offset/final/lag=117/117/0

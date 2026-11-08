@@ -1,3 +1,4 @@
+# Actualizado el 2026-11-08 (F6, 6.3, T032): solo la aserción de las claves de /api/salud, ampliadas en 5.6. El resto no cambia; la evidencia de docs/evidencias/f5/ no se reescribe.
 """Matriz del paso 5.1 contra la API REAL desplegada (F5, T009). SOLO LECTURA (GET/OPTIONS a la API y SELECT a la base).
 
 El oráculo es independiente de la API: se leen las filas de `live.evento_actual` una vez y se filtran en Python. Para que la ingesta en curso no altere la
@@ -141,7 +142,7 @@ try:
 except urllib.error.HTTPError as exc:
     comprobar(exc.code == 405, f"POST -> {exc.code} (la API solo lee)")
 st, salud, _ = get("/api/salud")
-comprobar(st == 200 and set(salud) == {"status", "database", "last_ingestion"}, f"/api/salud sin cambios en 5.1: {salud}")
+comprobar(st == 200 and set(salud) == {"status", "database", "last_ingestion", "generated", "ingestion_age_s", "stale", "stale_after_s", "gaps_pending", "live_since"} and (salud["status"], salud["database"]) == ("ok", "ok"), f"/api/salud: los tres campos de 5.1 y los de F5 (5.6): {sorted(salud)}")
 
 print("\n== 6. Idempotencia: dos lecturas idénticas de una ventana fija ==")
 a = get("/api/eventos", start=iso(inicio), end=iso(fin), min_mag="4")

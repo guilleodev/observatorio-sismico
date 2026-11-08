@@ -57,8 +57,9 @@ export class ApiService {
     }
   }
 
-  salud(externa?: AbortSignal): Promise<Salud> {
-    return this.obtener<Salud>('/api/salud', {}, externa);
+  /** /api/salud; con `params` (F6: `{ mode: 'replay' }`) añade el bloque `replay` de la ejecución consultada. */
+  salud(externa?: AbortSignal, params: Record<string, string> = {}): Promise<Salud> {
+    return this.obtener<Salud>('/api/salud', params, externa);
   }
 
   /**
@@ -114,7 +115,7 @@ export class ApiService {
   /** /api/estadisticas con los MISMOS parámetros que /api/eventos (mismo periodo resuelto y mismos filtros); comprueba la forma de la respuesta. */
   async estadisticas(params: Record<string, string>, externa?: AbortSignal): Promise<Estadisticas> {
     const d = await this.obtener<Estadisticas>('/api/estadisticas', params, externa);
-    if (typeof d?.total !== 'number' || !d.por_hora || !Array.isArray(d.por_pais?.items) || !Array.isArray(d.magnitud?.items) || !Array.isArray(d.profundidad?.items) || !d.comparacion?.reciente) {
+    if (typeof d?.total !== 'number' || !d.por_hora || !Array.isArray(d.por_pais?.items) || !Array.isArray(d.magnitud?.items) || !Array.isArray(d.profundidad?.items) || !this.comparacionValida(d.comparacion)) {
       throw new ErrorApi('formato', 'La respuesta de /api/estadisticas no tiene la forma esperada.');
     }
     return d;
@@ -124,6 +125,11 @@ export class ApiService {
   async panel(params: Record<string, string>, externa?: AbortSignal, maxPaginas?: number): Promise<{ eventos: EventosCompletos; estadisticas: Estadisticas }> {
     const [eventos, estadisticas] = await Promise.all([this.todasLasPaginas(params, externa, maxPaginas), this.estadisticas(params, externa)]);
     return { eventos, estadisticas };
+  }
+
+  /** En vivo la comparación trae `reciente`; en una reproducción (F6) viene como «no aplica» y no trae cifras. */
+  private comparacionValida(c: Estadisticas['comparacion'] | undefined): boolean {
+    return !!c && ('reciente' in c ? !!c.reciente : c.comparacion_disponible === false && typeof c.motivo === 'string');
   }
 
   private async errorHttp(respuesta: Response): Promise<ErrorApi> {

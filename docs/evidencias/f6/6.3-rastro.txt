@@ -1,0 +1,99 @@
+# 6.3 T030 - rastro del evento us7000twt0
+
+## 1. Fila actual (live.evento_actual)
+  event_time=2026-11-07T16:04:35.125000+00:00 updated_at=2026-11-08T11:51:01.383000+00:00 mag=5.5 mww place='10 km NW of Hamakita, Japan'
+  país=JPN (Japón) geo_resultado=interior source=usgs-all-day mode=live retirado=False coords=(137.691, 34.8611)
+  ingested_at=2026-11-08T11:51:59.789000+00:00 kafka=terremotos.live[0]@852
+
+## 2. Consulta a USGS que lo trajo (live.consulta_extraccion: la última iniciada antes de su ingesta)
+  consulta #2115 iniciada_at=2026-11-08T11:51:59.678000+00:00 duración=111 ms resultado=ok http=200 bytes=143211 eventos_en_respuesta=200 publicadas=1 omitidas=199
+  retraso entre la consulta y la ingesta del evento: 0.11 s
+
+## 3. Mensaje publicado (live.version_publicada) y 4. versión guardada (live.evento_version)
+  publicada: updated_ms=1794068474040 published_at=2026-11-07T16:22:53.925958+00:00 kafka=[0]@563
+  publicada: updated_ms=1794068629914 published_at=2026-11-07T16:24:53.972228+00:00 kafka=[0]@564
+  publicada: updated_ms=1794068712819 published_at=2026-11-07T16:26:54.022601+00:00 kafka=[0]@565
+  publicada: updated_ms=1794068815123 published_at=2026-11-07T16:27:54.065099+00:00 kafka=[0]@567
+  publicada: updated_ms=1794068867268 published_at=2026-11-07T16:28:54.076620+00:00 kafka=[0]@568
+  publicada: updated_ms=1794068900168 published_at=2026-11-07T16:29:54.081215+00:00 kafka=[0]@569
+  publicada: updated_ms=1794069018507 published_at=2026-11-07T16:31:54.155188+00:00 kafka=[0]@571
+  publicada: updated_ms=1794069096606 published_at=2026-11-07T16:32:54.213792+00:00 kafka=[0]@573
+  publicada: updated_ms=1794069239697 published_at=2026-11-07T16:34:54.201853+00:00 kafka=[0]@575
+  publicada: updated_ms=1794069570034 published_at=2026-11-07T16:40:54.468239+00:00 kafka=[0]@576
+  publicada: updated_ms=1794069768739 published_at=2026-11-07T16:43:54.576504+00:00 kafka=[0]@577
+  publicada: updated_ms=1794069961773 published_at=2026-11-07T16:46:54.659766+00:00 kafka=[0]@578
+  publicada: updated_ms=1794070149658 published_at=2026-11-07T16:49:54.754406+00:00 kafka=[0]@579
+  publicada: updated_ms=1794070385505 published_at=2026-11-07T16:53:54.855242+00:00 kafka=[0]@582
+  publicada: updated_ms=1794070669606 published_at=2026-11-07T16:58:55.034153+00:00 kafka=[0]@583
+  publicada: updated_ms=1794071170872 published_at=2026-11-07T17:06:55.261544+00:00 kafka=[0]@584
+  publicada: updated_ms=1794071676288 published_at=2026-11-07T17:15:55.563697+00:00 kafka=[0]@586
+  publicada: updated_ms=1794071877850 published_at=2026-11-07T17:18:55.676744+00:00 kafka=[0]@587
+  publicada: updated_ms=1794072100099 published_at=2026-11-07T17:22:55.777640+00:00 kafka=[0]@589
+  publicada: updated_ms=1794073079843 published_at=2026-11-07T17:38:56.315659+00:00 kafka=[0]@592
+  publicada: updated_ms=1794074089442 published_at=2026-11-07T17:55:56.856029+00:00 kafka=[0]@604
+  publicada: updated_ms=1794074325623 published_at=2026-11-07T17:58:57.041679+00:00 kafka=[0]@608
+  publicada: updated_ms=1794074928060 published_at=2026-11-07T18:09:57.233344+00:00 kafka=[0]@615
+  publicada: updated_ms=1794075039485 published_at=2026-11-07T18:11:57.342411+00:00 kafka=[0]@617
+  publicada: updated_ms=1794075104335 published_at=2026-11-07T18:12:57.384703+00:00 kafka=[0]@618
+  publicada: updated_ms=1794079340326 published_at=2026-11-07T19:23:59.721218+00:00 kafka=[0]@658
+  publicada: updated_ms=1794080798548 published_at=2026-11-07T19:48:00.417077+00:00 kafka=[0]@662
+  publicada: updated_ms=1794081686085 published_at=2026-11-07T20:02:00.815297+00:00 kafka=[0]@673
+  publicada: updated_ms=1794082628729 published_at=2026-11-07T20:18:01.286753+00:00 kafka=[0]@678
+  publicada: updated_ms=1794083488767 published_at=2026-11-07T20:32:01.800288+00:00 kafka=[0]@681
+  publicada: updated_ms=1794084517641 published_at=2026-11-07T20:49:02.414801+00:00 kafka=[0]@685
+  publicada: updated_ms=1794126194154 published_at=2026-11-08T08:55:07.088580+00:00 kafka=[0]@799
+  publicada: updated_ms=1794136957374 published_at=2026-11-08T11:23:58.877110+00:00 kafka=[0]@840
+  publicada: updated_ms=1794137589463 published_at=2026-11-08T11:33:59.244736+00:00 kafka=[0]@844
+  publicada: updated_ms=1794138661383 published_at=2026-11-08T11:51:59.797655+00:00 kafka=[0]@852
+  versión: updated_at=2026-11-07T16:21:14.040000+00:00 mag=5.5 ingested_at=2026-11-07T16:22:53.916000+00:00 kafka=terremotos.live[0]@563
+  versión: updated_at=2026-11-07T16:23:49.914000+00:00 mag=5.5 ingested_at=2026-11-07T16:24:53.960000+00:00 kafka=terremotos.live[0]@564
+  versión: updated_at=2026-11-07T16:25:12.819000+00:00 mag=5.5 ingested_at=2026-11-07T16:26:54.014000+00:00 kafka=terremotos.live[0]@565
+  versión: updated_at=2026-11-07T16:26:55.123000+00:00 mag=5.5 ingested_at=2026-11-07T16:27:54.055000+00:00 kafka=terremotos.live[0]@567
+  versión: updated_at=2026-11-07T16:27:47.268000+00:00 mag=5.5 ingested_at=2026-11-07T16:28:54.068000+00:00 kafka=terremotos.live[0]@568
+  versión: updated_at=2026-11-07T16:28:20.168000+00:00 mag=5.5 ingested_at=2026-11-07T16:29:54.073000+00:00 kafka=terremotos.live[0]@569
+  versión: updated_at=2026-11-07T16:30:18.507000+00:00 mag=5.5 ingested_at=2026-11-07T16:31:54.143000+00:00 kafka=terremotos.live[0]@571
+  versión: updated_at=2026-11-07T16:31:36.606000+00:00 mag=5.5 ingested_at=2026-11-07T16:32:54.202000+00:00 kafka=terremotos.live[0]@573
+  versión: updated_at=2026-11-07T16:33:59.697000+00:00 mag=5.5 ingested_at=2026-11-07T16:34:54.191000+00:00 kafka=terremotos.live[0]@575
+  versión: updated_at=2026-11-07T16:39:30.034000+00:00 mag=5.5 ingested_at=2026-11-07T16:40:54.460000+00:00 kafka=terremotos.live[0]@576
+  versión: updated_at=2026-11-07T16:42:48.739000+00:00 mag=5.5 ingested_at=2026-11-07T16:43:54.568000+00:00 kafka=terremotos.live[0]@577
+  versión: updated_at=2026-11-07T16:46:01.773000+00:00 mag=5.5 ingested_at=2026-11-07T16:46:54.646000+00:00 kafka=terremotos.live[0]@578
+  versión: updated_at=2026-11-07T16:49:09.658000+00:00 mag=5.5 ingested_at=2026-11-07T16:49:54.746000+00:00 kafka=terremotos.live[0]@579
+  versión: updated_at=2026-11-07T16:53:05.505000+00:00 mag=5.5 ingested_at=2026-11-07T16:53:54.847000+00:00 kafka=terremotos.live[0]@582
+  versión: updated_at=2026-11-07T16:57:49.606000+00:00 mag=5.5 ingested_at=2026-11-07T16:58:55.024000+00:00 kafka=terremotos.live[0]@583
+  versión: updated_at=2026-11-07T17:06:10.872000+00:00 mag=5.5 ingested_at=2026-11-07T17:06:55.253000+00:00 kafka=terremotos.live[0]@584
+  versión: updated_at=2026-11-07T17:14:36.288000+00:00 mag=5.5 ingested_at=2026-11-07T17:15:55.555000+00:00 kafka=terremotos.live[0]@586
+  versión: updated_at=2026-11-07T17:17:57.850000+00:00 mag=5.5 ingested_at=2026-11-07T17:18:55.667000+00:00 kafka=terremotos.live[0]@587
+  versión: updated_at=2026-11-07T17:21:40.099000+00:00 mag=5.5 ingested_at=2026-11-07T17:22:55.767000+00:00 kafka=terremotos.live[0]@589
+  versión: updated_at=2026-11-07T17:37:59.843000+00:00 mag=5.5 ingested_at=2026-11-07T17:38:56.304000+00:00 kafka=terremotos.live[0]@592
+  versión: updated_at=2026-11-07T17:54:49.442000+00:00 mag=5.5 ingested_at=2026-11-07T17:55:56.847000+00:00 kafka=terremotos.live[0]@604
+  versión: updated_at=2026-11-07T17:58:45.623000+00:00 mag=5.5 ingested_at=2026-11-07T17:58:57.032000+00:00 kafka=terremotos.live[0]@608
+  versión: updated_at=2026-11-07T18:08:48.060000+00:00 mag=5.5 ingested_at=2026-11-07T18:09:57.225000+00:00 kafka=terremotos.live[0]@615
+  versión: updated_at=2026-11-07T18:10:39.485000+00:00 mag=5.5 ingested_at=2026-11-07T18:11:57.334000+00:00 kafka=terremotos.live[0]@617
+  versión: updated_at=2026-11-07T18:11:44.335000+00:00 mag=5.5 ingested_at=2026-11-07T18:12:57.377000+00:00 kafka=terremotos.live[0]@618
+  versión: updated_at=2026-11-07T19:22:20.326000+00:00 mag=5.5 ingested_at=2026-11-07T19:23:59.710000+00:00 kafka=terremotos.live[0]@658
+  versión: updated_at=2026-11-07T19:46:38.548000+00:00 mag=5.5 ingested_at=2026-11-07T19:48:00.409000+00:00 kafka=terremotos.live[0]@662
+  versión: updated_at=2026-11-07T20:01:26.085000+00:00 mag=5.5 ingested_at=2026-11-07T20:02:00.807000+00:00 kafka=terremotos.live[0]@673
+  versión: updated_at=2026-11-07T20:17:08.729000+00:00 mag=5.5 ingested_at=2026-11-07T20:18:01.277000+00:00 kafka=terremotos.live[0]@678
+  versión: updated_at=2026-11-07T20:31:28.767000+00:00 mag=5.5 ingested_at=2026-11-07T20:32:01.791000+00:00 kafka=terremotos.live[0]@681
+  versión: updated_at=2026-11-07T20:48:37.641000+00:00 mag=5.5 ingested_at=2026-11-07T20:49:02.406000+00:00 kafka=terremotos.live[0]@685
+  versión: updated_at=2026-11-08T08:23:14.154000+00:00 mag=5.5 ingested_at=2026-11-08T08:55:06.902000+00:00 kafka=terremotos.live[0]@799
+  versión: updated_at=2026-11-08T11:22:37.374000+00:00 mag=5.5 ingested_at=2026-11-08T11:23:58.868000+00:00 kafka=terremotos.live[0]@840
+  versión: updated_at=2026-11-08T11:33:09.463000+00:00 mag=5.5 ingested_at=2026-11-08T11:33:59.235000+00:00 kafka=terremotos.live[0]@844
+  versión: updated_at=2026-11-08T11:51:01.383000+00:00 mag=5.5 ingested_at=2026-11-08T11:51:59.789000+00:00 kafka=terremotos.live[0]@852
+  coherencia: versiones=35 publicadas=35 offset de la fila actual == offset de la última versión: True
+
+## 5. Reenvíos naturales: el feed vuelve a traer el evento en cada consulta, pero no crea versiones nuevas
+  consultas correctas posteriores a su ingesta: 23 (el evento sigue en el feed de 24 h) -> versiones del evento: 35
+
+## 6. API: /api/eventos y /api/estadisticas con una ventana que lo contiene
+  /api/eventos: 19 eventos en la ventana; el evento aparece 1 vez/veces
+  properties: mag=5.5 time=1794067475125 updated=1794138661383 country_id=JPN; coords=[137.691, 34.8611, 38.081]
+  /api/estadisticas: total=19 (= /api/eventos: True); su país (JPN) cuenta [1]
+  por_hora: la hora UTC 1794067200000 cuenta [9]
+
+RASTRO COMPLETO
+
+## 7. Panel (navegador integrado, modo en vivo, 2026-11-08)
+  Búsqueda de «us7000twt0» en la tabla: una fila con 2026-11-07T16:04:35.125Z · M 5.5 mww · 38,08 km · «Menos de 70 km» · 10 km NW of Hamakita, Japan · Japón · 137,691 / 34,861 · actualizado 2026-11-08T11:51:01.383Z (= updated_at de la fila actual, punto 1).
+  Al seleccionarla se abre la ficha en el mapa con los mismos valores (ID us7000twt0). Contador cruzado: mapa 202 = tabla 202 = estadísticas 202 = API.
+  Nota: el evento tuvo 35 revisiones reales de USGS (una versión por revisión); es un buen ejemplo de «versión posterior» observada en live.

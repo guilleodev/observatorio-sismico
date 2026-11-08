@@ -3,3 +3,9 @@ main { max-width: 1200px; margin: auto; padding: 24px; } h1 { margin: 8px 0; fon
 .panel { margin-top: 20px; } .contador { background: white; border-left: 4px solid #176b70; padding: 10px 14px; margin: 0 0 12px; font-size: .9rem; }
 .graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-bottom: 8px; }
 @media (max-width: 520px) { .graficas { grid-template-columns: minmax(0, 1fr); } }
+/* F6 (6.2): modo REPRODUCCIÓN visible en mapa, panel de información y aviso de comparación */
+.oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mapa-envoltorio { position: relative; }
+.etiqueta-mapa { position: absolute; top: 10px; left: 50px; z-index: 1001; margin: 0; padding: 6px 10px; background: #5b21b6; color: white; font-weight: 700; font-size: .85rem; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); max-width: calc(100% - 70px); }
+.etiqueta-replay-info { background: #f3e8ff; border-left: 3px solid #5b21b6; padding: 6px 10px; color: #3b0764; }
+.no-aplica { background: white; border-left: 4px solid #5b21b6; padding: 12px 16px; margin: 0 0 16px; } .no-aplica h2 { margin: 0 0 6px; font-size: 1.1rem; } .no-aplica p { margin: 0; font-size: .9rem; }

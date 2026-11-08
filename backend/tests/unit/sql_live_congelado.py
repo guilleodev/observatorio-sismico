@@ -1,0 +1,14 @@
+"""Copia CONGELADA del SQL del consumidor en vivo tal y como estaba antes de parametrizar el destino (F6, T006).
+
+Es la referencia de `test_destino_sql.py`: el SQL que genera el destino `live` debe ser idéntico, carácter a carácter, a estas sentencias.
+Generado con `scripts/f6/generar_sql_congelado.py` a partir de `consumer/repositorio.py` en el commit 6f11d5b ([F5]). No editar a mano.
+"""
+
+SQL_VERSION = '\nINSERT INTO live.evento_version (event_id, event_time, updated_at, mag, mag_type, depth_km, longitude, latitude, place,\n    source, mode, ingested_at, kafka_topic, kafka_partition, kafka_offset, raw)\nVALUES (%(event_id)s, to_timestamp(%(event_time)s / 1000.0), to_timestamp(%(updated)s / 1000.0),\n    %(mag)s, %(mag_type)s, %(depth_km)s, %(longitude)s, %(latitude)s, %(place)s,\n    %(source)s, %(mode)s, to_timestamp(%(ingested_at)s / 1000.0),\n    %(topic)s, %(partition)s, %(offset)s, %(raw)s)\nON CONFLICT (event_id, updated_at) DO NOTHING\n'
+
+SQL_ACTUAL = '\nINSERT INTO live.evento_actual (event_id, event_time, updated_at, mag, mag_type, depth_km, longitude, latitude, place,\n    source, mode, ingested_at, kafka_topic, kafka_partition, kafka_offset, raw, country_id, country_name, geo_resultado, geo_catalogo, retirado)\nVALUES (%(event_id)s, to_timestamp(%(event_time)s / 1000.0), to_timestamp(%(updated)s / 1000.0),\n    %(mag)s, %(mag_type)s, %(depth_km)s, %(longitude)s, %(latitude)s, %(place)s,\n    %(source)s, %(mode)s, to_timestamp(%(ingested_at)s / 1000.0),\n    %(topic)s, %(partition)s, %(offset)s, %(raw)s, %(country_id)s, %(country_name)s, %(geo_resultado)s, %(geo_catalogo)s, false)\nON CONFLICT (event_id) DO UPDATE SET\n    event_time = EXCLUDED.event_time, updated_at = EXCLUDED.updated_at, mag = EXCLUDED.mag, mag_type = EXCLUDED.mag_type,\n    depth_km = EXCLUDED.depth_km, longitude = EXCLUDED.longitude, latitude = EXCLUDED.latitude, place = EXCLUDED.place,\n    source = EXCLUDED.source, mode = EXCLUDED.mode, ingested_at = EXCLUDED.ingested_at, kafka_topic = EXCLUDED.kafka_topic,\n    kafka_partition = EXCLUDED.kafka_partition, kafka_offset = EXCLUDED.kafka_offset, raw = EXCLUDED.raw,\n    country_id = EXCLUDED.country_id, country_name = EXCLUDED.country_name,\n    geo_resultado = EXCLUDED.geo_resultado, geo_catalogo = EXCLUDED.geo_catalogo,\n    retirado = false, stored_at = now()\nWHERE EXCLUDED.updated_at > live.evento_actual.updated_at\n'
+
+SQL_RETIRAR = '\nUPDATE live.evento_actual SET retirado = true, updated_at = to_timestamp(%(updated)s / 1000.0), stored_at = now()\nWHERE event_id = %(event_id)s AND updated_at < to_timestamp(%(updated)s / 1000.0)\n'
+
+SQL_CUARENTENA = '\nINSERT INTO live.cuarentena (categoria, motivo, event_id, updated_ms, kafka_topic, kafka_partition, kafka_offset, clave, payload, huella)\nVALUES (%(categoria)s, %(motivo)s, %(event_id)s, %(updated_ms)s, %(topic)s, %(partition)s, %(offset)s, %(clave)s, %(payload)s, %(huella)s)\nON CONFLICT (huella) DO NOTHING\n'
+

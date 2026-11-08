@@ -5,13 +5,18 @@ parámetro es `ErrorParametro` (la API responde 422); nada se ignora ni se recor
 """
 
 import math
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 
+from observatorio.modos import MODO_LIVE, MODO_REPLAY, MODOS_CONTRACTUALES
+
 SIN_PAIS = "sin_pais"  # valor reservado de country_id (DF7a): no puede coincidir con un ADM0_A3
 VENTANA_DEFECTO = timedelta(hours=24)
 PARAMETROS_FILTRO = ("start", "end", "min_mag", "country_id")
+PARAMETROS_MODO = ("mode", "run")  # F6: consulta de la reproducción (aditivo; sin ellos todo es como en F5)
+_RUN_VALIDO = re.compile(r"^[A-Za-z0-9._-]{1,64}$")  # el mismo formato que admite replay.ejecucion.run_id
 _EPOCA = datetime(1970, 1, 1, tzinfo=timezone.utc)
 _ANIO_MIN, _ANIO_MAX = 1970, 2100
 _OFFSET_MAX = 2_000_000_000
@@ -57,6 +62,32 @@ def _magnitud(texto: str) -> Decimal:
     return valor
 
 
+def validar_modo(mode: str | None, run: str | None) -> tuple[str, str | None]:
+    """`mode` (live por defecto o replay) y `run` (solo con replay). Cualquier otro valor es un 422: nada se interpreta ni se ignora."""
+    modo = MODO_LIVE if mode is None else mode
+    if modo not in MODOS_CONTRACTUALES:
+        raise ErrorParametro(f"mode debe ser uno de {', '.join(MODOS_CONTRACTUALES)}; recibido {mode!r}")
+    if run is None:
+        return modo, None
+    if modo != MODO_REPLAY:
+        raise ErrorParametro("run solo se admite con mode=replay")
+    if not _RUN_VALIDO.match(run):
+        raise ErrorParametro(f"run no es un identificador de ejecución válido: {run!r}")
+    return modo, run
+
+
+def para_modo(sql: str, modo: str) -> str:
+    """ÚNICO selector del esquema de lectura: las consultas se escriben sobre `live.evento_actual` y en replay se leen de `replay.evento_actual`.
+
+    `modo` ya está validado (validar_modo) y cualquier otro valor lo rechaza esta función: nunca se construye SQL con texto del usuario.
+    """
+    if modo == MODO_LIVE:
+        return sql
+    if modo == MODO_REPLAY:
+        return sql.replace("live.evento_actual", "replay.evento_actual")
+    raise ValueError(f"modo no válido: {modo!r}")
+
+
 def _pais(texto: str) -> str:
     codigo = texto.strip()
     if not codigo:
@@ -72,19 +103,30 @@ class Filtros:
     end: datetime
     min_mag: Decimal | None = None
     country_id: str | None = None
+    modo: str = MODO_LIVE
+    run_id: str | None = None  # solo en replay: la ejecución consultada (None = no hay ninguna)
 
     @classmethod
     def desde_parametros(cls, generado_ms: int, start: str | None = None, end: str | None = None,
-                         min_mag: str | None = None, country_id: str | None = None) -> "Filtros":
-        """Resuelve los valores por defecto con el instante `generated` de la API: `end = generated`, `start = end − 24 h`."""
-        fin = _fecha("end", end) if end is not None else desde_ms(generado_ms)
-        inicio = _fecha("start", start) if start is not None else fin - VENTANA_DEFECTO
+                         min_mag: str | None = None, country_id: str | None = None, *, modo: str = MODO_LIVE,
+                         run_id: str | None = None, intervalo: tuple[int, int] | None = None) -> "Filtros":
+        """Resuelve los valores por defecto con el instante `generated` de la API: `end = generated`, `start = end − 24 h`.
+
+        En replay con ejecución, el periodo por defecto es el intervalo de la ejecución `[desde, hasta + 1 ms)`, no «últimas 24 h».
+        """
+        if modo == MODO_REPLAY and intervalo is not None:
+            fin = _fecha("end", end) if end is not None else desde_ms(intervalo[1] + 1)
+            inicio = _fecha("start", start) if start is not None else desde_ms(intervalo[0])
+        else:
+            fin = _fecha("end", end) if end is not None else desde_ms(generado_ms)
+            inicio = _fecha("start", start) if start is not None else fin - VENTANA_DEFECTO
         if inicio >= fin:
             raise ErrorParametro(f"start debe ser anterior a end (start={inicio.isoformat()}, end={fin.isoformat()})")
         return cls(
             start=inicio, end=fin,
             min_mag=_magnitud(min_mag) if min_mag is not None else None,
             country_id=_pais(country_id) if country_id is not None else None,
+            modo=modo, run_id=run_id,
         )
 
     @property
@@ -95,6 +137,12 @@ class Filtros:
         """Cláusula WHERE sobre `live.evento_actual` (sin retirados) y sus parámetros con nombre. Ningún valor se concatena."""
         condiciones = ["event_time >= %(f_start)s", "event_time < %(f_end)s", "NOT retirado"]
         parametros: dict = {"f_start": self.start, "f_end": self.end}
+        if self.modo == MODO_REPLAY:
+            if self.run_id is None:
+                condiciones.append("run_id IS NULL")  # sin ejecuciones nada coincide (run_id es clave primaria, nunca nulo)
+            else:
+                condiciones.append("run_id = %(f_run)s")
+                parametros["f_run"] = self.run_id
         if con_magnitud and self.min_mag is not None:
             condiciones.append("mag >= %(f_min_mag)s")  # la magnitud nula no cumple el umbral (NULL >= x no es verdadero)
             parametros["f_min_mag"] = self.min_mag

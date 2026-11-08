@@ -1,0 +1,18 @@
+# 6.2 T027 [PA-4] - panel en el navegador integrado, contra la API real recreada (2026-11-08)
+Servidor estático temporal del build (python http.server, 127.0.0.1:4200, parado al terminar); config.json del repositorio (mode=api, http://127.0.0.1:8000), sin modificar.
+Observaciones tomadas del DOM de la página (get del texto y consultas JavaScript de solo lectura); la captura de pantalla expiró por el renderizado de la ventana y no se usó.
+
+EN VIVO (inicial): selector «En vivo (USGS)» marcado; 202 eventos; «Datos al día»; periodo de 24 h; 0 etiquetas de reproducción.
+-> REPRODUCCIÓN (ejecución por defecto = la más reciente, r-f6-prueba-b):
+  - anuncio aria-live: «Modo REPRODUCCIÓN: datos históricos reproducidos, no actividad actual.»
+  - etiqueta en mapa, panel de información, estado, título de la tabla y de las 4 gráficas: «REPRODUCCIÓN · ejecución r-f6-prueba-b · ×127,6 · terminada» (gráficas: «… · REPRODUCCIÓN»)
+  - periodo por defecto 2025-07-30T00:01:04.828Z → 00:41:29.429Z (intervalo de la ejecución, no 24 h); filtro de periodo «Toda la ejecución»; resumen «toda la ejecución»
+  - mapa = tabla = gráficas = API: «mapa: 35 dibujados · tabla: 35 · estadísticas: 35 · total de la API: 35»
+  - comparación: tarjeta sustituida por el aviso «no aplica en una reproducción»
+  - estado: «Reproducción histórica (no es actividad actual)»; la ingesta de USGS aparece rotulada «EN VIVO, no de la reproducción»
+  - ficha de un caso controlado (replay-ctl-maritimo): líneas de etiqueta + «caso controlado / sintético: maritimo»; la tabla muestra el mismo distintivo
+  - magnitud mínima 5 en replay: 22 de 22 en mapa, tabla, estadísticas y API (coincide con la matriz de T026: total=22)
+  - API caída (fetch simulado con error de red en la página; la API real no se paró): «Sin conexión con el backend… no son la situación actual. Son una reproducción histórica, no actividad actual»; se conservan los últimos datos y el estado general pasa a «Sin conexión»
+-> vuelta a EN VIVO: anuncio «Modo en vivo: datos actuales de USGS.»; 0 etiquetas, 0 distintivos de caso, 0 ids replay-ctl en la tabla, comparación en vivo visible, periodo «últimas 24 horas», filtros reiniciados (opciones Últimas 24 h / Últimos 7 días / Personalizado), 201 = 201 = 201 = 201.
+Modo demo (config.json de demostración en copia temporal, puerto 4201, borrada): «DEMOSTRACIÓN · datos ficticios», 4 eventos, sin selector ni panel de estado, 0 peticiones a la API.
+Limitaciones: la interfaz no ofrece elegir ejecución (usa la más reciente, r-f6-prueba-b); r-f6-prueba-a se verificó por API (matriz de T026) y por SQL (T028), no en el panel. «Sin ejecuciones» está cubierto por pruebas (backend con base temporal y frontend), no en el panel, porque exigiría vaciar el esquema replay (prohibido).

@@ -2,6 +2,7 @@
 // al pulsar «Aplicar»; toda la lógica (validación, conversión a parámetros de la API) está en `filtros.ts`, compartida con mapa, tabla y gráficas.
 import { Component, computed, input, output, signal } from '@angular/core';
 import { AVISO_COBERTURA, NOMBRE_SIN_PAIS, SIN_PAIS, aCampoFecha, estadoInicial, validar } from '../filtros';
+import { AVISO_FILTROS_REPLAY } from '../modo';
 import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos';
 
 @Component({
@@ -13,8 +14,8 @@ import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos
       <div class="campos">
         <label>Periodo
           <select [value]="borrador().preajuste" (change)="cambiarPreajuste($event)">
-            <option value="ultimas-24h">Últimas 24 horas</option>
-            <option value="ultimos-7d">Últimos 7 días</option>
+            <option value="ultimas-24h">{{ replay() ? 'Toda la ejecución' : 'Últimas 24 horas' }}</option>
+            @if (!replay()) { <option value="ultimos-7d">Últimos 7 días</option> }
             <option value="personalizado">Personalizado (UTC)</option>
           </select>
         </label>
@@ -49,7 +50,7 @@ import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos
         <button type="submit" [disabled]="errores().length > 0">Aplicar filtros</button>
         <button type="button" (click)="restablecer()">Restablecer</button>
       </div>
-      <p class="aviso" role="note">{{ aviso }}</p>
+      <p class="aviso" role="note">{{ replay() ? avisoReplay : aviso }}</p>
     </form>
   `,
   styles: `
@@ -74,12 +75,15 @@ export class FiltrosComponent {
   readonly paises = input<PaisCatalogo[]>([]);
   /** Último periodo consultado: sirve para rellenar «Desde/Hasta» al elegir «Personalizado». */
   readonly referencia = input<Ventana | null>(null);
+  /** F6: en reproducción el periodo por defecto es la ejecución (no «últimas 24 h») y no hay «últimos 7 días». */
+  readonly replay = input<boolean>(false);
   readonly aplicado = output<FiltrosEstado>();
 
   readonly borrador = signal<FiltrosEstado>(estadoInicial());
   readonly personalizado = computed(() => this.borrador().preajuste === 'personalizado');
   readonly errores = computed(() => validar(this.borrador()));
   readonly aviso = AVISO_COBERTURA;
+  readonly avisoReplay = AVISO_FILTROS_REPLAY;
   readonly sinPais = SIN_PAIS;
   readonly nombreSinPais = NOMBRE_SIN_PAIS;
 

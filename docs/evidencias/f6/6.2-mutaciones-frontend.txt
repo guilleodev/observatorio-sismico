@@ -1,0 +1,35 @@
+# 6.2 T024 - mutaciones del frontend
+Base sin mutar: OK (fail 0)
+
+  DETECTADA  mode=live también envía parámetros  [fail 1]
+  DETECTADA  run viaja sin mode=replay  [fail 2]
+  DETECTADA  el periodo de la ejecución excluye su último evento  [fail 2]
+  DETECTADA  el periodo personalizado se ignora en replay  [fail 1]
+  DETECTADA  la etiqueta no dice qué ejecución es  [fail 2]
+  DETECTADA  la etiqueta no dice la velocidad  [fail 1]
+  DETECTADA  los títulos de las gráficas nunca llevan etiqueta  [fail 1]
+  DETECTADA  la ficha de replay no lleva etiqueta  [fail 1]
+  DETECTADA  la ficha también se etiqueta en vivo  [fail 1]
+  DETECTADA  el caso controlado no se reconoce  [fail 1]
+  DETECTADA  la lectura vacía conserva la ejecución anterior  [fail 1]
+  DETECTADA  la lectura vacía conserva el total anterior  [fail 1]
+  DETECTADA  el resumen de replay sigue diciendo «últimas 24 h»  [fail 1]
+  DETECTADA  sin ejecuciones no se explica cómo lanzarla  [fail 1]
+  DETECTADA  la reproducción se presenta como «Datos al día»  [fail 1]
+  DETECTADA  sin conexión no advierte de que es una reproducción  [fail 1]
+  DETECTADA  sin ejecuciones se avisa de «sin eventos»  [fail 1]
+  DETECTADA  el servicio acepta estadísticas sin comparación  [fail 1]
+  DETECTADA  /api/salud ignora el modo  [fail 1]
+  DETECTADA  la tabla pierde el caso controlado  [fail 1]
+  DETECTADA  el mapa no lleva etiqueta  [fail 1]
+  DETECTADA  la tabla no recibe la etiqueta  [fail 1]
+  DETECTADA  una gráfica no lleva etiqueta  [fail 1]
+  DETECTADA  el estado no recibe la ejecución  [fail 1]
+  DETECTADA  la comparación se muestra también en replay  [fail 1]
+  DETECTADA  el cambio de modo no se anuncia con el texto del modo  [fail 1]
+  DETECTADA  el cambio de modo conserva los datos anteriores  [fail 1]
+  DETECTADA  el cambio de modo no cancela la petición en curso  [fail 1]
+  DETECTADA  la ficha del mapa no lleva la etiqueta de replay  [fail 1]
+
+Restaurado: OK (fail 0)
+Mutaciones: 29 | detectadas: 29 | supervivientes: ninguna

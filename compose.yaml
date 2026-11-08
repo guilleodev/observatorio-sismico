@@ -56,7 +56,7 @@ services:
 
   producer:
     build: ./backend
-    image: observatorio-backend
+    image: ${BACKEND_IMAGE:-observatorio-backend}
     command: ["python", "-m", "observatorio.producer.main"]
     environment:
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
@@ -76,6 +76,13 @@ services:
       INGESTA_PUBLICAR: ${INGESTA_PUBLICAR:-false}
       # Margen (s) de la detección de huecos de ingesta > 24 h (F4): se aplica por ambos lados del intervalo
       HUECO_MARGEN_S: ${HUECO_MARGEN_S:-21600}
+      # Replay histórico aislado (F6, DG1/DG3): topic, grupo y parámetros propios; nunca coinciden con los del flujo en vivo (ConfigReplay lo comprueba)
+      KAFKA_TOPIC_REPLAY: ${KAFKA_TOPIC_REPLAY:-terremotos.replay}
+      KAFKA_CONSUMER_GROUP_REPLAY: ${KAFKA_CONSUMER_GROUP_REPLAY:-consumidor-replay}
+      REPLAY_EVENTOS: ${REPLAY_EVENTOS:-30}
+      REPLAY_INTERVALO_S: ${REPLAY_INTERVALO_S:-2}
+      REPLAY_ESPERA_FINAL_S: ${REPLAY_ESPERA_FINAL_S:-10}
+      REPLAY_ESPERA_MAX_S: ${REPLAY_ESPERA_MAX_S:-120}
     depends_on:
       kafka:
         condition: service_healthy
@@ -91,7 +98,7 @@ services:
 
   consumer:
     build: ./backend
-    image: observatorio-backend
+    image: ${BACKEND_IMAGE:-observatorio-backend}
     command: ["python", "-m", "observatorio.consumer.main"]
     environment:
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
@@ -102,6 +109,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?definir en .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?definir en .env}
       CATALOGO_PATH: /datos/paises.geojson
+      # Replay histórico aislado (F6, DG1/DG3): topic, grupo y parámetros propios; nunca coinciden con los del flujo en vivo (ConfigReplay lo comprueba)
+      KAFKA_TOPIC_REPLAY: ${KAFKA_TOPIC_REPLAY:-terremotos.replay}
+      KAFKA_CONSUMER_GROUP_REPLAY: ${KAFKA_CONSUMER_GROUP_REPLAY:-consumidor-replay}
+      REPLAY_EVENTOS: ${REPLAY_EVENTOS:-30}
+      REPLAY_INTERVALO_S: ${REPLAY_INTERVALO_S:-2}
+      REPLAY_ESPERA_FINAL_S: ${REPLAY_ESPERA_FINAL_S:-10}
+      REPLAY_ESPERA_MAX_S: ${REPLAY_ESPERA_MAX_S:-120}
     volumes:
       # Catálogo de países entregado (Natural Earth): solo lectura, nunca se copia ni se modifica (F4).
       - ./frontend/public/datos/paises.geojson:/datos/paises.geojson:ro
@@ -120,7 +134,7 @@ services:
 
   api:
     build: ./backend
-    image: observatorio-backend
+    image: ${BACKEND_IMAGE:-observatorio-backend}
     command: ["uvicorn", "--factory", "observatorio.api.main:crear_app_desde_entorno", "--host", "0.0.0.0", "--port", "8000"]
     environment:
       POSTGRES_HOST: postgres
@@ -134,7 +148,7 @@ services:
       API_STATEMENT_TIMEOUT_S: ${API_STATEMENT_TIMEOUT_S:-10}
       API_MARGEN_PUBLICACION_S: ${API_MARGEN_PUBLICACION_S:-900}
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:${API_PUERTO:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy

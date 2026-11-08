@@ -1,0 +1,28 @@
+# 6.2 T024 - mutaciones del backend
+Base sin mutar: OK (211 passed, 1 warning in 10.55s)
+
+  DETECTADA  mode se ignora: cualquier valor se acepta  [FAILED tests/unit/test_api_replay.py::test_mode_o_run_invalidos_son_422_en_los_tres_endpoints[/api/eventos-mod]
+  DETECTADA  run se admite con mode=live  [FAILED tests/unit/test_api_replay.py::test_mode_o_run_invalidos_son_422_en_los_tres_endpoints[/api/eventos-mod]
+  DETECTADA  run con formato libre (sin validar)  [FAILED tests/unit/test_api_replay.py::test_validar_modo_y_formato_de_run_sin_base_de_datos]
+  DETECTADA  replay lee live.evento_actual (el selector no cambia el esquema)  [ERROR    api:main.py:74 Base de datos no disponible: UndefinedColumn]
+  DETECTADA  replay no filtra por ejecución  [FAILED tests/unit/test_api_replay.py::test_los_filtros_funcionan_igual_en_replay]
+  DETECTADA  sin ejecuciones, replay devuelve todas las filas  [FAILED tests/unit/test_api_replay.py::test_validar_modo_y_formato_de_run_sin_base_de_datos]
+  DETECTADA  periodo de 24 h en replay  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  el último evento queda fuera del periodo (hasta sin +1 ms)  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  un run inexistente se ignora en silencio  [FAILED tests/unit/test_api_replay.py::test_mode_o_run_invalidos_son_422_en_los_tres_endpoints[/api/eventos-mod]
+  DETECTADA  metadata.replay ausente en /api/eventos  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  /api/salud sin bloque replay  [FAILED tests/unit/test_api_replay.py::test_salud_replay_anade_el_bloque_replay_y_mantiene_la_ingesta_en_vivo]
+  DETECTADA  /api/estadisticas sin mode/replay en la respuesta  [FAILED tests/unit/test_api_replay.py::test_estadisticas_de_replay_mismos_bloques_y_comparacion_no_aplica]
+  DETECTADA  las estadísticas de replay calculan la comparación en vivo  [ERROR    api:main.py:74 Base de datos no disponible: UndefinedColumn]
+  DETECTADA  las estadísticas de replay leen live  [ERROR    api:main.py:74 Base de datos no disponible: UndefinedColumn]
+  DETECTADA  el total de replay se cuenta en live  [ERROR    api:main.py:74 Base de datos no disponible: UndefinedColumn]
+  DETECTADA  el caso y el instante de reproducción se pierden  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  las propiedades de replay aparecen también en vivo  [FAILED tests/unit/test_api_replay.py::test_sin_mode_y_con_mode_live_son_identicas_y_sin_campos_de_replay]
+  DETECTADA  replay devuelve campos de replay también en vivo (metadata)  [FAILED tests/unit/test_api_replay.py::test_sin_mode_y_con_mode_live_son_identicas_y_sin_campos_de_replay]
+  DETECTADA  por defecto se elige la ejecución más antigua  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  la velocidad de la ejecución se pierde  [FAILED tests/unit/test_api_replay.py::test_metadata_replay_y_propiedades_del_contrato]
+  DETECTADA  el intervalo de la ejecución se invierte  [FAILED tests/unit/test_api_replay.py::test_replay_por_defecto_lee_la_ejecucion_mas_reciente_aunque_este_en_cur]
+  DETECTADA  la cobertura de replay no es el intervalo de la ejecución  [FAILED tests/unit/test_api_replay.py::test_metadata_replay_y_propiedades_del_contrato]
+
+Restaurado: OK (211 passed, 1 warning in 10.63s)
+Mutaciones: 22 | detectadas: 22 | supervivientes: ninguna

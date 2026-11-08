@@ -39,6 +39,46 @@ def test_ningun_modulo_escribe_ni_cambia_el_esquema(modulo):
     assert ESCRITURAS.findall(modulo.read_text(encoding="utf-8")) == []
 
 
+# --- F6 (T020): el camino de replay solo toca replay.* y el de live nunca lo menciona -------------------------------------------------------
+
+def test_solo_el_camino_replay_menciona_el_esquema_replay():
+    mencionan = {m.name for m in MODULOS if re.search(r"\breplay\.[a-z_]+", m.read_text(encoding="utf-8"))}
+    assert mencionan == {"replay.py", "filtros.py"}      # el SQL de replay y el selector único; ningún otro módulo (ni comparacion.py) lo nombra
+
+
+def test_ni_comparacion_ni_el_sql_en_vivo_mencionan_replay():
+    from observatorio.api import comparacion, repositorio
+
+    assert "replay" not in (API / "comparacion.py").read_text(encoding="utf-8").lower()
+    for sql in (repositorio.SQL_EVENTOS, repositorio.SQL_TOTAL, repositorio.SQL_SIN_MAGNITUD, comparacion.SQL_COBERTURA, comparacion.SQL_ULTIMA_INGESTION):
+        assert "replay" not in sql and "live." in sql
+
+
+def test_el_selector_de_esquema_es_unico_y_cierra_el_acceso_a_otros_esquemas():
+    from observatorio.api import estadisticas, repositorio
+    from observatorio.api.filtros import para_modo
+    from observatorio.api.replay import SQL_EVENTOS_REPLAY
+
+    consultas = [repositorio.SQL_EVENTOS, repositorio.SQL_TOTAL, repositorio.SQL_SIN_MAGNITUD, estadisticas.SQL_POR_PAIS, estadisticas.SQL_POR_HORA,
+                 estadisticas.SQL_MAGNITUD, estadisticas.SQL_PROFUNDIDAD]
+    for sql in consultas:
+        en_replay = para_modo(sql, "replay")
+        assert "live.evento_actual" not in en_replay and "replay.evento_actual" in en_replay and "historico" not in en_replay and "sintetico" not in en_replay
+        assert para_modo(sql, "live") == sql                                   # live no se transforma: el SQL de F5 queda tal cual
+    assert "live." not in SQL_EVENTOS_REPLAY and "historico" not in SQL_EVENTOS_REPLAY and "sintetico" not in SQL_EVENTOS_REPLAY
+    for malo in ("historico", "sintetico", "REPLAY", "", "live; DROP", None):
+        with pytest.raises(ValueError):
+            para_modo(consultas[0], malo)
+
+
+def test_el_sql_de_replay_es_de_solo_lectura():
+    from observatorio.api import replay
+
+    for nombre in ("SQL_EJECUCION_ULTIMA", "SQL_EJECUCION_POR_ID", "SQL_EVENTOS_REPLAY"):
+        sql = getattr(replay, nombre)
+        assert re.match(r"\s*SELECT\b", sql) and ESCRITURAS.findall(sql) == [], nombre
+
+
 def test_el_sql_de_comparacion_sobre_el_historico_es_un_select_agregado():
     from observatorio.api import comparacion
 

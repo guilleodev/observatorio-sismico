@@ -1,0 +1,43 @@
+# T015 [PA-2] - migración sql/004_esquema_f6.sql en PostgreSQL REAL (aditiva e idempotente; solo crea el esquema replay) 2026-11-08T11:10:08Z
+
+## ANTES
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=822 versiones=806 cuarentena=16 | offset/final/lag=831/831/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+esquemas presentes: geo,historico,live,sintetico
+replay: el esquema todavía no existe (se crea en el paso 6.1 con autorización PA-2)
+
+## aplicar (1.ª vez)
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+
+## aplicar (2.ª vez: idempotente)
+14
+
+## DESPUÉS
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=822 versiones=806 cuarentena=16 | offset/final/lag=832/832/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+esquemas presentes: geo,historico,live,replay,sintetico
+replay: ejecuciones=0 | actuales=0 | versiones=0 | cuarentena=0
+
+## tablas del esquema replay
+cuarentena (13 columnas)
+ejecucion (12 columnas)
+evento_actual (24 columnas)
+evento_version (19 columnas)
+## restricciones de modo y fuente
+replay.evento_actual: CHECK ((mode = 'replay'::text))
+replay.evento_actual: CHECK ((source = 'replay-historico'::text))
+replay.evento_version: CHECK ((mode = 'replay'::text))
+replay.evento_version: CHECK ((source = 'replay-historico'::text))
+## claves foráneas entre replay y live/historico (deben ser 0)
+0

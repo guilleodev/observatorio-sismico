@@ -1,3 +1,5 @@
+# Actualizado el 2026-11-08 (F6, 6.3, T032): claves de /api/estadisticas (por_hora y comparacion, añadidas en 5.3/5.5) y la ausencia del texto «historico» fuera del bloque `comparacion`.
+# El resto no cambia; la evidencia de docs/evidencias/f5/ no se reescribe.
 """Matriz del paso 5.2 contra la API REAL desplegada (F5, T015). SOLO LECTURA (GET a la API y SELECT a la base).
 
 El oráculo es independiente de la API: lee las filas de `live.evento_actual` una vez y calcula los bloques en Python (comparaciones con los bordes).
@@ -129,11 +131,11 @@ for nombre, params, filtro in casos:
 
 print("\n== 2. Estructura, defecto y unidades ==")
 st, r = get("/api/estadisticas")
-comprobar(st == 200 and set(r) == {"generated", "period", "filters", "total", "sin_magnitud", "por_pais", "magnitud", "profundidad"}, f"claves: {sorted(r)}")
+comprobar(st == 200 and set(r) == {"generated", "period", "filters", "total", "sin_magnitud", "por_pais", "magnitud", "profundidad", "por_hora", "comparacion"}, f"claves: {sorted(r)}")
 comprobar(r["period"]["end"] == r["generated"] and r["period"]["start"] == r["generated"] - 86_400_000, "periodo por defecto = últimas 24 h hasta generated")
 comprobar((r["por_pais"]["unit"], r["magnitud"]["unit"], r["profundidad"]["unit"]) == ("events", "magnitude", "km") and r["filters"] == {"min_mag": None, "country_id": None}, "unidades y filtros aplicados")
 comprobar(len(r["magnitud"]["items"]) == 10 and len(r["profundidad"]["items"]) == 7 and r["magnitud"]["items"][0]["from"] is None and r["profundidad"]["items"][-1]["to"] is None, "10 intervalos de magnitud y 7 de profundidad, extremos abiertos como null")
-texto = json.dumps(r)
+texto = json.dumps({k: v for k, v in r.items() if k != "comparacion"})  # la tarjeta de comparación cita el histórico a propósito (5.3); el resto no
 comprobar("NaN" not in texto and "Infinity" not in texto and "historico" not in texto.lower() and "synthetic" not in texto.lower(), "sin NaN/Infinity, sin histórico ni sintético")
 st1, e = get("/api/eventos")
 comprobar(e["metadata"]["total"] == r["total"], f"total de /api/eventos (sin parámetros) = total de /api/estadisticas = {r['total']}")

@@ -1,0 +1,33 @@
+# T017 [PA-4] - replay REAL: plan previo (solo lectura, sin publicar) 2026-11-08T11:15:03Z
+topics antes: __consumer_offsets terremotos.live 
+{
+ "run_id": "r-f6-prueba-a",
+ "dia": "2025-07-30",
+ "eventos_reales": 30,
+ "mensajes": 39,
+ "casos": 9,
+ "intervalo_s": 2.0,
+ "velocidad": 31.903,
+ "topic": "terremotos.replay",
+ "duracion_prevista_s": 76.0
+}
+primeros mensajes:
+  0 us6000r10g None 1753833664828
+  1 replay-ctl-duplicado duplicado 1753833664828
+  2 replay-ctl-duplicado duplicado 1753833664828
+  3 us6000r10e None 1753833686150
+  4 replay-ctl-revision revision 1753833686150
+  5 replay-ctl-revision revision 1753833686150
+  6 us6000qw6r None 1753833887327
+  7 replay-ctl-antigua antigua 1753833887327
+  8 replay-ctl-antigua antigua 1753833887327
+casos:
+  1 replay-ctl-duplicado duplicado
+  2 replay-ctl-duplicado duplicado
+  4 replay-ctl-revision revision
+  5 replay-ctl-revision revision
+  7 replay-ctl-antigua antigua
+  8 replay-ctl-antigua antigua
+  10 replay-ctl-magnitud_nula magnitud_nula
+  12 replay-ctl-coordenadas_invalidas coordenadas_invalidas
+  14 replay-ctl-maritimo maritimo

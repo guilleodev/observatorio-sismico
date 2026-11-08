@@ -1,0 +1,26 @@
+# T001 - línea base de pruebas existentes + repetibilidad de la línea base de la API 2026-11-08T10:04:44Z
+
+## repetibilidad de linea_base_api.py (segunda captura frente a la guardada)
+huellas de la API iguales: True | oráculo SQL igual: True
+RESULTADO: OK
+
+## backend completo (scripts/f6/ejecutar.sh; 661 de F5 + 22 nuevas de ConfigReplay)
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+683 passed, 1 warning in 49.30s
+
+## frontend (node --test)
+ℹ tests 88
+ℹ pass 88
+ℹ fail 0
+ℹ skipped 0
+
+## sha256 de lo que no debe cambiar
+934e0c913b10a3273a65de5430d0d5defaf54c9271ba345d2736afd99246e1d9 *package.json
+0185b54a7ebe69b3452fdf38e1a024183cf5b3116d35e7c57efa269fcd61e339 *package-lock.json
+4e288bfc5cb983e004a192db4266597d0fee3c7f5b14478618fd9589ec5108b9 *angular.json
+d42a020876ef636cb993c7c35e2738ce0a095243d714f9eae7fd02e4e399f87d *tsconfig.json
+caa84e8abdba5afa155da8dc22276ae5144efe50508f6c346ecf99e7ad5015f3 *tsconfig.app.json
+27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525 *public/config.json
+d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c *public/datos/paises.geojson

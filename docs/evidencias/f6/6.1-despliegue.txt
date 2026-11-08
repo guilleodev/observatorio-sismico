@@ -1,0 +1,76 @@
+# T016 [PA-3] - recreación de consumer y producer con la imagen nueva (de uno en uno; Kafka y PostgreSQL NO se tocan) 2026-11-08T11:11:13Z
+
+## ANTES
+api 4ac7520a35a0 Up 2 hours (healthy)
+consumer 1bd149cce180 Up 2 hours (healthy)
+kafka 8334b55b327c Up 2 hours (healthy)
+postgres 046081f539aa Up 2 hours (healthy)
+producer 8e645f8153e2 Up 2 hours (healthy)
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=823 versiones=807 cuarentena=16 | offset/final/lag=833/833/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+imágenes previas etiquetadas:
+observatorio-backend:latest d1a568b553a7
+observatorio-backend:previo-f6-api d1a568b553a7
+observatorio-backend:previo-f6-consumer d1a568b553a7
+observatorio-backend:previo-f6-producer d1a568b553a7
+
+## construir la imagen (misma etiqueta para los tres servicios Python; el contenedor de la API en marcha no cambia)
+
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image observatorio-backend Built 
+observatorio-backend:latest 2721dbf27699
+observatorio-backend:previo-f6-api d1a568b553a7
+observatorio-backend:previo-f6-consumer d1a568b553a7
+observatorio-backend:previo-f6-producer d1a568b553a7
+
+## recrear CONSUMER
+ Container observatorio-consumer-1 Recreated 
+ Container observatorio-consumer-1 Starting 
+ Container observatorio-consumer-1 Started 
+cinco servicios healthy
+api 4ac7520a35a0 Up 2 hours (healthy)
+consumer b52f396fff3c Up 11 seconds (healthy)
+kafka 8334b55b327c Up 2 hours (healthy)
+postgres 046081f539aa Up 2 hours (healthy)
+producer 8e645f8153e2 Up 2 hours (healthy)
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=823 versiones=807 cuarentena=16 | offset/final/lag=833/833/0
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+
+## logs del consumer (últimas líneas)
+consumer-1  | 2026-11-08 11:11:43,772 aiokafka.consumer.group_coordinator INFO (Re-)joining group consumidor-live
+consumer-1  | 2026-11-08 11:11:52,867 aiokafka.consumer.group_coordinator INFO Joined group 'consumidor-live' (generation 18) with member_id aiokafka-0.15.0-ee02f79a-3307-45ac-a290-6be52c98e8e8
+consumer-1  | 2026-11-08 11:11:52,867 aiokafka.consumer.group_coordinator INFO Elected group leader -- performing partition assignments using roundrobin
+consumer-1  | 2026-11-08 11:11:52,869 aiokafka.consumer.group_coordinator INFO Successfully synced group consumidor-live with generation 18
+consumer-1  | 2026-11-08 11:11:52,869 aiokafka.consumer.group_coordinator INFO Setting newly assigned partitions {TopicPartition(topic='terremotos.live', partition=0)} for group consumidor-live
+consumer-1  | 2026-11-08 11:11:52,870 consumer INFO Consumiendo terremotos.live con el grupo consumidor-live (destino live)
+
+## recrear PRODUCER 2026-11-08T11:12:30Z
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=823 versiones=807 cuarentena=16 | offset/final/lag=833/833/0
+ Container observatorio-producer-1 Recreated 
+ Container observatorio-producer-1 Starting 
+ Container observatorio-producer-1 Started 
+cinco servicios healthy
+api 4ac7520a35a0 Up 2 hours (healthy)
+consumer b52f396fff3c Up About a minute (healthy)
+kafka 8334b55b327c Up 2 hours (healthy)
+postgres 046081f539aa Up 2 hours (healthy)
+producer 4f0f75f00a36 Up 7 seconds (healthy)
+
+## esperar un ciclo de ingestión (60 s) y comprobar que el sistema sigue ingiriendo y consumiendo
+producer-1  | 2026-11-08 11:12:58,386 producer INFO Ingesta USGS cada 60 s en modo PUBLICACIÓN REAL (https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson)
+producer-1  | 2026-11-08 11:12:58,541 producer.ingesta INFO Consulta ok: 202 eventos, 144649 bytes, 123 ms, 1 intento(s), copia guardada; publicadas=2
+producer-1  | 2026-11-08 11:13:58,592 producer.ingesta INFO Consulta ok: 202 eventos, 144649 bytes, 120 ms, 1 intento(s), copia guardada; publicadas=1
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=826 versiones=810 cuarentena=16 | offset/final/lag=836/836/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=4ac7520a35a0 consumer=b52f396fff3c kafka=8334b55b327c postgres=046081f539aa producer=4f0f75f00a36 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=558 | versiones=810 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+
+{"status":"ok","database":"ok","last_ingestion":1794136438580,"generated":1794136485598,"ingestion_age_s":47,"stale":false,"stale_after_s":300,"gaps_pending":0,"live_since":1793897694423}

@@ -2,9 +2,14 @@
 // Regla central: «no hay datos» NO es «no hay conexión». Un filtro sin eventos es un resultado válido; un fallo de red o un 503 es un error y los últimos datos
 // válidos se conservan, indicando su antigüedad y que pueden estar desactualizados. Las antigüedades se miden con el reloj de la API (`generated`, `ingestion_age_s`)
 // o con un reloj MONOTÓNICO local (duración transcurrida), nunca comparando con la hora del navegador, que puede estar desajustada.
-import type { Salud, TipoError } from './modelos';
+import type { ModoVista, Salud, TipoError } from './modelos';
 
-export type CodigoAviso = 'sin-conexion' | 'filtros-rechazados' | 'datos-desactualizados' | 'sin-eventos' | 'truncado' | 'huecos' | 'recuperado';
+// F6: sin ejecuciones guardadas no es un fallo de conexión; el texto explica cómo lanzar una (solo `import type` en este archivo: se prueba con node --test).
+export const AVISO_SIN_EJECUCIONES =
+  'Todavía no hay ninguna reproducción guardada: no es un fallo de conexión. Lánzala con «bash scripts/f6/ensayo_replay.sh» o con el productor de replay ' +
+  '(docker compose run --rm --no-deps producer python -m observatorio.replay.reproducir) y vuelve a pulsar «Reproducción».';
+
+export type CodigoAviso = 'sin-ejecuciones' | 'sin-conexion' | 'filtros-rechazados' | 'datos-desactualizados' | 'sin-eventos' | 'truncado' | 'huecos' | 'recuperado';
 export type Aviso = { codigo: CodigoAviso; severidad: 'error' | 'aviso' | 'info'; rol: 'alert' | 'status'; titulo: string; texto: string };
 export type ErrorPanel = { tipo: TipoError; mensaje: string; detalle?: string };
 
@@ -24,6 +29,9 @@ export type EntradaEstado = {
   siguiente: number | null;
   /** Instante (UTC, ISO) en que se recuperó la conexión tras un fallo, o null. */
   recuperadoEn: string | null;
+  /** F6: modo de la vista (por defecto `live`) y si la reproducción todavía no tiene ninguna ejecución. */
+  modo?: ModoVista;
+  sinEjecuciones?: boolean;
 };
 
 /** «45 s», «3 min 05 s», «2 h 10 min», «1 d 4 h». */
@@ -62,8 +70,11 @@ const TITULO_CONEXION: Record<string, string> = { red: 'Sin conexión con el bac
 /** Avisos visibles, de más a menos grave. */
 export function avisos(e: EntradaEstado): Aviso[] {
   const lista: Aviso[] = [];
+  if (e.modo === 'replay' && e.sinEjecuciones && !e.error) {
+    lista.push({ codigo: 'sin-ejecuciones', severidad: 'info', rol: 'status', titulo: 'Sin reproducciones', texto: AVISO_SIN_EJECUCIONES });
+  }
   const conLectura = e.hayLectura && e.edadLecturaMs !== null
-    ? `Se muestran los últimos datos válidos, leídos hace ${formatoEdad(e.edadLecturaMs)}: pueden estar desactualizados y no son la situación actual.`
+    ? `Se muestran los últimos datos válidos, leídos hace ${formatoEdad(e.edadLecturaMs)}: pueden estar desactualizados y no son la situación actual.` + (e.modo === 'replay' ? ' Son una reproducción histórica, no actividad actual.' : '')
     : 'Todavía no hay ninguna lectura válida que mostrar.';
   if (e.error && e.error.tipo === 'validacion') {
     lista.push({ codigo: 'filtros-rechazados', severidad: 'aviso', rol: 'alert', titulo: 'La API rechazó los filtros',
@@ -85,7 +96,7 @@ export function avisos(e: EntradaEstado): Aviso[] {
     lista.push({ codigo: 'datos-desactualizados', severidad: 'aviso', rol: 'status', titulo: 'Datos desactualizados',
       texto: `El backend responde, pero ${edad}. Los eventos más recientes pueden faltar.` });
   }
-  if (!e.error && e.hayLectura && e.cargados === 0 && (e.total === 0 || e.total === null)) {
+  if (!e.error && !e.sinEjecuciones && e.hayLectura && e.cargados === 0 && (e.total === 0 || e.total === null)) {
     lista.push({ codigo: 'sin-eventos', severidad: 'info', rol: 'status', titulo: 'Sin eventos para estos filtros',
       texto: 'La consulta funcionó y no hay terremotos que cumplan los filtros en este periodo: no es un error ni una pérdida de conexión.' });
   }
@@ -106,5 +117,6 @@ export type EstadoGeneral = { nivel: 'ok' | 'desactualizado' | 'sin-conexion'; t
 export function estadoGeneral(e: EntradaEstado): EstadoGeneral {
   if (e.error && e.error.tipo !== 'validacion') return { nivel: 'sin-conexion', texto: 'Sin conexión con el backend' };
   if (e.salud && e.salud.stale === true) return { nivel: 'desactualizado', texto: 'Datos desactualizados' };
+  if (e.modo === 'replay') return { nivel: 'ok', texto: e.sinEjecuciones ? 'Reproducción: sin ejecuciones' : 'Reproducción histórica (no es actividad actual)' };
   return { nivel: 'ok', texto: e.hayLectura ? 'Datos al día' : 'Sin lectura todavía' };
 }

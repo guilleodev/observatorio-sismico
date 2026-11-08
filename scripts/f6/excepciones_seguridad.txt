@@ -1,0 +1,5 @@
+# Excepciones APROBADAS a verificar_seguridad.sh: una por línea, «archivo:fragmento de la línea permitida».
+# Solo recursos TEMPORALES de pruebas (topics y grupos con prefijo test-f6-, protegidos por un case en el propio script); nunca datos reales ni volúmenes.
+scripts/f6/limpiar_temporales_kafka.sh:kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic "$topic"
+scripts/f6/limpiar_temporales_kafka.sh:kafka-consumer-groups.sh --bootstrap-server localhost:9092 --delete --group "$grupo"
+scripts/f6/ensayo_replay.sh:docker ps --filter "name=observatorio-consumer-run-" -q | xargs -r docker kill

@@ -1,0 +1,16 @@
+# T017 - productor de replay (ejecución r-f6-prueba-a, intervalo por defecto 2 s) 2026-11-08T11:15:24Z
+ Container observatorio-producer-run-53ed2b00ed45 Creating 
+ Container observatorio-producer-run-53ed2b00ed45 Created 
+{
+  "run_id": "r-f6-prueba-a",
+  "dia": "2025-07-30",
+  "eventos_reales": 30,
+  "mensajes": 39,
+  "casos": 9,
+  "intervalo_s": 2.0,
+  "velocidad": 31.903,
+  "topic": "terremotos.replay",
+  "duracion_prevista_s": 76.0,
+  "publicados": 39,
+  "estado": "terminada"
+}

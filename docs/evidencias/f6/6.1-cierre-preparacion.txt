@@ -1,0 +1,22 @@
+# cierre de la preparación T001–T002 2026-11-08T10:08:01Z
+## servicios (deben ser los mismos ids que en la línea base)
+api Up About an hour (healthy) 4ac7520a35a0
+consumer Up About an hour (healthy) 1bd149cce180
+kafka Up About an hour (healthy) 8334b55b327c
+postgres Up About an hour (healthy) 046081f539aa
+producer Up About an hour (healthy) 8e645f8153e2
+## scripts seguros
+RESULTADO: OK - ningún script de scripts/f6 contiene órdenes destructivas ni que paren o recreen servicios
+## lag/reconciliación/temporales
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=809 versiones=793 cuarentena=16 | offset/final/lag=819/819/0
+esquemas presentes: geo,historico,live,sintetico
+replay: el esquema todavía no existe (se crea en el paso 6.1 con autorización PA-2)
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+## línea base de la API sigue igual
+RESULTADO: OK
+## no tocado: docs/referencias, specs/001-004, catálogo, frontend/src, frontend/public
+0
+## secretos en lo nuevo o modificado (valor de POSTGRES_PASSWORD, authtoken)
+1
+0

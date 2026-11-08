@@ -1,0 +1,43 @@
+# T002 - docker compose config (solo lectura) 2026-11-08T10:01:20Z
+name: observatorio
+    image: observatorio-backend
+        host_ip: 127.0.0.1
+        published: "8000"
+      KAFKA_CONSUMER_GROUP_REPLAY: consumidor-replay
+      KAFKA_TOPIC_REPLAY: terremotos.replay
+      REPLAY_ESPERA_FINAL_S: "10"
+      REPLAY_ESPERA_MAX_S: "120"
+      REPLAY_EVENTOS: "30"
+      REPLAY_INTERVALO_S: "2"
+    image: observatorio-backend
+    image: apache/kafka:4.3.2
+    image: postgres:17.11
+      KAFKA_CONSUMER_GROUP_REPLAY: consumidor-replay
+      KAFKA_TOPIC_REPLAY: terremotos.replay
+      REPLAY_ESPERA_FINAL_S: "10"
+      REPLAY_ESPERA_MAX_S: "120"
+      REPLAY_EVENTOS: "30"
+      REPLAY_INTERVALO_S: "2"
+    image: observatorio-backend
+    name: observatorio_observatorio
+    name: observatorio_kafkadata
+    name: observatorio_pgdata
+--- proyecto paralelo simulado (solo config, NO se levanta nada):
+name: observatorio_limpio
+    image: observatorio-backend-limpio
+        host_ip: 127.0.0.1
+        published: "8100"
+    image: observatorio-backend-limpio
+    image: apache/kafka:4.3.2
+    image: postgres:17.11
+    image: observatorio-backend-limpio
+--- volúmenes y red del proyecto paralelo simulado (config, no se levanta nada):
+        source: kafkadata
+        source: pgdata
+networks:
+    name: observatorio_limpio_observatorio
+volumes:
+  kafkadata:
+    name: observatorio_limpio_kafkadata
+  pgdata:
+    name: observatorio_limpio_pgdata

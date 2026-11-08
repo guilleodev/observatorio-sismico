@@ -165,3 +165,78 @@ def test_config_api_rechaza_valores_invalidos_con_el_nombre_de_la_variable(monke
     monkeypatch.setenv(nombre, valor)
     with pytest.raises(ConfigError, match=nombre):
         ConfigApi.desde_entorno()
+
+
+# --- ConfigReplay (F6, paso 6.1; tarea T002) ------------------------------------------------------------------------------
+
+REPLAY_VARIABLES = ("KAFKA_TOPIC", "KAFKA_CONSUMER_GROUP", "KAFKA_TOPIC_REPLAY", "KAFKA_CONSUMER_GROUP_REPLAY", "REPLAY_EVENTOS", "REPLAY_INTERVALO_S",
+                    "REPLAY_ESPERA_FINAL_S", "REPLAY_ESPERA_MAX_S")
+
+
+def _limpiar_replay(monkeypatch):
+    for nombre in REPLAY_VARIABLES:
+        monkeypatch.delenv(nombre, raising=False)
+
+
+def test_config_replay_por_defecto_son_los_valores_del_sdd(monkeypatch):
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    assert ConfigReplay.desde_entorno() == ConfigReplay(topic="terremotos.replay", grupo="consumidor-replay", eventos=30, intervalo_s=2.0,
+                                                        espera_final_s=10, espera_max_s=120)
+
+
+def test_config_replay_valores_validos(monkeypatch):
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    for nombre, valor in zip(REPLAY_VARIABLES[2:], ("demo.replay", "grupo-demo", "5", "0.5", "3", "60")):
+        monkeypatch.setenv(nombre, valor)
+    assert ConfigReplay.desde_entorno() == ConfigReplay("demo.replay", "grupo-demo", 5, 0.5, 3, 60)
+
+
+@pytest.mark.parametrize("nombre,valor", [("REPLAY_EVENTOS", "0"), ("REPLAY_EVENTOS", "-3"), ("REPLAY_EVENTOS", "muchos"), ("REPLAY_EVENTOS", "2.5"), ("REPLAY_EVENTOS", "1001"),
+                                          ("REPLAY_INTERVALO_S", "0"), ("REPLAY_INTERVALO_S", "-1"), ("REPLAY_INTERVALO_S", "rapido"), ("REPLAY_INTERVALO_S", "nan"),
+                                          ("REPLAY_INTERVALO_S", "inf"), ("REPLAY_INTERVALO_S", "3601"),
+                                          ("REPLAY_ESPERA_FINAL_S", "0"), ("REPLAY_ESPERA_MAX_S", "0"),
+                                          ("KAFKA_TOPIC_REPLAY", "con espacios"), ("KAFKA_TOPIC_REPLAY", "../etc"), ("KAFKA_CONSUMER_GROUP_REPLAY", "a b")])
+def test_config_replay_rechaza_valores_invalidos_con_el_nombre_de_la_variable(monkeypatch, nombre, valor):
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    monkeypatch.setenv(nombre, valor)
+    with pytest.raises(ConfigError, match=nombre):
+        ConfigReplay.desde_entorno()
+
+
+def test_config_replay_la_espera_maxima_no_puede_ser_menor_que_la_final(monkeypatch):
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    monkeypatch.setenv("REPLAY_ESPERA_FINAL_S", "30")
+    monkeypatch.setenv("REPLAY_ESPERA_MAX_S", "10")
+    with pytest.raises(ConfigError, match="REPLAY_ESPERA_MAX_S"):
+        ConfigReplay.desde_entorno()
+
+
+@pytest.mark.parametrize("vivo,replay,esperado", [("KAFKA_TOPIC", "KAFKA_TOPIC_REPLAY", "KAFKA_TOPIC_REPLAY"),
+                                                  ("KAFKA_CONSUMER_GROUP", "KAFKA_CONSUMER_GROUP_REPLAY", "KAFKA_CONSUMER_GROUP_REPLAY")])
+def test_config_replay_nunca_comparte_topic_ni_grupo_con_el_flujo_en_vivo(monkeypatch, vivo, replay, esperado):
+    """Aislamiento (constitución III): el replay no puede leer ni confirmar offsets en el topic o el grupo reales."""
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    monkeypatch.setenv(vivo, "terremotos.live" if vivo == "KAFKA_TOPIC" else "consumidor-live")
+    monkeypatch.setenv(replay, "terremotos.live" if vivo == "KAFKA_TOPIC" else "consumidor-live")
+    with pytest.raises(ConfigError, match=esperado):
+        ConfigReplay.desde_entorno()
+
+
+def test_config_replay_por_defecto_no_coincide_con_los_valores_en_vivo_del_env_example(monkeypatch):
+    from observatorio.config import ConfigReplay
+
+    _limpiar_replay(monkeypatch)
+    monkeypatch.setenv("KAFKA_TOPIC", "terremotos.live")
+    monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "consumidor-live")
+    cfg = ConfigReplay.desde_entorno()
+    assert cfg.topic != "terremotos.live" and cfg.grupo != "consumidor-live"

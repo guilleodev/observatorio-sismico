@@ -1,0 +1,20 @@
+# T001 - verificar_seguridad.sh: prueba de que DETECTA lo peligroso (archivo temporal que NO se ejecuta, borrado después) y de que pasa limpio
+# verificación estática de scripts/f6 2026-11-08T10:03:05Z
+  PELIGRO  scripts/f6/_prueba_peligro.sh:2: docker compose down -v
+  PELIGRO  scripts/f6/_prueba_peligro.sh:3: docker volume rm observatorio_pgdata
+  PELIGRO  scripts/f6/_prueba_peligro.sh:4: rm -rf data
+  revisado scripts/f6/_prueba_peligro.sh
+  revisado scripts/f6/ejecutar.sh
+  revisado scripts/f6/etiquetar_imagenes.sh
+  revisado scripts/f6/invariantes.sh
+  revisado scripts/f6/linea_base_api.py
+RESULTADO: 3 FALLOS
+código de salida con el archivo peligroso: 1
+--- sin el archivo temporal:
+# verificación estática de scripts/f6 2026-11-08T10:03:05Z
+  revisado scripts/f6/ejecutar.sh
+  revisado scripts/f6/etiquetar_imagenes.sh
+  revisado scripts/f6/invariantes.sh
+  revisado scripts/f6/linea_base_api.py
+RESULTADO: OK - ningún script de scripts/f6 contiene órdenes destructivas ni que paren o recreen servicios
+código de salida: 0

@@ -1,0 +1,144 @@
+# 6.4 - mediciones de tiempo y memoria 2026-11-08T16:26:53Z
+
+## Equipo y estado
+docker: CPUs=16 memoria=16269598720 B SO=Docker Desktop núcleo=6.18.54.1-microsoft-standard-WSL2 Docker=29.9.2
+anfitrión: AMD Ryzen 7 7700X 8-Core Processor              | 31.1 GB RAM | Microsoft Windows 11 Home
+servicios reales en marcha durante la medición (ingesta real activa, no se detienen): api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+carga instantánea de los contenedores reales:
+observatorio-api-1 CPU=0.10% MEM=45.47MiB / 15.15GiB
+observatorio-producer-1 CPU=0.00% MEM=34.54MiB / 15.15GiB
+observatorio-consumer-1 CPU=2.02% MEM=42.09MiB / 15.15GiB
+observatorio-postgres-1 CPU=0.00% MEM=126.7MiB / 15.15GiB
+observatorio-kafka-1 CPU=0.86% MEM=1.031GiB / 15.15GiB
+
+## Datos reales ANTES
+live: actuales=599 versiones=880 (la ingesta real sigue y puede crecer)
+historico: md5=057f8f4ebaaf142ebe3eda20346c65f7
+sintetico: 18 5b9d041e8ff21ee9822d336b53ee8aff
+replay: 2 ejecuciones, 70 actuales, md5=b8ac11985e8f51d43856b8c24f5d8905
+esquemas: geo,historico,live,replay,sintetico | bases obs_*/bench: 0
+
+## Recursos temporales: bench-f6-pg=postgres:17.11  | volúmenes anónimos del temporal: 0 montajes (tmpfs)
+PostgreSQL temporal: PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linu | shared_buffers=128MB
+
+## Versiones: Python 3.13.18, shapely 2.2.0, psycopg 3.3.7, GEOS 3.14.1
+
+## Pruebas del generador (con la base temporal)
+...............                                                          [100%]
+15 passed in 0.68s
+
+## Mediciones (un proceso por tamaño)
+RESULTADO {"n": 1000, "filas": 1000, "eventos_distintos": 667, "tabla_mb": 0.23, "a_busqueda_versiones_sql_pk": {"n": 500, "mediana_ms": 0.1267, "p95_ms": 0.1677, "max_ms": 0.3217, "tracemalloc_pico_mb": 0.27, "rss_base_mb": 60.8}, "a_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.28..8.29 rows=1 width=28) | Index Cond: (event_id = 'bench-0000491'::text)", "b_construccion_asignador_ms": 26.4, "b_geo": {"por_punto_mediana_ms": 0.0075, "por_punto_p95_ms": 0.0134, "por_punto_max_ms": 0.0694, "total_ms_mediana": 8.8, "total_ms_p95": 9.2, "puntos": 1000, "repeticiones": 3, "tracemalloc_pico_mb": 0.11, "rss_base_mb": 66.4, "reparto_primeros_5000": {"sin_pais": 664, "interior": 336}}, "c1_agregacion_sql": {"n": 15, "mediana_ms": 0.5663, "p95_ms": 0.74, "max_ms": 0.865, "tracemalloc_pico_mb": 0.05, "rss_base_mb": 66.4, "ventanas": 644}, "c2_agregacion_python": {"n": 15, "mediana_ms": 1.2007, "p95_ms": 1.3645, "max_ms": 1.407, "tracemalloc_pico_mb": 0.1, "rss_base_mb": 66.4, "ventanas": 644}, "rss_maximo_proceso_mb": 66.4}
+RESULTADO {"n": 10000, "filas": 10000, "eventos_distintos": 6645, "tabla_mb": 1.8, "a_busqueda_versiones_sql_pk": {"n": 500, "mediana_ms": 0.1292, "p95_ms": 0.1836, "max_ms": 0.2932, "tracemalloc_pico_mb": 0.27, "rss_base_mb": 64.6}, "a_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.29..8.30 rows=1 width=28) | Index Cond: (event_id = 'bench-0000398'::text)", "b_construccion_asignador_ms": 25.7, "b_geo": {"por_punto_mediana_ms": 0.0074, "por_punto_p95_ms": 0.0137, "por_punto_max_ms": 0.1113, "total_ms_mediana": 90.6, "total_ms_p95": 91.4, "puntos": 10000, "repeticiones": 3, "tracemalloc_pico_mb": 1.13, "rss_base_mb": 67.7, "reparto_primeros_5000": {"sin_pais": 3363, "interior": 1637}}, "c1_agregacion_sql": {"n": 15, "mediana_ms": 4.9011, "p95_ms": 5.465, "max_ms": 5.6099, "tracemalloc_pico_mb": 0.56, "rss_base_mb": 70.2, "ventanas": 4655}, "c2_agregacion_python": {"n": 15, "mediana_ms": 12.5338, "p95_ms": 12.7467, "max_ms": 16.3089, "tracemalloc_pico_mb": 1.25, "rss_base_mb": 70.2, "ventanas": 4655}, "rss_maximo_proceso_mb": 71.7}
+RESULTADO {"n": 100000, "filas": 100000, "eventos_distintos": 66634, "tabla_mb": 17.55, "a_busqueda_versiones_sql_pk": {"n": 500, "mediana_ms": 0.1266, "p95_ms": 0.1788, "max_ms": 0.2284, "tracemalloc_pico_mb": 0.27, "rss_base_mb": 104.9}, "a_plan": "Index Scan using evento_version_pkey on evento_version  (cost=0.42..10.20 rows=2 width=28) | Index Cond: (event_id = 'bench-0010709'::text)", "b_construccion_asignador_ms": 25.3, "b_geo": {"por_punto_mediana_ms": 0.0075, "por_punto_p95_ms": 0.0138, "por_punto_max_ms": 0.1981, "total_ms_mediana": 907.9, "total_ms_p95": 925.3, "puntos": 100000, "repeticiones": 3, "tracemalloc_pico_mb": 11.2, "rss_base_mb": 104.9, "reparto_primeros_5000": {"sin_pais": 3363, "interior": 1637}}, "c1_agregacion_sql": {"n": 15, "mediana_ms": 35.4359, "p95_ms": 39.1986, "max_ms": 42.8429, "tracemalloc_pico_mb": 1.17, "rss_base_mb": 114.8, "ventanas": 8755}, "c2_agregacion_python": {"n": 15, "mediana_ms": 119.2885, "p95_ms": 126.2414, "max_ms": 127.3364, "tracemalloc_pico_mb": 10.92, "rss_base_mb": 114.8, "ventanas": 8755}, "rss_maximo_proceso_mb": 127.4}
+
+## Datos reales DESPUÉS
+live: actuales=599 versiones=880 (la ingesta real sigue y puede crecer)
+historico: md5=057f8f4ebaaf142ebe3eda20346c65f7
+sintetico: 18 5b9d041e8ff21ee9822d336b53ee8aff
+replay: 2 ejecuciones, 70 actuales, md5=b8ac11985e8f51d43856b8c24f5d8905
+esquemas: geo,historico,live,replay,sintetico | bases obs_*/bench: 0
+
+## Comparación (las líneas de live pueden crecer por la ingesta real; el resto debe ser idéntico)
+historico, sintetico, replay y esquemas: IDÉNTICOS antes y después
+
+## Recursos temporales tras eliminar: contenedores=0 redes=0 volúmenes totales ahora/antes=27/27 | servicios reales: api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+
+################ TABLAS (bench_tabla.py) ################
+
+== Ejecución 1 (tiempo y memoria 2026-11-08T16:25:39Z)
+                                                     N = 1,000      N = 10,000     N = 100,000
+filas / eventos distintos                             1000/667      10000/6645    100000/66634
+tamaño de tabla + índice (MB)                             0.23             1.8           17.55
+(a) búsqueda de versiones por event_id (SQL, clave primaria), por búsqueda
+  mediana / p95 (ms)                              0.129/0.1566    0.1285/0.165   0.1362/0.1699
+  pico tracemalloc (MB)                                   0.27            0.27            0.27
+(b) integración geográfica (Asignador, STRtree + covers)
+  por punto mediana / p95 (ms)                   0.0085/0.0147   0.0073/0.0137    0.0076/0.014
+  total de N puntos, mediana de 3 (ms)                    10.0            91.2           930.0
+  pico tracemalloc (MB)                                   0.11            1.13            11.2
+(c) agregación por ventanas de 1 h (15 repeticiones)
+  SQL GROUP BY mediana / p95 (ms)                0.6224/0.7675   4.7044/5.3695 33.4086/35.3015
+  SQL GROUP BY pico tracemalloc (MB)                      0.05            0.56            1.17
+  Python (trae filas) mediana / p95 (ms)          1.3137/1.484 11.7402/12.1042118.9017/124.1116
+  Python (trae filas) pico tracemalloc (MB)                0.1            1.25           10.92
+RSS máximo del proceso (MB)                               66.4            72.1           127.3
+RSS base antes de (a) / de (b) (MB)                  60.8/66.4       65.2/67.9     105.1/105.1
+construcción del asignador (ms): 29.2, 25.0, 26.3
+
+== Ejecución 2 (la de arriba, repetida con el mismo procedimiento)
+                                                     N = 1,000      N = 10,000     N = 100,000
+filas / eventos distintos                             1000/667      10000/6645    100000/66634
+tamaño de tabla + índice (MB)                             0.23             1.8           17.55
+(a) búsqueda de versiones por event_id (SQL, clave primaria), por búsqueda
+  mediana / p95 (ms)                             0.1267/0.1677   0.1292/0.1836   0.1266/0.1788
+  pico tracemalloc (MB)                                   0.27            0.27            0.27
+(b) integración geográfica (Asignador, STRtree + covers)
+  por punto mediana / p95 (ms)                   0.0075/0.0134   0.0074/0.0137   0.0075/0.0138
+  total de N puntos, mediana de 3 (ms)                     8.8            90.6           907.9
+  pico tracemalloc (MB)                                   0.11            1.13            11.2
+(c) agregación por ventanas de 1 h (15 repeticiones)
+  SQL GROUP BY mediana / p95 (ms)                  0.5663/0.74    4.9011/5.465 35.4359/39.1986
+  SQL GROUP BY pico tracemalloc (MB)                      0.05            0.56            1.17
+  Python (trae filas) mediana / p95 (ms)         1.2007/1.3645 12.5338/12.7467119.2885/126.2414
+  Python (trae filas) pico tracemalloc (MB)                0.1            1.25           10.92
+RSS máximo del proceso (MB)                               66.4            71.7           127.4
+RSS base antes de (a) / de (b) (MB)                  60.8/66.4       64.6/67.7     104.9/104.9
+construcción del asignador (ms): 26.4, 25.7, 25.3
+
+################ PROCEDIMIENTO ################
+bash scripts/f6/bench_ejecutar.sh  (≈ 2 min). Crea la red bench-f6-net, un PostgreSQL 17.11 propio bench-f6-pg (datos en tmpfs, sin puertos ni volúmenes) y el contenedor de medida
+bench-f6-med (python:3.13-slim-trixie con shapely/psycopg del requirements-dev). scripts/f6/bench_datos.py genera N versiones sintéticas deterministas (semilla 20261108; `origen = 'sintetico-bench'`
+por CHECK; solo se conecta a bench-f6-pg/bench), scripts/f6/bench_medidas.py las mide (un proceso por tamaño; tiempo con perf_counter_ns; memoria con tracemalloc en una repetición aparte y ru_maxrss).
+Pruebas del generador (T035): scripts/f6/test_bench_datos.py (14 sin base + 1 con la base temporal = 15 en el contenedor de medida). El PostgreSQL y la ingesta reales NO se detienen ni se consultan durante las medidas:
+solo se leen sus huellas antes y después (idénticas para historico, sintetico y replay; live crece por la ingesta real). Al terminar se eliminan los dos contenedores y la red (0 restos).
+
+################ ANÁLISIS ################
+1. (a) Búsqueda de versiones por event_id: ≈ 0,13 ms (p95 ≈ 0,17 ms) a 1 000, 10 000 y 100 000 versiones. Es CONSTANTE: el plan es Index Scan por la clave primaria (event_id, updated_at), O(log n)
+   con un árbol B de 3 niveles; la diferencia entre tamaños (<10 %) está dentro del ruido entre ejecuciones. En esos ~0,13 ms casi todo es ida y vuelta al servidor, no búsqueda. Memoria: 0,27 MB de pico, independiente de N.
+2. (b) Integración geográfica: ≈ 7,5 µs por punto (p95 ≈ 14 µs), también constante: el STRtree descarta por caja envolvente y solo se evalúa `covers` en los pocos polígonos candidatos. Un lote de 100 000
+   epicentros tarda ≈ 0,9 s, es decir, lineal en N (×10 de N → ×10 del lote). Memoria de la operación: de 0,11 MB (1 000) a 11 MB (100 000) (lista de resultados), lineal. La construcción del índice (177 polígonos) cuesta ≈ 26 ms, una vez por arranque.
+   Los epicentros sintéticos son uniformes sobre el globo (~2/3 mar): contraste con F4 (docs/evidencias/f4/4.3-rendimiento.txt): 7,6 µs por punto aleatorio (igual que aquí) y 10,6 µs con eventos reales
+   de live (sobre todo EE. UU., más candidatos por punto): con datos reales cabe esperar ≈ 40 % más, de la misma magnitud. La construcción incluye leer y validar el catálogo (≈ 17 + 8 ms en F4).
+3. (c) Agregación por ventanas de 1 h: SQL 0,6 → 4,9 → 35 ms; Python 1,2 → 12,5 → 119 ms. Ambas son lineales (×10 de N → ×7 a ×10 de tiempo), pero hacerlo en SQL es ≈ 3,5× más rápido a 100 000 y usa ≈ 10× menos
+   memoria (1,2 MB frente a 10,9 MB): el cuello de botella de Python es TRAER y construir 100 000 filas, no contar. Es el argumento de diseño de la API (las estadísticas se calculan en la base y se devuelven agregadas, nunca sobre una página).
+4. Memoria del proceso (RSS máximo 66 → 72 → 127 MB): es la marca de agua del proceso entero e INCLUYE la generación y carga de los datos sintéticos y el intérprete con shapely (≈ 60 MB base), por eso crece más que el pico
+   de cada operación (tracemalloc). Solo el RSS de 100 000 se distingue del base con claridad.
+5. Reproducibilidad: dos ejecuciones completas dan los mismos órdenes de magnitud y diferencias del 0–10 % (la mayor, la mediana de la agregación SQL a 100 000: 33,4 → 35,4 ms).
+
+################ LIMITACIONES (extrapolar desde una máquina) ################
+- Una sola máquina (Ryzen 7 7700X, 16 hilos y 16 GB para Docker sobre WSL2/Docker Desktop de Windows 11) con la pila real en marcha pero casi ociosa (CPU < 1 % salvo Kafka 0,8 %); no se aísla del ruido del sistema anfitrión.
+- PostgreSQL temporal con datos en tmpfs (RAM): no hay latencia de disco, así que (a) y (c) son OPTIMISTAS frente a un disco real o a datos que no caben en memoria; el contenedor de medida y la base comparten red virtual local (RTT ≈ 0).
+- shared_buffers = 128 MB por defecto y todo el conjunto (17,5 MB a 100 000) cabe en caché: no se mide el caso frío ni la presión de memoria; no se pueden inferir 100 millones de registros (eso es 6.5, razonado, no medido).
+- La repetición es pequeña (500 búsquedas, 3 pasadas geográficas, 15 agregaciones); el p95 de 3 pasadas del lote geográfico no se publica porque no es significativo (se da el p95 POR PUNTO, sobre 300 000 muestras).
+- Datos sintéticos: ids, tiempos y epicentros uniformes; la distribución real (concentración en cinturones sísmicos, ráfagas de réplicas) cambia el reparto de polígonos candidatos y la cardinalidad de las ventanas (8 760 ventanas máximo en un año).
+- Cifras de ESTA máquina, a fecha de hoy: sirven para comparar tamaños y operaciones, no como garantía de rendimiento de otro equipo.
+
+################ ANEXO T037: UMBRALES PROPUESTOS (PENDIENTES DE CONFIRMACIÓN; NO se declaran cumplidos) ################
+Margen de ≈ ×10 sobre el p95 medido para absorber un equipo más lento, un disco real y el caso frío. Solo valen hasta 100 000 elementos.
+| Operación | Medido a 100 000 (p95) | Umbral propuesto |
+|---|---|---|
+| (a) búsqueda de versiones por event_id (índice PK) | ≈ 0,18 ms | ≤ 2 ms por búsqueda |
+| (b) asignación de país, por punto | ≈ 14 µs | ≤ 0,15 ms por punto (lote de 100 000 ≤ 15 s) |
+| (c1) agregación por hora en SQL | ≈ 39 ms | ≤ 400 ms |
+| (c2) agregación por hora en Python (no usada en producción) | ≈ 126 ms | sin umbral: solo referencia de coste |
+| Memoria pico (tracemalloc) de una operación a 100 000 | 0,27 / 11,2 / 10,9 MB | ≤ 100 MB |
+Decisión pendiente de la persona estudiante: confirmar, ajustar o descartar estos umbrales. Hasta entonces SC-010 consta como «mediciones hechas, umbrales propuestos sin confirmar».
+
+################ ANEXO T037 — DECISIÓN DE LA PERSONA ESTUDIANTE (2026-11-08) ################
+Aprobados como OBJETIVOS PARA ESTE ENTORNO DE BENCHMARK (hasta 100 000 elementos, mismo equipo y procedimiento; no son garantías de producción ni predicciones):
+búsqueda ≤ 2 ms, geolocalización ≤ 0,15 ms/punto, agregación SQL ≤ 400 ms, memoria pico ≤ 100 MB.
+
+DEFINICIÓN EXACTA DE LA MEMORIA (decisión de medición, a confirmar): «memoria pico» = el máximo de `tracemalloc.get_traced_memory()[1]` durante UNA ejecución completa de la operación a N = 100 000 en el proceso de medida
+(memoria de objetos Python asignada por la operación). EXCLUYE el intérprete, las librerías cargadas (shapely, psycopg), el catálogo ya cargado y el servidor PostgreSQL. NO es el RSS del proceso.
+El RSS máximo del proceso se registra aparte, solo como referencia: 127,4 MB a 100 000 incluye ≈ 60 MB del intérprete con sus librerías y la generación y carga de los datos sintéticos. Con esa otra definición (RSS) el umbral de 100 MB NO se cumpliría;
+por eso la definición importa y queda fijada aquí.
+
+APROBADO frente a VERIFICADO (N = 100 000; dos ejecuciones; p95 de la ejecución peor; cada una solo vale en este entorno):
+| Operación | Umbral aprobado | Verificado (peor de las 2 ejecuciones) | Estado |
+|---|---|---|---|
+| (a) búsqueda de versiones por event_id (PK) | ≤ 2 ms | p95 0,18 ms | verificado en este entorno |
+| (b) asignación de país por punto | ≤ 0,15 ms | p95 0,014 ms (lote de 100 000: 0,91 s) | verificado en este entorno |
+| (c1) agregación por hora en SQL | ≤ 400 ms | p95 39,2 ms | verificado en este entorno |
+| Memoria pico tracemalloc por operación | ≤ 100 MB | (a) 0,27 · (b) 11,2 · (c1) 1,17 · (c2, Python, referencia) 10,9 MB | verificado en este entorno con la definición anterior |
+No verificado: cualquier tamaño > 100 000, otro equipo, disco real o caché fría (ver LIMITACIONES), ni el cumplimiento en producción. El umbral de «p95 por búsqueda» con p95 de 500 muestras es significativo; el del lote de (b) usa la mediana de 3 pasadas.

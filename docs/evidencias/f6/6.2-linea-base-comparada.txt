@@ -1,0 +1,2 @@
+huellas de la API iguales: True | oráculo SQL igual: True
+RESULTADO: OK

@@ -7,6 +7,8 @@ export type Config = { mode: 'demo' | 'api'; apiUrl: string; refreshMs: number; 
 export type Propiedades = {
   mag: number | null; magType?: string | null; place: string; time: number; updated: number;
   country_id?: string | null; country_name?: string | null;
+  /** F6: solo en reproducción. `caso` = caso controlado (sintético); nulo en los eventos reales. */
+  caso?: string | null; replayed_at?: number;
 };
 export type Punto = { type: 'Point'; coordinates: (number | null)[] };
 export type Evento = { type: 'Feature'; id?: string | number; geometry: Punto | null; properties: Propiedades };
@@ -15,17 +17,28 @@ export type Evento = { type: 'Feature'; id?: string | number; geometry: Punto | 
 export type Metadatos = {
   generated: number; last_ingestion: number | null; mode: string; count: number; truncated: boolean;
   total: number; limit: number; offset: number; next_offset: number | null; sin_magnitud: number;
-  period: { start: number; end: number }; coverage: { live_since: number | null };
+  period: { start: number; end: number }; coverage: { live_since?: number | null; desde?: number | null; hasta?: number | null };
+  /** F6: solo con mode=replay; null si todavía no hay ejecuciones. */
+  replay?: EjecucionReplay | null;
 };
 export type RespuestaEventos = { type: 'FeatureCollection'; metadata: Metadatos; features: Evento[] };
 /** /api/salud (F5, 5.6): estado de la ingesta medido por el reloj de la API. Los campos nuevos son opcionales para tolerar una API anterior. */
 export type Salud = {
   status: string; database: string; last_ingestion: number | null; generated?: number; ingestion_age_s?: number | null; stale?: boolean;
   stale_after_s?: number; gaps_pending?: number; live_since?: number | null;
+  /** F6: solo con mode=replay. `last_ingestion` sigue siendo la ingesta EN VIVO. */
+  replay?: EjecucionReplay | null;
 };
 
 /** Páginas leídas de un mismo periodo: `incompleta` si quedan eventos sin cargar (por la guarda de páginas) y `siguiente` es el `offset` de la página que falta (o null). */
 export type EventosCompletos = { features: Evento[]; metadata: Metadatos; paginas: number; incompleta: boolean; siguiente: number | null };
+
+/** F6 (contracts/f6.md §2): ejecución de replay tal como la devuelve la API (fechas en ms Unix UTC). */
+export type EjecucionReplay = {
+  run_id: string; estado: string; tamano: number; velocidad: number | null; intervalo: { desde: number | null; hasta: number | null };
+  iniciada_at: number; terminada_at: number | null;
+};
+export type ModoVista = 'live' | 'replay';
 
 export type Preajuste = 'ultimas-24h' | 'ultimos-7d' | 'personalizado';
 
@@ -57,14 +70,25 @@ export type Comparacion = {
   variacion: number | null; variacion_definida: boolean; periodo_reciente_incompleto: boolean; motivos_incompleto: string[];
 };
 
+/** Comparación de una reproducción: no aplica (la API no calcula nada). */
+export type ComparacionNoAplica = { unit: string; comparacion_disponible: false; motivo: string; historico: null; variacion: null };
+
 export type Estadisticas = {
   generated: number; period: { start: number; end: number }; filters: { min_mag: number | null; country_id: string | null };
-  total: number; sin_magnitud: number; por_hora: BloqueHora; por_pais: BloquePais; magnitud: BloqueIntervalos; profundidad: BloqueIntervalos; comparacion: Comparacion;
+  total: number; sin_magnitud: number; por_hora: BloqueHora; por_pais: BloquePais; magnitud: BloqueIntervalos; profundidad: BloqueIntervalos; comparacion: Comparacion | ComparacionNoAplica;
+  mode?: string; replay?: EjecucionReplay | null;
 };
 
 /** Una fila de la tabla de eventos (valores ya normalizados: `null` = sin valor, nunca 0). */
 export type FilaTabla = {
   id: string; tiempo: number | null; mag: number | null; magTipo: string | null; profundidad: number | null; clase: string; lugar: string;
   pais: string; paisId: string | null; lon: number | null; lat: number | null; actualizado: number | null;
+  caso: string | null;
 };
 export type ItemGrafica = { etiqueta: string; valor: number; detalle?: string };
+
+/** Todo lo que describe la lectura en pantalla; al cambiar de modo se reinicia por completo (F6). */
+export type Lectura = {
+  eventos: Evento[]; estadisticas: Estadisticas | null; ejecucion: EjecucionReplay | null; total: number | null; siguiente: number | null;
+  ventana: Ventana | null; salud: Salud | null; periodo: string; resumen: string;
+};

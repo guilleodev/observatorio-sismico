@@ -8,13 +8,15 @@ import { ComparacionComponent } from './comparacion/comparacion.component';
 import { EstadoComponent } from './estado/estado.component';
 import { FiltrosComponent } from './filtros/filtros.component';
 import { TablaComponent } from './tabla/tabla.component';
+import { SelectorModoComponent } from './selector-modo/selector-modo.component';
 import { itemsHora as itemsDeHora, itemsIntervalos, itemsPais } from './graficas';
 import { idDe } from './tabla';
 import { edadLecturaMs, retardoSiguiente } from './estado';
 import type { EntradaEstado, ErrorPanel } from './estado';
 import { estadoInicial, paisesDelCatalogo, parametros, resolverVentana, resumen } from './filtros';
 import { colorProfundidad, fechaUtc, numeroFinito, radioMagnitud, textoFicha } from './formato';
-import type { Config, Estadisticas, Evento, FiltrosEstado, PaisCatalogo, Salud, Ventana } from './modelos';
+import { AVISO_COMPARACION_NO_APLICA, MODO_INICIAL, conEtiqueta, etiquetaReplay, fichaReplay, lecturaVacia, parametrosModo, resumenReplay, ventanaReplay } from './modo';
+import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, FiltrosEstado, ModoVista, PaisCatalogo, Salud, Ventana } from './modelos';
 
 // Frontend proporcionado + F5 (paso 5.4): el mapa, las capas y la lectura robusta son los entregados; se añaden un servicio de API (`api.service.ts`),
 // un único estado de filtros (`filtros.ts`) y el componente de filtros. En modo `demo` no se llama a la API. Las funciones de formato se extrajeron
@@ -22,7 +24,7 @@ import type { Config, Estadisticas, Evento, FiltrosEstado, PaisCatalogo, Salud, 
 type DatosDemo = FeatureCollection & { metadata?: { generated?: number } };
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [LeafletDirective, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent],
+  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent],
   templateUrl: './app.component.html', styleUrl: './app.component.css'
 })
 export class AppComponent implements OnDestroy {
@@ -53,8 +55,19 @@ export class AppComponent implements OnDestroy {
   readonly entradaEstado = computed<EntradaEstado>(() => ({
     error: this.errorPanel(), salud: this.salud(), hayLectura: this.lecturaPerf() !== null, edadLecturaMs: edadLecturaMs(this.ahoraPerf(), this.lecturaPerf()),
     cargados: this.eventos().length, total: this.estadisticas() ? this.estadisticas()!.total : null, siguiente: this.siguienteOffset(), recuperadoEn: this.recuperadoEn(),
+    modo: this.modoVista(), sinEjecuciones: this.sinEjecuciones(),
   }));
   readonly ventana = signal<Ventana | null>(null);
+  // F6 (6.2): modo de vista. En reproducción TODO (mapa, tabla, ficha, gráficas, estado) lleva la etiqueta y la lectura anterior se descarta al cambiar de modo.
+  readonly modoVista = signal<ModoVista>(MODO_INICIAL);
+  readonly ejecucion = signal<EjecucionReplay | null>(null);
+  readonly sinEjecuciones = signal(false);
+  readonly anuncioModo = signal('');
+  readonly esReplay = computed(() => this.modoVista() === 'replay');
+  readonly etiquetaVista = computed(() => (this.esReplay() ? etiquetaReplay(this.ejecucion()) : null));
+  readonly avisoNoAplica = AVISO_COMPARACION_NO_APLICA;
+  readonly comparacionVivo = computed<Comparacion | null>(() => { const c = this.estadisticas()?.comparacion; return c && 'reciente' in c ? c : null; });
+  readonly rotular = (titulo: string): string => conEtiqueta(titulo, this.esReplay());
   // F5 (5.5): UNA sola respuesta del periodo resuelto alimenta mapa, tabla, gráficas y comparación; y UN solo evento seleccionado compartido por mapa y tabla
   readonly eventos = signal<Evento[]>([]);
   readonly estadisticas = signal<Estadisticas | null>(null);
@@ -134,6 +147,64 @@ export class AppComponent implements OnDestroy {
     void this.refresh(this.config);
   }
 
+  /**
+   * Cambio de modo (F6): se cancela la petición en curso y se DESCARTA toda la lectura del modo anterior (eventos, estadísticas, ejecución, periodo, selección y filtros)
+   * antes de consultar el nuevo; así nunca se ve una mezcla ni una reproducción presentada como actividad en vivo.
+   */
+  cambiarModo(modo: ModoVista): void {
+    if (!this.config || this.config.mode !== 'api' || modo === this.modoVista()) return;
+    clearTimeout(this.timer);
+    this.ultima.cancelar();
+    this.modoVista.set(modo);
+    this.descartarLectura();
+    this.anuncioModo.set(modo === 'replay' ? 'Modo REPRODUCCIÓN: datos históricos reproducidos, no actividad actual.' : 'Modo en vivo: datos actuales de USGS.');
+    void this.refresh(this.config);
+  }
+
+  private descartarLectura(): void {
+    const v = lecturaVacia();
+    this.eventos.set(v.eventos); this.estadisticas.set(v.estadisticas); this.ejecucion.set(v.ejecucion); this.total.set(v.total);
+    this.siguienteOffset.set(v.siguiente); this.ventana.set(v.ventana); this.salud.set(v.salud); this.periodo.set(v.periodo); this.resumenFiltros.set(v.resumen);
+    this.sinEjecuciones.set(false); this.errorPanel.set(null); this.recuperadoEn.set(null); this.lecturaPerf.set(null); this.ultimoAcceso.set(null);
+    this.seleccionado.set(null); this.avisoSeleccion.set(''); this.nombrePaisActual.set(undefined);
+    this.filtros.set(estadoInicial()); this.ultimosFiltros = estadoInicial();
+    this.paramsVigentes = null; this.huboError = false; this.versionLectura++;
+    this.map?.closePopup();
+    this.dibujar([]);
+    this.status.set(this.esReplay() ? 'Cargando la reproducción…' : 'Cargando datos en vivo…');
+    this.mode.set(this.esReplay() ? 'REPRODUCCIÓN · eventos históricos reproducidos, no actividad actual' : 'API · datos del backend');
+  }
+
+  /** Modo REPRODUCCIÓN: la ejecución (la más reciente) viene de /api/salud?mode=replay; con ella, eventos y estadísticas del MISMO periodo y de la MISMA ejecución. */
+  private async leerReplay(id: number, externa: AbortSignal): Promise<void> {
+    const salud = await this.api!.salud(externa, parametrosModo('replay'));
+    const ejec = salud.replay ?? null;
+    if (this.destroyed || !this.ultima.vigente(id)) return;
+    const filtros = this.filtros();
+    const ventana = ejec === null ? null : ventanaReplay(filtros, ejec, resolverVentana);
+    let eventos: Evento[] = []; let est: Estadisticas | null = null; let total: number | null = 0; let siguiente: number | null = null;
+    let params: Record<string, string> | null = null; let periodo = 'Sin consulta'; let generado = fechaUtc(salud.generated);
+    if (ejec !== null && ventana !== null) {
+      params = { ...parametros(filtros, ventana), ...parametrosModo('replay', ejec.run_id) };
+      const panel = await this.api!.panel(params, externa, 1);
+      if (this.destroyed || !this.ultima.vigente(id)) return;
+      eventos = panel.eventos.features; est = panel.estadisticas; total = panel.eventos.metadata.total; siguiente = panel.eventos.siguiente;
+      periodo = `${fechaUtc(panel.eventos.metadata.period.start)} → ${fechaUtc(panel.eventos.metadata.period.end)} (fin exclusivo; fechas originales de los eventos)`;
+      generado = fechaUtc(panel.eventos.metadata.generated);
+    }
+    this.ejecucion.set(ejec); // antes de dibujar: las fichas llevan la identidad de la ejecución
+    this.sinEjecuciones.set(ejec === null);
+    this.dibujar(eventos);
+    this.eventos.set(eventos); this.estadisticas.set(est); this.total.set(total); this.siguienteOffset.set(siguiente); this.ventana.set(ventana); this.periodo.set(periodo);
+    this.ultimosFiltros = filtros; this.resumenFiltros.set(resumenReplay(filtros, resumen(filtros, this.nombresPais)));
+    this.nombrePaisActual.set(this.nombresPais[filtros.pais.trim().toUpperCase()]);
+    this.paramsVigentes = params; this.versionLectura++;
+    this.salud.set(salud); this.ultimoAcceso.set(new Date().toISOString()); this.lecturaPerf.set(performance.now());
+    this.recuperadoEn.set(this.huboError ? new Date().toISOString().slice(11, 19) : null); this.huboError = false; this.errorPanel.set(null);
+    this.generated.set(generado);
+    this.status.set(ejec === null ? 'Todavía no hay ninguna reproducción guardada.' : `${etiquetaReplay(ejec)} · consulta completada. Datos históricos reproducidos, no actividad actual.`);
+  }
+
   private async readJson<T>(url: string, headers: Record<string, string> = {}): Promise<T> {
     const response = await fetch(url, { headers, cache: 'no-store',
       signal: AbortSignal.any([this.controller.signal, AbortSignal.timeout(15000)]) });
@@ -153,6 +224,12 @@ export class AppComponent implements OnDestroy {
         this.dibujar(data.features as unknown as Evento[]);
         this.generated.set(fechaUtc(data.metadata?.generated));
         this.status.set('Ejemplo estático: no representa actividad real');
+        return;
+      }
+      if (this.modoVista() === 'replay') { // F6: la reproducción no usa el reloj ni la ventana de «últimas 24 h» del modo en vivo
+        await this.leerReplay(id, AbortSignal.any([this.controller.signal, señal]));
+        if (this.destroyed || !this.ultima.vigente(id)) return;
+        correcto = true;
         return;
       }
       // Modo API: primero el instante `generated` de la API (`instanteApi`: no el reloj del navegador) y con él UNA ventana explícita para todas las peticiones del refresco.
@@ -240,7 +317,7 @@ export class AppComponent implements OnDestroy {
       if (!p || typeof lon !== 'number' || typeof lat !== 'number' || !Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lon) > 180 || Math.abs(lat) > 90) { omitted++; continue; }
       const color = colorProfundidad(depth);
       const popup = document.createElement('div');
-      popup.textContent = textoFicha(p, depth, feature.id);
+      popup.textContent = fichaReplay(p, this.ejecucion(), this.esReplay()) + textoFicha(p, depth, feature.id);
       const id = idDe(feature, indice); // el mismo identificador que usa la tabla
       const estilo: L.PathOptions & { radius: number } = { radius: radioMagnitud(numeroFinito(p.mag)), color, fillColor: color, fillOpacity: .75, weight: 1 };
       const marcador = L.circleMarker([lat, lon], estilo).bindPopup(popup).on('click', () => this.elegir(id, 'mapa')).addTo(next);

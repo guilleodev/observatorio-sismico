@@ -1,0 +1,16 @@
+# T001 - imágenes de los contenedores y vuelta atrás de PA-3 2026-11-08T10:04:29Z
+Hallazgo: la imagen que usan consumer y producer (sha256:af47…) YA NO existe en el almacén de Docker (su etiqueta pasó a la imagen reconstruida para la API en 5.6); no se puede etiquetar.
+
+# imagen observatorio-backend:latest frente a HEAD (31 archivos en la imagen, 31 en Git; se ignoran los saltos de línea CRLF)
+RESULTADO: IDÉNTICOS - la imagen lleva exactamente el código de HEAD
+
+# etiquetado de las imágenes en uso 2026-11-08T10:04:31Z
+api: contenedor=4ac7520a35a0 imagen=sha256:d1a568b553a7932fb2ee6223f9d8d729a53163c549b74756b9177df835a30b34 -> observatorio-backend:previo-f6-api (OK)
+consumer: contenedor=1bd149cce180 imagen en uso=sha256:af47199d4166993cecc6985d37d24cf68a28bdb2264e5fd221f6542689594cd5 NO DISPONIBLE -> observatorio-backend:previo-f6-consumer = imagen equivalente verificada sha256:d1a568b553a7932fb2ee6223f9d8d729a53163c549b74756b9177df835a30b34
+producer: contenedor=8e645f8153e2 imagen en uso=sha256:af47199d4166993cecc6985d37d24cf68a28bdb2264e5fd221f6542689594cd5 NO DISPONIBLE -> observatorio-backend:previo-f6-producer = imagen equivalente verificada sha256:d1a568b553a7932fb2ee6223f9d8d729a53163c549b74756b9177df835a30b34
+volver atrás: solo con autorización expresa y siguiendo specs/005-replay-despliegue-final/research.md (R-017)
+
+observatorio-backend:latest d1a568b553a7
+observatorio-backend:previo-f6-api d1a568b553a7
+observatorio-backend:previo-f6-consumer d1a568b553a7
+observatorio-backend:previo-f6-producer d1a568b553a7

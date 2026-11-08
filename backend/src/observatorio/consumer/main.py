@@ -1,13 +1,16 @@
 """Servicio consumidor: Kafka -> PostgreSQL con offsets manuales (se confirman tras guardar)."""
 
+import argparse
 import asyncio
 import logging
+import time
 from pathlib import Path
 
 import psycopg
 from aiokafka import AIOKafkaConsumer, TopicPartition
 
-from observatorio.config import ConfigKafka, ConfigPostgres, leer_obligatoria
+from observatorio.config import ConfigKafka, ConfigPostgres, ConfigReplay, leer_obligatoria
+from observatorio.consumer.destino import DESTINO_LIVE, Destino, destino_por_nombre
 from observatorio.consumer.mensaje import Clasificacion, clasificar_mensaje
 from observatorio.consumer.repositorio import ReferenciaMensaje, RepositorioEventos
 from observatorio.geo.arranque import esperar_asignador, preparar_asignador
@@ -25,7 +28,8 @@ async def procesar_registro(consumidor, registro, repositorio) -> str:
     (no sísmico, a cuarentena y retirada si ya lo conocíamos), «cuarentena» (registro no tratable) y «descartado» (modo o
     fuente fuera de contrato; solo se registra en el log).
     """
-    c = clasificar_mensaje(registro.value)
+    destino = getattr(repositorio, "destino", DESTINO_LIVE)  # los dobles de las pruebas de F3 no lo tienen: son del flujo en vivo
+    c = clasificar_mensaje(registro.value, destino)
     ref = ReferenciaMensaje(registro.topic, registro.partition, registro.offset, registro.key, registro.value or b"")
     if c.estado == "descartado":
         log.warning("DESCARTADO offset=%s clave=%r motivo=%s", registro.offset, registro.key, c.motivo)
@@ -59,7 +63,9 @@ async def aislar_error_permanente(consumidor, registro, repositorio, exc: Except
     contenido = registro.value or b""
     ref = ReferenciaMensaje(registro.topic, registro.partition, registro.offset, registro.key, contenido)
     motivo = f"error permanente de persistencia: {type(exc).__name__}"
-    await repositorio.poner_en_cuarentena(Clasificacion("invalido", motivo=motivo, base_huella=contenido), ref)
+    destino = getattr(repositorio, "destino", DESTINO_LIVE)
+    run_id = (clasificar_mensaje(contenido, destino).run_id or "sin-run") if destino.con_run else None  # la cuarentena de replay se atribuye a su ejecución
+    await repositorio.poner_en_cuarentena(Clasificacion("invalido", motivo=motivo, base_huella=contenido, run_id=run_id), ref)
     log.error("CUARENTENA offset=%s clave=%r motivo=%s (%s)", registro.offset, registro.key, motivo, exc)
     await consumidor.commit({TopicPartition(registro.topic, registro.partition): registro.offset + 1})
     return "cuarentena"
@@ -102,12 +108,12 @@ async def con_reintentos(accion, descripcion: str):
 class ConexionPostgres:
     """Conexión viva a PostgreSQL: se reabre si se cerró o se rompió (p. ej. tras reiniciar la base)."""
 
-    def __init__(self, config: ConfigPostgres, conexion, asignador=None):
-        self._config, self._conexion, self.asignador = config, conexion, asignador
+    def __init__(self, config: ConfigPostgres, conexion, asignador=None, destino: Destino = DESTINO_LIVE):
+        self._config, self._conexion, self.asignador, self._destino = config, conexion, asignador, destino
 
     @classmethod
-    async def abrir(cls, config: ConfigPostgres) -> "ConexionPostgres":
-        return cls(config, await cls._conectar(config))
+    async def abrir(cls, config: ConfigPostgres, destino: Destino = DESTINO_LIVE) -> "ConexionPostgres":
+        return cls(config, await cls._conectar(config), destino=destino)
 
     @staticmethod
     async def _conectar(config: ConfigPostgres):
@@ -115,7 +121,7 @@ class ConexionPostgres:
             lambda: psycopg.AsyncConnection.connect(config.conninfo(), autocommit=True), "PostgreSQL")
 
     def repositorio(self) -> RepositorioEventos:
-        return RepositorioEventos(self._conexion, self.asignador)
+        return RepositorioEventos(self._conexion, self.asignador, self._destino)
 
     def en_bruto(self):
         return self._conexion
@@ -128,18 +134,44 @@ class ConexionPostgres:
         await self._conexion.close()
 
 
-async def main() -> None:
-    kafka = ConfigKafka.desde_entorno()
-    pg = ConfigPostgres.desde_entorno()
-    grupo = leer_obligatoria("KAFKA_CONSUMER_GROUP")
+async def consumir_hasta_inactividad(consumidor, procesar, cfg: ConfigReplay, reloj=time.monotonic) -> int:
+    """Bucle del consumidor de replay (F6, R-005): procesa lo que llega y TERMINA SOLO, sin esperar eternamente ni cortar antes de tiempo.
 
-    conexion = await ConexionPostgres.abrir(pg)
+    Termina cuando pasan `espera_final_s` sin mensajes DESPUÉS de haber procesado el primero (un productor lento no lo corta) o, si no llega ninguno,
+    cuando pasan `espera_max_s`. `procesar` guarda y confirma el offset de cada registro; un error propaga (nada se traga). Devuelve los registros procesados.
+    """
+    inicio, ultimo, n = reloj(), None, 0
+    while True:
+        lotes = await consumidor.getmany(timeout_ms=1000)
+        for registros in lotes.values():
+            for registro in registros:
+                await procesar(registro)
+                n += 1
+                ultimo = reloj()
+        ahora = reloj()
+        if ultimo is not None and ahora - ultimo >= cfg.espera_final_s:
+            return n
+        if ultimo is None and ahora - inicio >= cfg.espera_max_s:
+            return n
+
+
+async def main(destino_nombre: str = "live") -> None:
+    destino = destino_por_nombre(destino_nombre)
+    pg = ConfigPostgres.desde_entorno()
+    if destino.con_run:  # replay: topic y grupo propios (ConfigReplay comprueba que NO son los del flujo en vivo)
+        replay = ConfigReplay.desde_entorno()
+        bootstrap, topic, grupo = leer_obligatoria("KAFKA_BOOTSTRAP_SERVERS"), replay.topic, replay.grupo
+    else:
+        kafka = ConfigKafka.desde_entorno()
+        bootstrap, topic, grupo = kafka.bootstrap_servers, kafka.topic, leer_obligatoria("KAFKA_CONSUMER_GROUP")
+
+    conexion = await ConexionPostgres.abrir(pg, destino)
 
     # Sin catálogo válido y coherente con la base NO se consume ni se declara sano (4.2): ningún evento se procesa a ciegas.
     conexion.asignador = await esperar_asignador(lambda: preparar_asignador(conexion.en_bruto()), conexion.asegurar)
 
     consumidor = AIOKafkaConsumer(
-        kafka.topic, bootstrap_servers=kafka.bootstrap_servers, group_id=grupo,
+        topic, bootstrap_servers=bootstrap, group_id=grupo,
         enable_auto_commit=False, auto_offset_reset="earliest")
 
     async def arrancar():
@@ -151,10 +183,17 @@ async def main() -> None:
     await con_reintentos(arrancar, "Kafka")
 
     MARCA_SALUD.touch()
-    log.info("Consumiendo %s con el grupo %s", kafka.topic, grupo)
+    log.info("Consumiendo %s con el grupo %s (destino %s)", topic, grupo, destino.nombre)
     try:
-        async for registro in consumidor:
-            await procesar_con_reintentos(consumidor, registro, conexion.repositorio, conexion.asegurar)
+        if destino.con_run:
+            async def procesar(registro):
+                return await procesar_con_reintentos(consumidor, registro, conexion.repositorio, conexion.asegurar)
+
+            n = await consumir_hasta_inactividad(consumidor, procesar, replay)
+            log.info("Replay: %s registros procesados; sin más mensajes, el consumidor termina", n)
+        else:
+            async for registro in consumidor:
+                await procesar_con_reintentos(consumidor, registro, conexion.repositorio, conexion.asegurar)
     finally:
         MARCA_SALUD.unlink(missing_ok=True)
         await consumidor.stop()
@@ -162,5 +201,8 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Consumidor: Kafka -> PostgreSQL. Por defecto el flujo en vivo; --destino replay procesa la reproducción histórica aislada y termina solo.")
+    parser.add_argument("--destino", choices=("live", "replay"), default="live")
+    argumentos = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
-    asyncio.run(main())
+    asyncio.run(main(argumentos.destino))

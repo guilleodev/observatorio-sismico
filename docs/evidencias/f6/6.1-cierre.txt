@@ -1,0 +1,42 @@
+# 6.1 - cierre: estado final del sistema y regresión completa 2026-11-08T11:19:43Z
+api 4ac7520a35a0 Up 2 hours (healthy)
+consumer b52f396fff3c Up 8 minutes (healthy)
+kafka 8334b55b327c Up 2 hours (healthy)
+postgres 046081f539aa Up 2 hours (healthy)
+producer 4f0f75f00a36 Up 6 minutes (healthy)
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=829 versiones=813 cuarentena=16 | offset/final/lag=839/839/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=4ac7520a35a0 consumer=b52f396fff3c kafka=8334b55b327c postgres=046081f539aa producer=4f0f75f00a36 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=558 | versiones=813 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live terremotos.replay 
+
+## replay por ejecución
+r-f6-prueba-a | terminada | 35/37/1
+r-f6-prueba-b | terminada | 35/37/1
+
+## suite completa de backend (con Kafka real temporal)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+788 passed, 1 warning in 59.03s
+topics que quedan: __consumer_offsets terremotos.live terremotos.replay 
+grupos que quedan: consumidor-live consumidor-replay 
+
+## frontend
+ℹ tests 88
+ℹ pass 88
+ℹ fail 0
+
+## aislamiento F5
+  FALLA consumidor y productor que mencionan historico: obtenido '1', esperado '0'
+RESULTADO: 1 FALLOS
+RESULTADO: OK - ningún script de scripts/f6 contiene órdenes destructivas ni que paren o recreen servicios
+## fuentes sin mutaciones residuales:
+0

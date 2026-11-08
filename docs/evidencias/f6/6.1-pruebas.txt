@@ -1,0 +1,13 @@
+# T014 - suite completa de backend (scripts/f6/ejecutar.sh, con Kafka real temporal) 2026-11-08T10:22:39Z
+............................................................             [100%]
+=============================== warnings summary ===============================
+../usr/local/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /usr/local/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+780 passed, 1 warning in 58.94s
+
+grupo eliminado: test-f6-grupo-e32fdce0e5
+topics que quedan: __consumer_offsets terremotos.live 
+grupos que quedan: consumidor-live 

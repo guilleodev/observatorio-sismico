@@ -8,7 +8,9 @@ Los intervalos son fijos (no dependen de los datos) para que dos consultas sean 
 from datetime import timedelta
 
 from observatorio.api import comparacion
-from observatorio.api.filtros import SIN_PAIS, Filtros, a_ms
+from observatorio.api.filtros import SIN_PAIS, Filtros, a_ms, para_modo
+from observatorio.api.replay import COMPARACION_NO_APLICA
+from observatorio.modos import MODO_REPLAY
 
 NOMBRE_SIN_PAIS = "Sin país asignado"
 # Bordes de los intervalos [from, to): el primero y el último están abiertos (null). Los negativos válidos del feed caen en el primero.
@@ -86,7 +88,7 @@ async def calcular(conn, filtros: Filtros, generado_ms: int, max_casillas: int, 
     sin_umbral, parametros_sin_umbral = filtros.donde(con_magnitud=False)
 
     async def filas(sql, donde_, params_):
-        return await (await conn.execute(sql.format(donde=donde_), params_)).fetchall()
+        return await (await conn.execute(para_modo(sql, filtros.modo).format(donde=donde_), params_)).fetchall()
 
     total = (await filas("SELECT count(*) FROM live.evento_actual WHERE {donde}", donde, parametros))[0][0]
     sin_magnitud = (await filas("SELECT count(*) FROM live.evento_actual WHERE {donde} AND mag IS NULL", sin_umbral, parametros_sin_umbral))[0][0]
@@ -98,5 +100,7 @@ async def calcular(conn, filtros: Filtros, generado_ms: int, max_casillas: int, 
     _, casillas = casillas_horarias(filtros)
     recuentos_hora = None if casillas > max_casillas else {h: n for h, n in await filas(SQL_POR_HORA, donde, parametros)}
     resultado["por_hora"] = bloque_por_hora(filtros, recuentos_hora, max_casillas)
-    resultado["comparacion"] = await comparacion.calcular(conn, filtros, generado_ms, margen_publicacion_s)
+    # La comparación mide el periodo EN VIVO contra el histórico de 2025: en una reproducción no aplica y no se consulta ni live ni el histórico.
+    resultado["comparacion"] = (dict(COMPARACION_NO_APLICA) if filtros.modo == MODO_REPLAY
+                                else await comparacion.calcular(conn, filtros, generado_ms, margen_publicacion_s))
     return resultado

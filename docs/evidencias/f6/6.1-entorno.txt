@@ -1,0 +1,47 @@
+# 6.1 T001 - línea base del entorno (SOLO LECTURA salvo el etiquetado de imágenes, que solo añade nombres; detalle en 6.1-imagenes.txt) 2026-11-08T10:05:52Z
+
+## git (sin commit ni push; rama main)
+6f11d5b feat: [F5] completar API y dashboard interactivo
+2f8f3df feat: [F4] completar histórico, recuperación y comparaciones
+daa2236 feat: [F4-WIP] implementar catálogo y asignación geográfica
+ M .env.example
+ M backend/src/observatorio/config.py
+ M backend/tests/unit/test_config.py
+ M compose.yaml
+?? docs/evidencias/f6/
+?? scripts/f6/
+?? specs/005-replay-despliegue-final/
+
+## docker compose ps
+SERVICE    STATUS                       CONTAINER ID   PORTS
+api        Up About an hour (healthy)   4ac7520a35a0   127.0.0.1:8000->8000/tcp
+consumer   Up About an hour (healthy)   1bd149cce180   
+kafka      Up About an hour (healthy)   8334b55b327c   9092/tcp
+postgres   Up About an hour (healthy)   046081f539aa   5432/tcp
+producer   Up About an hour (healthy)   8e645f8153e2   
+
+== invariantes [F6 linea base] 2026-11-08T10:05:54Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=809 versiones=793 cuarentena=16 | offset/final/lag=819/819/0
+geo: reparto live=interior=453, sin_pais=97 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+== estado del sistema [F6 linea base] 2026-11-08T10:06:03Z ==
+contenedores (servicio=id): api=4ac7520a35a0 consumer=1bd149cce180 kafka=8334b55b327c postgres=046081f539aa producer=8e645f8153e2 
+imágenes en uso (contenedor=imagen): api=sha256:d1a568b553a7932fb2ee6223f9d8d729a53163c549b74756b9177df835a30b34 consumer=sha256:af47199d4166993cecc6985d37d24cf68a28bdb2264e5fd221f6542689594cd5 kafka=sha256:852a0d49fc4e656b022e7f23785411802c9a088c78a7c5e39f33969de9c227a7 postgres=sha256:3b0cda93be7c8dba2ed484d19393d93845dc3dafb88973e248ba8e6d99d784e1 producer=sha256:af47199d4166993cecc6985d37d24cf68a28bdb2264e5fd221f6542689594cd5 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+puertos publicados en el equipo: api=127.0.0.1:8000->8000/tcp 
+esquemas presentes: geo,historico,live,sintetico
+live: eventos actuales=550 | versiones=793 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: el esquema todavía no existe (se crea en el paso 6.1 con autorización PA-2)
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+topics distintos de los permanentes: 
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live 
+
+## aislamiento e invariantes de F5 (scripts/f5/aislamiento_final.sh)
+RESULTADO: OK - aislamiento verificado

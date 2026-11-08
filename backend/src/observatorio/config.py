@@ -1,6 +1,7 @@
 """Lectura de la configuración desde variables de entorno (sin valores por defecto ocultos)."""
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -197,3 +198,47 @@ class ConfigApi:
             statement_timeout_s=_entero("API_STATEMENT_TIMEOUT_S", 10),
             margen_publicacion_s=_entero("API_MARGEN_PUBLICACION_S", 900, minimo=0),
         )
+
+
+NOMBRE_KAFKA = re.compile(r"[A-Za-z0-9._-]{1,200}")
+
+
+def _nombre_kafka(nombre: str, defecto: str) -> str:
+    """Nombre de topic o de grupo de consumidores: solo letras, números, punto, guion y guion bajo (nada que pueda alterar una orden)."""
+    valor = os.environ.get(nombre, "").strip() or defecto
+    if not NOMBRE_KAFKA.fullmatch(valor):
+        raise ConfigError(f"{nombre} solo admite letras, números, '.', '-' y '_' (hasta 200 caracteres), no {valor!r}")
+    return valor
+
+
+@dataclass(frozen=True)
+class ConfigReplay:
+    """Reproducción histórica aislada (F6, DG1/DG3). Todas las variables son opcionales; los valores por defecto son los del SDD.
+
+    El topic y el grupo del replay NUNCA pueden coincidir con los del flujo en vivo (constitución III): se comprueba aquí.
+    """
+
+    topic: str
+    grupo: str
+    eventos: int  # eventos reales de la selección (los casos controlados se añaden aparte)
+    intervalo_s: float  # segundos entre mensajes
+    espera_final_s: int  # inactividad, tras el primer mensaje procesado, con la que termina el consumidor de replay
+    espera_max_s: int  # tope de espera si no llega ningún mensaje
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigReplay":
+        topic = _nombre_kafka("KAFKA_TOPIC_REPLAY", "terremotos.replay")
+        grupo = _nombre_kafka("KAFKA_CONSUMER_GROUP_REPLAY", "consumidor-replay")
+        if topic == os.environ.get("KAFKA_TOPIC", "").strip():
+            raise ConfigError("KAFKA_TOPIC_REPLAY no puede ser el mismo topic que KAFKA_TOPIC (el replay no se mezcla con lo real)")
+        if grupo == os.environ.get("KAFKA_CONSUMER_GROUP", "").strip():
+            raise ConfigError("KAFKA_CONSUMER_GROUP_REPLAY no puede ser el mismo grupo que KAFKA_CONSUMER_GROUP (el replay no confirma offsets reales)")
+        eventos = _entero("REPLAY_EVENTOS", 30)
+        if eventos > 1000:
+            raise ConfigError(f"REPLAY_EVENTOS no puede superar 1000, no {eventos}")
+        espera_final = _entero("REPLAY_ESPERA_FINAL_S", 10)
+        espera_max = _entero("REPLAY_ESPERA_MAX_S", 120)
+        if espera_max < espera_final:
+            raise ConfigError(f"REPLAY_ESPERA_MAX_S ({espera_max}) no puede ser menor que REPLAY_ESPERA_FINAL_S ({espera_final})")
+        return cls(topic=topic, grupo=grupo, eventos=eventos, intervalo_s=_decimal("REPLAY_INTERVALO_S", 2.0, 0.01, 3600.0),
+                   espera_final_s=espera_final, espera_max_s=espera_max)

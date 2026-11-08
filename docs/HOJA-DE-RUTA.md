@@ -188,16 +188,20 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §8, `CONTRATO-API.md`): filtros `start`, `end`, `min_mag` y `country_id` coherentes entre mapa y gráficos; la magnitud nula no cumple `min_mag` y se cuenta aparte; `truncated` con paginación y sin estadísticas globales sobre una muestra truncada; estadísticas con periodo, filtros, unidad y registros sin valor; comparación histórica con el mismo filtro y días con cero eventos en el denominador; agregaciones calculadas desde el estado actual, no con contadores por mensaje; error explícito si la base falla; panel de estado con último acceso a la API, última ingesta y aviso de datos desactualizados; tabla consultable como alternativa al mapa; primeras mediciones de consultas con y sin índice.
 
-### F6 — Replay, pruebas y despliegue · ⬜ pendiente
+### F6 — Replay, pruebas y despliegue · SDD aprobado el 2026-11-08 (`specs/005-replay-despliegue-final/`); preparación T001–T002 hecha; DG10 aprobada y constitución v1.0.4 aplicada; 6.1, 6.2 y 6.3 hechos (6.3 aprobada); 6.4 aprobada; 6.5 hecha (a falta de la revisión humana y de los datos de costes)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 6.1 | Implementar replay histórico aislado | ⬜ |
-| 6.2 | Comprobar velocidad, identidad y separación de eventos reproducidos | ⬜ |
-| 6.3 | Ejecutar pruebas integradas y de aceptación del profesor | ⬜ |
-| 6.4 | Medir tiempo y memoria con tres tamaños de datos | ⬜ |
-| 6.5 | Comparar búsqueda secuencial/diccionario y SQL con/sin índice | ⬜ |
-| 6.6 | Configurar ngrok, desplegar Angular en Netlify y verificar acceso | ⬜ |
+| 6.1 | Implementar replay histórico aislado | ✅ (esquema `replay` con `CHECK` de modo y fuente y clave `(run_id, event_id)`; topic `terremotos.replay`; consumidor reutilizado con destino parametrizado —SQL de `live` idéntico carácter a carácter—; productor bajo demanda con seis casos controlados `replay-ctl-…`; 105 pruebas nuevas, 39/39 mutaciones detectadas; replay real: 39 mensajes → 35 filas / 37 versiones / 1 en cuarentena, repetible e interrumpible sin duplicados; `live`, `historico` y `sintetico` intactos) |
+| 6.2 | Replay en la API y el panel; comprobar velocidad, identidad y separación de eventos reproducidos | ✅ (a falta de la revisión humana) |
+| 6.3 | Ejecutar pruebas integradas y de aceptación del profesor | ✅ (a falta de la revisión humana) |
+| 6.4 | Medir tiempo y memoria con tres tamaños de datos | ✅ mediciones hechas; umbrales propuestos pendientes de confirmar |
+| 6.5 | Comparar búsqueda secuencial/diccionario y SQL con/sin índice | ✅ análisis hecho; datos de costes pendientes de la persona estudiante |
+| 6.6 | Configurar ngrok, desplegar Angular en Netlify y verificar acceso (preparación local primero; publicar solo tras autorización) | ⬜ |
+| 6.7 | Accesibilidad, diseño responsive y compatibilidad del panel | ⬜ |
+| 6.8 | Estabilidad, recuperación y persistencia sin operaciones destructivas | ⬜ |
+| 6.9 | Entregables, reproducibilidad y cierre de F6 | ⬜ |
+| 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ⬜ pendiente |
 
 **Se mantiene además** (`ENUNCIADO.md` §9, §10, §11): replay por Kafka con topic y tablas separados, tiempo original y de reproducción, etiqueta «REPRODUCCIÓN» y casos controlados de duplicado y revisión; las pruebas de aceptación del enunciado §11 (incluido cerrar y reabrir el túnel); mediciones también de la integración geográfica y de la agregación por ventanas, con datos sintéticos marcados y fuera del análisis real, y razonamiento para 100 millones de registros; CORS con el origen exacto de Netlify; authtoken de ngrok fuera de Git y de Angular; solo la API expuesta.
 
