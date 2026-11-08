@@ -55,6 +55,10 @@ servicios nuevos permanentes, y cualquier operación destructiva (`down -v`, bor
 - Q: ¿Cómo se cambia entre vivo y reproducción en el panel publicado? → A: con un **selector visible en el propio panel** (el modo inicial es `live`), sin recompilar ni volver a publicar; `config.json` no cambia de modo (FR-010).
 - Q: ¿Qué pendientes manuales o de autorización impiden el cierre técnico de F6? → A: **ninguno lo impide**. El cierre técnico exige todo lo automatizable; los pendientes (lector de pantalla real, publicación en ngrok/Netlify, SC-010 de F3, navegadores o dispositivos no disponibles) constan en `resultados.md` como «pendiente de la persona estudiante» con su guion, no se declaran cumplidos y se cierran con un anexo posterior (SC-012, SC-014, SC-018).
 
+### Decisión de privacidad de la publicación (2026-11-08, persona estudiante)
+- Q: ¿Quién puede ver el panel publicado antes de la defensa? → A: la persona estudiante quería el sitio de Netlify (`https://observatorio-sismico.netlify.app/`, cuenta existente, proyecto independiente del portfolio) **privado**, pero **su cuenta gratuita no ofrece privacidad ni contraseña** («Password Protection → Upgrade to unlock»; decisión del usuario: no contratar ni cambiar de plan, no investigar más). **El sitio de Netlify es PÚBLICO** (la página provisional se sirve con HTTP 200 a cualquiera). Decisión resultante: **el dashboard real NO se sube a Netlify hasta una autorización expresa**, y los **datos** se protegen en la API con una clave de acceso (FR-041).
+- Q: ¿Basta CORS para proteger la API del túnel (`grandpa-bunkbed-spree.ngrok-free.dev`)? → A: **no**: CORS no es autenticación. Se aprueba la **opción A**: clave de acceso obligatoria en la API (cabecera `X-Observatorio-Clave`, 401 sin ella), generada de forma segura, solo en el `.env` local; el panel la pide y la guarda solo en memoria. Planes de pago: ninguno.
+
 ### Revisión de Architect y QA (2026-11-08)
 
 - «SC-010(F3)» designa siempre la conservación tras 24 h de la fase F3; «SC-010» sin sufijo, el criterio de mediciones de esta especificación.
@@ -340,6 +344,7 @@ La persona estudiante decide cuándo comprobar que los eventos que salieron de l
 
 - **FR-038**: Se mantienen los cinco servicios; solo la API se publica (127.0.0.1:8000); no se añade ningún servicio permanente (DG1, DG4).
 - **FR-039**: Los datos reales, históricos, de replay y sintéticos MUST permanecer aislados y etiquetados; un nulo nunca es 0 y «Sin país asignado» nunca es el país más cercano.
+- **FR-041**: Los endpoints de datos de la API expuesta por el túnel MUST rechazar con HTTP 401 toda petición sin la clave de acceso o con una incorrecta (antes de validar parámetros, en live y en replay), aceptándola solo por cabecera (`X-Observatorio-Clave`), comparada en tiempo constante; el preflight CORS MUST funcionar sin clave y sin dar datos; la clave (>= 32 caracteres aleatorios) MUST NOT estar en Git, registros, URLs, `config.json` ni el build, y el panel MUST pedirla y conservarla solo en memoria (sin localStorage, sessionStorage ni cookies). Sin `API_CLAVE_ACCESO` la API local se comporta como antes. Como el sitio de Netlify es público (cuenta gratuita sin privacidad), el dashboard real NO se publica hasta autorización expresa de la persona estudiante, y el túnel permanece cerrado hasta que se verifique la protección en la API recreada.
 - **FR-040**: Cada comportamiento MUST tener una prueba o comprobación ejecutada con resultado real en `docs/evidencias/f6/`; no se modifican `docs/referencias/` ni `specs/001`–`004`.
 
 ### Entidades clave

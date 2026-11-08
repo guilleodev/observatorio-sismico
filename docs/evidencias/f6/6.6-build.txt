@@ -1,0 +1,30 @@
+# 6.6 T043 - build público 2026-11-08T16:53:55Z
+hash de frontend/public/config.json antes: 27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525
+config.json escrito para el build (URL del túnel, refresco 600000 ms, pausa con la pestaña oculta)
+Application bundle generation complete. [1.840 seconds]
+## Comprobaciones del build público
+  OK    el build lleva la URL del túnel (https://ejemplo-simulacro.ngrok-free.app)
+  OK    el config.json del build no menciona direcciones locales
+  OK    refresco público de 600000 ms
+  OK    suspensión con la pestaña oculta activada
+  OK    skipNgrokWarning activado
+  OK    el config.json del build no contiene secretos
+  OK    el build no cita el origen de desarrollo
+## Restauración del original
+  OK    hash de frontend/public/config.json restaurado (idéntico al de antes)
+  OK    git no ve cambios en frontend/public/config.json
+  OK    el repositorio conserva http://127.0.0.1:8000
+  OK    el repositorio conserva el refresco de desarrollo (60 s)
+sha256 del config.json publicado: c4197634d620324bd5ca2199c7404637de6c29d988210d7ef3dc59fe7871c36c
+archivos del build: 11, 1242 KB
+Application bundle generation complete. [1.811 seconds]
+  OK    dist/ vuelve a compilarse con el config.json del repositorio (no queda un build con la URL del túnel)
+
+RESULTADO: OK
+
+## Vista previa del build público en el navegador integrado (T043/T047, sin túnel real)
+Build con la URL de simulacro `https://tunel-simulado.invalid` (dominio no resoluble, nunca ngrok), servido en 127.0.0.1:4200 y después borrado y recompilado con el config.json del repositorio (dist/ vuelve a llevar http://127.0.0.1:8000; hash de config.json sin cambios).
+Observado: texto «Actualización automática cada 10 min. La actualización automática se suspende mientras la pestaña no está visible. Puedes actualizar a mano con «Actualizar ahora»» y el botón «Actualizar ahora» presente.
+Escenario «túnel cerrado» (URL inalcanzable): estado «Sin conexión con el backend», aviso «No se puede conectar con la API (red, túnel o CORS)… Se reintenta automáticamente» y, al no haber lectura previa, «Todavía no hay ninguna lectura válida que mostrar».
+Con una lectura previa (6.2) se conservan los últimos datos y su antigüedad. Pausa: con document.hidden simulado a true, a los 33 s se mostró «En pausa: la pestaña no está visible.» (el temporizador no reintentó); al volver a visible se reanudó la consulta (no se contaron las peticiones de red).
+Limitación: la prueba de pausa usó el evento visibilitychange simulado en el mismo navegador; no se observó con una pestaña realmente en segundo plano.

@@ -7,6 +7,9 @@ export MSYS_NO_PATHCONV=1
 q() { docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "$1" | tr -d '\r'; }
 ok() { if [ "$1" = "$2" ]; then echo "  OK    $3 ($1)"; else echo "  FALLA $3: obtenido '$1', esperado '$2'"; FALLOS=$((FALLOS+1)); fi; }
 FALLOS=0
+# F6 (FR-041): con la clave de acceso activa, las consultas a la API la llevan en cabecera (leída del .env, desde un archivo temporal; no se imprime)
+CAB=""; if [ -f .env ] && grep -qE '^API_CLAVE_ACCESO=.+' .env; then CAB="$(cygpath -m "$(mktemp)")"; chmod 600 "$CAB"; printf 'X-Observatorio-Clave: %s\n' "$(grep -E '^API_CLAVE_ACCESO=' .env | cut -d= -f2- | tr -d '\r')" > "$CAB"; trap 'rm -f "$CAB"' EXIT; fi
+apicurl() { if [ -n "$CAB" ]; then curl -H @"$CAB" "$@"; else curl "$@"; fi; }
 echo "# 6.3 T033 - aislamiento e invariantes finales (F5 + replay) $(date -u +%FT%TZ)"
 echo "## Datos: live / historico / sintetico"
 ok "$(q "select count(*) from live.evento_actual where mode <> 'live'")" 0 "live.evento_actual con mode distinto de live"
@@ -19,7 +22,7 @@ ok "$(q "select count(*)||' '||md5(string_agg(t::text,'|' order by t::text)) fro
 ok "$(q "select md5(string_agg(event_id||updated_at::text||coalesce(country_id,'-'), '|' order by event_id)) from historico.evento")" 057f8f4ebaaf142ebe3eda20346c65f7 "historico.evento intacto (md5)"
 ok "$(q "select count(*) from historico.evento")" 18302 "filas del histórico de 2025"
 ok "$(q "select count(*) from pg_database where left(datname, 4) = 'obs_'")" 0 "bases temporales sin eliminar"
-API=$(curl -s http://127.0.0.1:8000/api/eventos)
+API=$(apicurl -s http://127.0.0.1:8000/api/eventos)
 ok "$(echo "$API" | grep -o '"mode":"[a-z]*"' | sort -u | tr '\n' ' ')" '"mode":"live" ' "modos presentes en /api/eventos"
 IDS=$(echo "$API" | grep -o '"id":"[^"]*"' | sed 's/"id":"//; s/"$//' | sed "s/.*/'&'/" | paste -sd, -)
 ok "$(q "select count(*) from historico.evento where event_id in ($IDS)")" 0 "eventos de /api/eventos que están en historico"
@@ -38,8 +41,8 @@ ok "$(docker compose ps --format '{{.Service}}={{.Ports}}' | grep -- '->' | tr -
 ok "$(docker compose ps --format '{{.Health}}' | grep -c '^healthy$')" 5 "servicios healthy"
 ok "$(docker ps -a --format '{{.Names}}' | grep -c 'api-f5')" 0 "contenedores temporales de F5 sin eliminar"
 ok "$(docker volume ls --format '{{.Name}}' | grep observatorio | tr '\n' ' ')" "observatorio_kafkadata observatorio_pgdata " "volúmenes (sin borrar ni añadir)"
-ok "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:8000/api/eventos)" 405 "POST a /api/eventos rechazado"
-ok "$(curl -s -D - -o /dev/null -H 'Origin: http://localhost:4200' http://127.0.0.1:8000/api/salud | tr -d '\r' | grep -ci '^access-control-allow-origin: http://localhost:4200$')" 1 "CORS limitado a los orígenes configurados (API_CORS_ORIGINS)"
+ok "$(apicurl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:8000/api/eventos)" 405 "POST a /api/eventos rechazado"
+ok "$(apicurl -s -D - -o /dev/null -H 'Origin: http://localhost:4200' http://127.0.0.1:8000/api/salud | tr -d '\r' | grep -ci '^access-control-allow-origin: http://localhost:4200$')" 1 "CORS limitado a los orígenes configurados (API_CORS_ORIGINS)"
 echo "## Archivos que no deben cambiar"
 ok "$(git status --short -- docs/referencias specs/001-* specs/002-* specs/003-* | wc -l)" 0 "cambios en docs/referencias, specs/001, specs/002 y specs/003"
 ok "$(sha256sum frontend/public/datos/paises.geojson | cut -d' ' -f1)" d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c "huella del catálogo de países entregado"
@@ -68,7 +71,7 @@ ok "$(grep -rlE --include='*.py' 'replay\.(evento_actual|evento_version|cuarente
 ok "$(grep -c 'replay' backend/src/observatorio/api/comparacion.py)" 0 "comparacion.py (único lector de historico) sin menciones de replay"
 ok "$(q "select count(*) from replay.ejecucion")" 2 "ejecuciones de replay conservadas (r-f6-prueba-a y r-f6-prueba-b)"
 ok "$(q "select count(*) from replay.evento_actual where run_id in ('r-f6-prueba-a','r-f6-prueba-b')")" 70 "eventos actuales de las dos ejecuciones conservadas"
-API_R=$(curl -s "http://127.0.0.1:8000/api/eventos?mode=replay&limit=5000")
+API_R=$(apicurl -s "http://127.0.0.1:8000/api/eventos?mode=replay&limit=5000")
 IDS_R=$(echo "$API_R" | grep -o '"id":"[^"]*"' | sed 's/"id":"//; s/"$//' | sed "s/.*/'&'/" | paste -sd, -)
 ok "$(q "select count(*) from live.evento_actual where event_id in ($IDS_R)")" 0 "eventos de /api/eventos?mode=replay que están en live"
 ok "$(q "select count(*) from historico.evento where event_id like 'replay-ctl-%' or event_id in ($(echo "$IDS_R" | grep -o "'replay-ctl[^']*'" | paste -sd, - | sed 's/^$/'"''"'/'))")" 0 "casos controlados de la API de replay en historico"

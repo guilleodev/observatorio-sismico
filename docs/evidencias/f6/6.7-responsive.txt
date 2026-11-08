@@ -1,0 +1,35 @@
+# 6.7 T050 - comprobación DOM de accesibilidad y diseño responsive (scripts/f6/a11y_dom.js) · 2026-11-08
+Navegador integrado (Chromium del panel), panel servido en 127.0.0.1:4200 con el config.json del repositorio y la API real (solo lectura). El script se inyecta desde un servidor estático temporal (puerto 4201, ya cerrado) y no entra en la aplicación.
+Criterios (WCAG 2.2): sin desbordamiento horizontal de la página (1.4.10), objetivos >= 24 px (2.5.8), nombre accesible de todo control (4.1.2), contraste de texto 4,5:1 / 3:1 si es grande (1.4.3), regiones desplazables alcanzables con teclado (2.1.1), estructura (h1, encabezados, tablas con caption y scope, SVG con título).
+Se comprueban los DOS modos: en vivo y REPRODUCCIÓN (ejecución r-f6-prueba-b). El 200 % de zoom se emula con un viewport de 640 px CSS y el reflujo del 400 % con 320 px (el zoom real del navegador no es manipulable desde la herramienta; ver limitaciones).
+
+## ANTES de las correcciones (estado tras 6.6)
+| Ancho | Desborde de la página | Controles < 24 px | Sin nombre | Contraste de texto (mín.) | Regiones desplazables sin teclado |
+|---|---|---|---|---|---|
+| 1440 | no | button.actualizar 112×21; 2 radios 13×13 | 0 | 5,57:1 · 0 fallos de 399 textos | 0 |
+| 1024 | no | los mismos 3 | 0 | 5,57:1 · 0 fallos | 0 |
+| 768 | no | los mismos 3 | 0 | 5,57:1 · 0 fallos | 0 |
+| 375 | no | los mismos 3 | 0 | 5,57:1 · 0 fallos | 0 |
+| 320 | SÍ: scrollWidth 324 (4 px): rejillas `dl` del panel de estado y del selector de modo (columna mínima 280/240 px) y, ocultado por ellas, el buscador de la tabla (min-width 280 px) | los mismos 3 | 0 | 5,57:1 · 0 fallos | 0 |
+En REPRODUCCIÓN los resultados fueron iguales (377 textos medidos; etiqueta «REPRODUCCIÓN · ejecución r-f6-prueba-b · ×127,6 · terminada» presente).
+
+## Hallazgos (corregidos en T054; ver 6.7-correcciones.txt)
+H1 «Actualizar ahora» (añadido en 6.6) medía 21 px de alto. H2 los botones de opción del selector de modo (6.2) medían 13×13 px. H3 a 320 px la página se desbordaba 4 px (tres causas: dos rejillas `dl` y el buscador de la tabla de F5).
+El contraste de la capa del mapa (H4) se mide aparte: 6.7-contraste-mapa.txt.
+
+## DESPUÉS de las correcciones (build recompilado; mismo script)
+| Ancho | Desborde | Controles < 24 px | Sin nombre | Contraste mín. / fallos (en vivo y REPRODUCCIÓN) | Regiones desplazables / sin teclado | Saltos de encabezado · ids duplicados · SVG sin nombre · tablas sin caption |
+|---|---|---|---|---|---|---|
+| 1440 | no | 0 | 0 | 5,57:1 · 0 · 0 | 1 / 0 | 0 · 0 · 0 · 0 |
+| 1024 | no | 0 | 0 | 5,57:1 · 0 · 0 | 5 / 0 | 0 · 0 · 0 · 0 |
+| 768 | no | 0 | 0 | 5,57:1 · 0 · 0 | 1 / 0 | 0 · 0 · 0 · 0 |
+| 640 (≈ 200 %) | no | 0 | 0 | 5,57:1 · 0 · 0 | 1 / 0 | 0 · 0 · 0 · 0 |
+| 375 | no | 0 | 0 | 5,57:1 · 0 · 0 | 5 / 0 | 0 · 0 · 0 · 0 |
+| 320 (≈ 400 %) | no (scrollWidth 320) | 0 | 0 | 5,57:1 · 0 · 0 | 5 / 0 | 0 · 0 · 0 · 0 |
+Móvil emulado (preset del panel: 375×812, agente de usuario Android): sin desborde, 0 controles pequeños, 0 sin nombre, contraste mínimo 5,57:1. 64 controles visibles con nombre accesible en todos los anchos.
+
+## Limitaciones (no verificado por este script)
+- Foco visible y orden de tabulación: se comprueban con el teclado (guion-accesibilidad.md); el script solo verifica que no hay tabindex positivos (0) y que las regiones desplazables son enfocables.
+- Zoom real del navegador del 200 % / 400 % y el zoom solo de texto: emulados por ancho de viewport; no medidos con el zoom del navegador.
+- El contraste de texto excluye lo dibujado sobre el mapa (teselado) y los SVG; el del mapa está en 6.7-contraste-mapa.txt.
+- Contraste de los estados :hover/:focus y de los colores de las barras SVG (decorativas: cada barra tiene su valor en texto y en la tabla alternativa de F5).

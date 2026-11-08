@@ -1,0 +1,19 @@
+# 6.8 T057 · el consumidor se para y se arranca sin duplicar ni perder (2026-11-08)
+
+Método: `CONFIRMO_ENSAYO=consumer bash scripts/f6/ensayo_parada.sh consumer <s>` (solo `docker compose stop` / `start`; mismo contenedor y mismos volúmenes). Detalle completo en los dos ficheros citados.
+
+## A. Consumidor en vivo (PA-5, autorizado expresamente)
+| Ensayo | Parado | Qué ocurrió | Resultado |
+|---|---|---|---|
+| `6.8-ensayo-consumer.txt` | 180 s | La ingesta real no publicó nada en esa ventana (USGS sin eventos nuevos): no hubo cola que drenar. Lag 0 antes, durante y después. Versiones 945→946. | OK |
+| `6.8-ensayo-consumer-largo.txt` | 540 s | Apareció cola real: lag 0→7 y reconciliación 7 (publicadas 966→973 con 950 versiones guardadas). Al arrancar: healthy en ≈10 s; lag 0 y reconciliación 0 en ≈10 s; versiones 950→959. 0 offsets duplicados, 0 filas desfasadas. | OK |
+
+Comprobaciones superadas en ambos: mismo contenedor (no se recreó), mismos volúmenes (nombre y fecha), huellas de `historico` y `sintetico` idénticas, `replay` sin cambios, live no pierde nada, cinco servicios healthy, RestartCount 0, API sigue devolviendo 401 sin clave.
+
+Limitación honesta: el ensayo de 180 s por sí solo NO demostró el drenado (no había cola); lo demuestra el de 540 s.
+
+## B. Consumidor efímero de replay matado y repetido (PA-4) — evidencia reutilizada
+`6.1-replay-ensayos.txt`: consumidor efímero de replay matado a mitad de una reproducción (parcial 14/16/1) y reproducción repetida (35/37/1): 0 duplicados, lag 0. No se repitió en 6.8 (se reutilizó, como se indicó). En la ejecución de estabilidad (T061) otra reproducción completa terminó con 35/37/1 sin incidencias.
+
+## Cobertura de FR/SC
+FR-011 (fila «Reiniciar consumidor» de §11), FR-015, FR-016, SC-008: cumplidos con lo anterior.

@@ -1,0 +1,63 @@
+# Estabilidad de 60 min · 2026-11-08T20:23:28Z · reproducción prevista: r-f6-estab-11082023 a los 15 min
+## INICIO
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=975 versiones=959 cuarentena=16 | offset/final/lag=985/985/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=637 | versiones=959 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+contenedores al inicio (id, arranque): api=a380a434a67870b38e2a1020e6aebee5f41f1f74ecba352e1d31c5c9 consumer=81212326a3f310a8291070fd1d46d646a48394d81fbdc4aaf4d kafka=8334b55b327c9264286cc9da0d8f2eef2bb21d1f8485e584167764 postgres=046081f539aaa2706af33297e00980bcc52c546f67b8912c8af producer=a08f771a27deb0edb49d317ef8ebfd4b15d2fd3a6bc82a4974f 
+[t=0 · 20:24:29] mem(MiB): api=44.19MiB producer=34.57MiB consumer=41.13MiB postgres=55.82MiB kafka=579MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=985/985/0  · reinicios Docker: 0 · ingesta hace 51s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=5 min · 20:30:03] mem(MiB): api=44.65MiB producer=34.73MiB consumer=41.11MiB postgres=54.07MiB kafka=506.3MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=986/986/0  · reinicios Docker: 0 · ingesta hace 25s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=10 min · 20:35:38] mem(MiB): api=44.79MiB producer=34.18MiB consumer=41.16MiB postgres=54.77MiB kafka=509.1MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=987/987/0  · reinicios Docker: 0 · ingesta hace 60s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+-- lanzando la reproducción r-f6-estab-11082023 (20:40:40): consumidor efímero de replay + productor bajo demanda (intervalo 2 s ≈ 76 s)
+  "run_id": "r-f6-estab-11082023",  "mensajes": 39,  "velocidad": 31.903,  "publicados": 39,  "estado": "terminada"
+-- reproducción terminada (20:42:15): recuentos de r-f6-estab-11082023 (actuales / versiones / cuarentena) = 35 / 37 / 1
+[t=15 min · 20:42:49] mem(MiB): api=43.55MiB producer=34.75MiB consumer=41.25MiB postgres=57.09MiB kafka=551.4MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=992/992/0  · reinicios Docker: 0 · ingesta hace 10s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=20 min · 20:48:23] mem(MiB): api=44.68MiB producer=35.02MiB consumer=41.27MiB postgres=58.05MiB kafka=611.3MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=996/996/0  · reinicios Docker: 0 · ingesta hace 44s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=25 min · 20:53:54] mem(MiB): api=45.35MiB producer=34.95MiB consumer=41.23MiB postgres=58.07MiB kafka=671.6MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=998/998/0  · reinicios Docker: 0 · ingesta hace 14s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=30 min · 20:59:25] mem(MiB): api=44.53MiB producer=34.88MiB consumer=40.99MiB postgres=57.52MiB kafka=730.9MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=999/999/0  · reinicios Docker: 0 · ingesta hace 46s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=35 min · 21:04:57] mem(MiB): api=44.71MiB producer=35.49MiB consumer=41.1MiB postgres=57MiB kafka=803MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=1002/1002/0  · reinicios Docker: 0 · ingesta hace 18s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=40 min · 21:10:29] mem(MiB): api=44.01MiB producer=35.35MiB consumer=40.95MiB postgres=57.47MiB kafka=857MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=1003/1003/0  · reinicios Docker: 0 · ingesta hace 49s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=45 min · 21:16:00] mem(MiB): api=44.96MiB producer=35.47MiB consumer=40.83MiB postgres=57.6MiB kafka=1000MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=1006/1006/0  · reinicios Docker: 0 · ingesta hace 20s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=50 min · 21:21:31] mem(MiB): api=44.43MiB producer=38.82MiB consumer=41.41MiB postgres=58.18MiB kafka=977.8MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=1007/1007/0  · reinicios Docker: 0 · ingesta hace 51s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+[t=55 min · 21:27:02] mem(MiB): api=44.46MiB producer=34.76MiB consumer=41.23MiB postgres=57.95MiB kafka=978.6MiB 
+     reconciliacion=0 offsets duplicados=0 offset/final/lag=1008/1008/0  · reinicios Docker: 0 · ingesta hace 22s · API sin clave HTTP 401 · líneas de error desde el inicio: api=0 consumer=0 producer=0 postgres=0 kafka=0 
+## FINAL
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=998 versiones=982 cuarentena=16 | offset/final/lag=1008/1008/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=649 | versiones=982 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=3 | actuales=105 | versiones=111 | cuarentena=3
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+versiones de live: 959 → 982 (crece por la ingesta real) · contenedores al final (id, arranque): api=a380a434a67870b38e2a1020e6aebee5f41f1f74ecba352e1d31c5c9 consumer=81212326a3f310a8291070fd1d46d646a48394d81fbdc4aaf4d kafka=8334b55b327c9264286cc9da0d8f2eef2bb21d1f8485e584167764 postgres=046081f539aaa2706af33297e00980bcc52c546f67b8912c8af producer=a08f771a27deb0edb49d317ef8ebfd4b15d2fd3a6bc82a4974f 
+contenedores temporales sin eliminar: 0
+## Resumen
+reproducción r-f6-estab-11082023: terminada · 39 mensajes
+historico/sintetico iguales: sí
+FIN 2026-11-08T21:27:31Z
+
+## Lectura (añadida tras la ejecución)
+- 60 min, 13 muestras: 0 reinicios, 0 líneas de error en los cinco servicios, lag 0 y reconciliación 0 en todas, API 401 sin clave, ingesta siempre ≤ 60 s de antigüedad.
+- Reproducción r-f6-estab-11082023: terminada, 39 mensajes, 35 actuales / 37 versiones / 1 cuarentena (igual que 6.1); sin contenedores temporales residuales.
+- Memoria: api, producer, consumer y postgres planos (≈34-58 MiB). KAFKA CRECIÓ de ≈506 MiB a ≈1000 MiB (t=45) y se estabilizó en ≈978 MiB (t=50-55): es caché de página/heap de la JVM, sin reinicios ni errores, pero 60 min no bastan para asegurar que no siga creciendo con el tiempo; no se ha medido límite de contenedor. Queda como observación, no como fallo.
+- historico/sintetico idénticos al inicio y al final; versiones de live 959→982 por la ingesta real.

@@ -9,12 +9,14 @@ import { EstadoComponent } from './estado/estado.component';
 import { FiltrosComponent } from './filtros/filtros.component';
 import { TablaComponent } from './tabla/tabla.component';
 import { SelectorModoComponent } from './selector-modo/selector-modo.component';
+import { AccesoComponent } from './acceso/acceso.component';
 import { itemsHora as itemsDeHora, itemsIntervalos, itemsPais } from './graficas';
 import { idDe } from './tabla';
 import { edadLecturaMs, retardoSiguiente } from './estado';
+import { debeRefrescarAlVolver, pausada, textoActualizacion } from './actualizacion';
 import type { EntradaEstado, ErrorPanel } from './estado';
 import { estadoInicial, paisesDelCatalogo, parametros, resolverVentana, resumen } from './filtros';
-import { colorProfundidad, fechaUtc, numeroFinito, radioMagnitud, textoFicha } from './formato';
+import { colorProfundidad, estiloCirculo, fechaUtc, numeroFinito, radioMagnitud, textoFicha } from './formato';
 import { AVISO_COMPARACION_NO_APLICA, MODO_INICIAL, conEtiqueta, etiquetaReplay, fichaReplay, lecturaVacia, parametrosModo, resumenReplay, ventanaReplay } from './modo';
 import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, FiltrosEstado, ModoVista, PaisCatalogo, Salud, Ventana } from './modelos';
 
@@ -24,7 +26,7 @@ import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, Filtro
 type DatosDemo = FeatureCollection & { metadata?: { generated?: number } };
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent],
+  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, AccesoComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent],
   templateUrl: './app.component.html', styleUrl: './app.component.css'
 })
 export class AppComponent implements OnDestroy {
@@ -64,7 +66,7 @@ export class AppComponent implements OnDestroy {
   readonly sinEjecuciones = signal(false);
   readonly anuncioModo = signal('');
   readonly esReplay = computed(() => this.modoVista() === 'replay');
-  readonly etiquetaVista = computed(() => (this.esReplay() ? etiquetaReplay(this.ejecucion()) : null));
+  readonly etiquetaVista = computed(() => (this.esReplay() ? (this.pideClave() ? 'REPRODUCCIÓN · acceso restringido (falta la clave)' : etiquetaReplay(this.ejecucion())) : null)); // sin clave no se sabe si hay ejecuciones: no se dice «sin ejecuciones»
   readonly avisoNoAplica = AVISO_COMPARACION_NO_APLICA;
   readonly comparacionVivo = computed<Comparacion | null>(() => { const c = this.estadisticas()?.comparacion; return c && 'reciente' in c ? c : null; });
   readonly rotular = (titulo: string): string => conEtiqueta(titulo, this.esReplay());
@@ -100,6 +102,19 @@ export class AppComponent implements OnDestroy {
   private versionLectura = 0;
   private huboError = false;
   private relojEstado?: ReturnType<typeof setInterval>;
+  // F6 (6.6): en el despliegue público (config.pausarSiOculta) la consulta automática se suspende con la pestaña oculta y se reanuda al volver; siempre hay actualización manual.
+  // F6 (FR-041): clave de acceso de la API publicada; vive solo en ApiService (memoria)
+  readonly pideClave = signal(false);
+  readonly claveRechazada = signal(false);
+  readonly textoAct = signal('');
+  readonly enPausa = signal(false);
+  private readonly alCambiarVisibilidad = (): void => {
+    const config = this.config;
+    if (!config || config.mode !== 'api' || document.hidden || !this.enPausa()) return;
+    this.enPausa.set(false);
+    if (debeRefrescarAlVolver(performance.now(), this.lecturaPerf(), config.refreshMs)) { clearTimeout(this.timer); void this.refresh(config); }
+    else this.programar(config, true);
+  };
   private readonly alVolverRed = (): void => { if (this.config?.mode === 'api' && this.huboError) { clearTimeout(this.timer); void this.refresh(this.config); } };
   private ultimosFiltros: FiltrosEstado = estadoInicial(); // filtros de la última lectura CORRECTA (los que describen lo que hay en el mapa)
 
@@ -132,7 +147,7 @@ export class AppComponent implements OnDestroy {
       if (!['demo', 'api'].includes(config.mode)) throw new Error('Modo inválido');
       this.config = config;
       this.esApi.set(config.mode === 'api');
-      if (config.mode === 'api') { this.relojEstado = setInterval(() => this.ahoraPerf.set(performance.now()), 1000); window.addEventListener('online', this.alVolverRed); }
+      if (config.mode === 'api') { this.relojEstado = setInterval(() => this.ahoraPerf.set(performance.now()), 1000); window.addEventListener('online', this.alVolverRed); document.addEventListener('visibilitychange', this.alCambiarVisibilidad); this.textoAct.set(textoActualizacion(config)); }
       if (config.mode === 'api') this.api = new ApiService(config.apiUrl, { omitirAvisoNgrok: config.skipNgrokWarning });
       this.mode.set(config.mode === 'demo' ? 'DEMOSTRACIÓN · datos ficticios' : 'API · datos del backend');
       await this.refresh(config);
@@ -205,6 +220,33 @@ export class AppComponent implements OnDestroy {
     this.status.set(ejec === null ? 'Todavía no hay ninguna reproducción guardada.' : `${etiquetaReplay(ejec)} · consulta completada. Datos históricos reproducidos, no actividad actual.`);
   }
 
+  /** Siguiente consulta automática. Con la pestaña oculta y `pausarSiOculta`, no se consulta: queda en pausa hasta que vuelva a ser visible. */
+  private programar(config: Config, correcto: boolean): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      if (pausada(document.hidden, config)) { this.enPausa.set(true); return; }
+      void this.refresh(config);
+    }, retardoSiguiente(correcto, config.refreshMs));
+  }
+
+  /** Recibe la clave escrita en el panel: la entrega al servicio (solo memoria) y consulta de nuevo. */
+  enviarClave(clave: string): void {
+    if (!this.api || !this.config || this.config.mode !== 'api') return;
+    this.api.establecerClave(clave);
+    this.pideClave.set(false);
+    this.claveRechazada.set(false);
+    clearTimeout(this.timer);
+    void this.refresh(this.config);
+  }
+
+  /** «Actualizar ahora»: consulta inmediata (cancela la espera y la lectura en curso, como «Aplicar filtros»). */
+  actualizarAhora(): void {
+    if (!this.config || this.config.mode !== 'api') return;
+    clearTimeout(this.timer);
+    this.enPausa.set(false);
+    void this.refresh(this.config);
+  }
+
   private async readJson<T>(url: string, headers: Record<string, string> = {}): Promise<T> {
     const response = await fetch(url, { headers, cache: 'no-store',
       signal: AbortSignal.any([this.controller.signal, AbortSignal.timeout(15000)]) });
@@ -268,7 +310,12 @@ export class AppComponent implements OnDestroy {
       if (this.destroyed || !this.ultima.vigente(id) || (e instanceof ErrorApi && e.tipo === 'cancelado')) return;
       const error: ErrorPanel = e instanceof ErrorApi ? { tipo: e.tipo, mensaje: e.message, detalle: e.detalle } : { tipo: 'red', mensaje: 'Error inesperado al actualizar.' };
       this.errorPanel.set(error); // los últimos datos válidos se conservan en pantalla; el panel de estado indica su antigüedad
-      if (error.tipo === 'validacion') {
+      if (error.tipo === 'autorizacion') {
+        this.claveRechazada.set(this.api?.tieneClave() ?? false); // con clave enviada = incorrecta; sin ella = falta
+        this.api?.establecerClave(null); // la clave rechazada se olvida
+        this.pideClave.set(true);
+        this.status.set('Acceso restringido: la API exige una clave de acceso.');
+      } else if (error.tipo === 'validacion') {
         this.status.set('Filtros rechazados por la API: se conserva la última lectura válida.');
         this.filtros.set(this.ultimosFiltros); // la actualización automática sigue con los últimos filtros válidos, no reintenta los rechazados
       } else {
@@ -278,7 +325,7 @@ export class AppComponent implements OnDestroy {
     } finally {
       if (!this.destroyed && this.ultima.vigente(id)) {
         this.cargando.set(false);
-        if (config.mode === 'api') this.timer = setTimeout(() => void this.refresh(config), retardoSiguiente(correcto, config.refreshMs)); // tras un fallo se reintenta pronto: recuperación automática
+        if (config.mode === 'api' && !this.pideClave()) this.programar(config, correcto); // sin clave no se reintenta en bucle: se espera a que la persona la escriba // tras un fallo se reintenta pronto: recuperación automática
       }
     }
   }
@@ -319,7 +366,7 @@ export class AppComponent implements OnDestroy {
       const popup = document.createElement('div');
       popup.textContent = fichaReplay(p, this.ejecucion(), this.esReplay()) + textoFicha(p, depth, feature.id);
       const id = idDe(feature, indice); // el mismo identificador que usa la tabla
-      const estilo: L.PathOptions & { radius: number } = { radius: radioMagnitud(numeroFinito(p.mag)), color, fillColor: color, fillOpacity: .75, weight: 1 };
+      const estilo: L.PathOptions & { radius: number } = estiloCirculo(color, radioMagnitud(numeroFinito(p.mag)));
       const marcador = L.circleMarker([lat, lon], estilo).bindPopup(popup).on('click', () => this.elegir(id, 'mapa')).addTo(next);
       marcadores.set(id, marcador); estilos.set(id, estilo);
       count++;
@@ -361,5 +408,5 @@ export class AppComponent implements OnDestroy {
     if (id !== null && estilo) this.marcadores.get(id)?.setStyle(estilo);
   }
 
-  ngOnDestroy(): void { this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); this.ultima.cancelar(); this.controller.abort(); }
+  ngOnDestroy(): void { this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); document.removeEventListener('visibilitychange', this.alCambiarVisibilidad); this.ultima.cancelar(); this.controller.abort(); }
 }

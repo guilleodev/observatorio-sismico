@@ -1,0 +1,26 @@
+# 6.6 T043 - build público 2026-11-08T18:58:27Z
+hash de frontend/public/config.json antes: 27cb394e18f7468fff58684a8a15427167b6af29aec357a50365d1d34afd8525
+config.json escrito para el build (URL del túnel, refresco 600000 ms, pausa con la pestaña oculta)
+Application bundle generation complete. [2.190 seconds]
+## Comprobaciones del build público
+  OK    el build lleva la URL del túnel (https://grandpa-bunkbed-spree.ngrok-free.dev)
+  OK    el config.json del build no menciona direcciones locales
+  OK    refresco público de 600000 ms
+  OK    suspensión con la pestaña oculta activada
+  OK    skipNgrokWarning activado
+  OK    el config.json del build no contiene secretos ni claves
+  OK    el nombre de la cabecera está en el código (solo el nombre; ninguna clave)
+  OK    la clave de acceso real NO está en ningún archivo del build
+  OK    el build no cita el origen de desarrollo
+build público copiado a frontend/dist/publico-netlify (11 archivos); NO publicado
+## Restauración del original
+  OK    hash de frontend/public/config.json restaurado (idéntico al de antes)
+  OK    git no ve cambios en frontend/public/config.json
+  OK    el repositorio conserva http://127.0.0.1:8000
+  OK    el repositorio conserva el refresco de desarrollo (60 s)
+sha256 del config.json publicado: 0f939738d88e2a8b7a9f4087a1b5c75fd7a37b52932895a6a39de3b5c8bb6a0d
+archivos del build: 11, 1246 KB
+Application bundle generation complete. [2.197 seconds]
+  OK    dist/ vuelve a compilarse con el config.json del repositorio (no queda un build con la URL del túnel)
+
+RESULTADO: OK

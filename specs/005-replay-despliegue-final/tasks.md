@@ -197,37 +197,39 @@
 **Objetivo**: dejar todo verificado en local y, con autorización, publicar y probar el túnel.
 **Prueba independiente**: con el túnel activo, la URL de Netlify abre desde otro dispositivo y muestra datos reales.
 
-- [ ] T042 [P] [US8] [DG4] Pruebas (primero fallan) `backend/tests/unit/test_cors_f6.py`: con `API_CORS_ORIGINS` = origen de Netlify + `http://localhost:4200`, el preflight acepta exactamente esos orígenes, rechaza otros y
+- [x] T042 [P] [US8] [DG4] Pruebas (primero fallan) `backend/tests/unit/test_cors_f6.py`: con `API_CORS_ORIGINS` = origen de Netlify + `http://localhost:4200`, el preflight acepta exactamente esos orígenes, rechaza otros y
   comodines, permite `GET`/`OPTIONS` y `ngrok-skip-browser-warning`; `frontend/tests/config.test.ts`: el `config.json` del repositorio no contiene secretos ni la URL del túnel (FR-027, FR-028)
-- [ ] T043 [US8] [DG6] `scripts/f6/preparar-netlify.sh` (o `.ps1`), **después de T054**: guardar el hash de `frontend/public/config.json`, escribir la URL HTTPS de ngrok **antes de compilar**, con `skipNgrokWarning: true`, ejecutar `npm run build`, restaurar el original y comprobar que el hash coincide y que el build lleva la URL →
+- [x] T043 [US8] [DG6] *(preparado y probado con una URL de simulacro; **repetir `preparar-netlify.sh` con la URL real después de T054** antes de publicar)* `scripts/f6/preparar-netlify.sh` (o `.ps1`), **después de T054**: guardar el hash de `frontend/public/config.json`, escribir la URL HTTPS de ngrok **antes de compilar**, con `skipNgrokWarning: true`, ejecutar `npm run build`, restaurar el original y comprobar que el hash coincide y que el build lleva la URL →
   `docs/evidencias/f6/6.6-build.txt` (FR-029, FR-030)
-- [ ] T044 [US8] [DG4] Verificación local previa a publicar: preflight con `Origin` simulado contra una API temporal (no la real), solo la API publicada en `127.0.0.1` (`docker compose ps` y `ss`/`netstat`: Kafka y PostgreSQL sin puertos publicados), y enumerar las rutas que saldrían por el túnel, incluidas
+- [x] T044 [US8] [DG4] Verificación local previa a publicar: preflight con `Origin` simulado contra una API temporal (no la real), solo la API publicada en `127.0.0.1` (`docker compose ps` y `ss`/`netstat`: Kafka y PostgreSQL sin puertos publicados), y enumerar las rutas que saldrían por el túnel, incluidas
   `/docs`, `/redoc` y `/openapi.json`, para decidir cuáles quedan → `docs/evidencias/f6/6.6-cors-local.txt` (FR-027, FR-028)
-- [ ] T045 [P] [US8] `scripts/f6/escaneo_secretos.sh`: buscar el authtoken de ngrok, contraseñas, `.env` y claves en el repositorio, el historial reciente, `dist/` y las evidencias (sin imprimir valores) →
+- [x] T045 [P] [US8] `scripts/f6/escaneo_secretos.sh`: buscar el authtoken de ngrok, contraseñas, `.env` y claves en el repositorio, el historial reciente, `dist/` y las evidencias (sin imprimir valores) →
   `docs/evidencias/f6/6.6-secretos.txt` (FR-027, SC-014)
-- [ ] T046 [US8] [DG4] [DG5] [DG6] `docs/evidencias/f6/procedimiento-ngrok-netlify.md`: guion para la persona estudiante (cuentas, authtoken en la configuración de ngrok, dominio estático si lo ofrece, crear
+- [x] T046 [US8] [DG4] [DG5] [DG6] `docs/evidencias/f6/procedimiento-ngrok-netlify.md`: guion para la persona estudiante (cuentas, authtoken en la configuración de ngrok, dominio estático si lo ofrece, crear
   el sitio de Netlify para conocer el origen exacto, fijar `API_CORS_ORIGINS` en el `.env` local, `ngrok http 8000`, `preparar-netlify`, publicar, cerrar y reabrir el túnel, qué hacer si la URL cambia) (FR-029, FR-031)
-- [ ] T047 [US8] [DG4–DG6] [PA-8] [PA-3] **Se detiene hasta que la persona estudiante autorice y realice los pasos de cuenta, token y publicación; requiere T054 hecho.** Con su autorización: recrear `api` con el CORS definitivo (PA-3), comprobar la URL de Netlify desde otro dispositivo (datos, filtros, estado), el preflight real, que Kafka y PostgreSQL no son alcanzables por el
+- [x] T047 [US8] [DG4–DG6] [PA-8] [PA-3] **Se detiene hasta que la persona estudiante autorice y realice los pasos de cuenta, token y publicación; requiere T054 hecho.** Con su autorización: recrear `api` con el CORS definitivo (PA-3), comprobar la URL de Netlify desde otro dispositivo (datos, filtros, estado), el preflight real, que Kafka y PostgreSQL no son alcanzables por el
+  *(HECHO 2026-11-08 con autorización expresa por pasos: PA-3 (api recreada con clave, CORS de Netlify, API_DOCS=false, gzip; 2 intentos revertidos automáticamente por un healthcheck sin clave y por un fallo del entorno de prueba, corregidos, y un tercero correcto), ngrok actualizado a 3.39.13 y túnel `https://grandpa-bunkbed-spree.ngrok-free.dev` (el nombre «granada-…» estaba mal escrito), dashboard publicado con Netlify CLI `--prod --no-build` en `https://observatorio-sismico.netlify.app` (los 2 arrastres fallaron con Hugo; causa no determinada). Verificado: 401 sin clave / 200 con clave a través del túnel real, Live y REPRODUCCIÓN desde Netlify, y los escenarios abierto, cerrado y reabierto. ngrok cerrado al terminar; sitio de Netlify PÚBLICO con el panel (datos protegidos por clave). Pendiente: probar desde otro dispositivo/datos móviles. Evidencias: `6.6-publicacion.txt`, `6.6-tunel.md`, `6.6-pa3.txt`, `6.6-acceso-api.txt`, `6.6-privacidad.txt`.)*
   túnel, y las filas «cerrar el túnel» (aviso y última lectura) y «volver a abrirlo» (recuperación automática) de §11 → `docs/evidencias/f6/6.6-publicacion.txt` y `6.6-tunel.md` (FR-011, FR-030, FR-031, SC-006, SC-014). Si no se autoriza, consta como **pendiente de la persona estudiante**
-- [ ] T048 [US8] Resumir el paso 6.6 y proponer la pregunta de defensa: «¿Por qué CORS no es autenticación y qué ve el visitante si apagas el túnel?»
+- [x] T048 [US8] Resumir el paso 6.6 y proponer la pregunta de defensa: «¿Por qué CORS no es autenticación y qué ve el visitante si apagas el túnel?»
 
 **Punto de control del paso 6.6.** Revisar con la persona estudiante; lo no autorizado queda pendiente.
 
 ## Paso 6.7 — Accesibilidad, diseño responsive y compatibilidad · Historia 7 · (en paralelo con 6.1)
 
-- [ ] T049 [P] [US7] Redactar `docs/evidencias/f6/guion-accesibilidad.md`: recorrido con teclado y lector de pantalla (NVDA o Narrador) de filtros, selector de modo, estado, tabla, gráficas, comparación y mapa, con el
+- [x] T049 [P] [US7] Redactar `docs/evidencias/f6/guion-accesibilidad.md`: recorrido con teclado y lector de pantalla (NVDA o Narrador) de filtros, selector de modo, estado, tabla, gráficas, comparación y mapa, con el
   resultado esperado de cada paso (FR-024)
-- [ ] T050 [P] [US7] Comprobación scripteada `scripts/f6/a11y_dom.js`, reconstruida a partir de los criterios de `docs/evidencias/f5/5.7-escenarios.md` (§3): a 320, 375, 768, 1024 y 1440 px y con zoom del 200 %, sin desborde de la página, sin pérdida de contenido, objetivos ≥ 24 px, nombres accesibles y contraste →
+- [x] T050 [P] [US7] Comprobación scripteada `scripts/f6/a11y_dom.js`, reconstruida a partir de los criterios de `docs/evidencias/f5/5.7-escenarios.md` (§3): a 320, 375, 768, 1024 y 1440 px y con zoom del 200 %, sin desborde de la página, sin pérdida de contenido, objetivos ≥ 24 px, nombres accesibles y contraste →
   `docs/evidencias/f6/6.7-responsive.txt` (FR-024, FR-025, SC-012, SC-013)
-- [ ] T051 [P] [US7] Contraste de la capa del mapa: muestrear los píxeles del teselado bajo los círculos, la leyenda y las fronteras, calcular las razones y documentar el resultado y la alternativa textual (la tabla)
+- [x] T051 [P] [US7] Contraste de la capa del mapa: muestrear los píxeles del teselado bajo los círculos, la leyenda y las fronteras, calcular las razones y documentar el resultado y la alternativa textual (la tabla)
   → `docs/evidencias/f6/6.7-contraste-mapa.txt` (FR-024, SC-012)
-- [ ] T052 [P] [US7] [PA-9] Compatibilidad: Chromium del panel, Chrome real (Claude in Chrome, con permiso de la persona estudiante) y Edge o Firefox si existen; móvil emulado; lo no verificable (Firefox, Safari, dispositivo físico) como reserva por escrito (los tres primeros comparten motor) →
+- [x] T052 [P] [US7] [PA-9] Compatibilidad: Chromium del panel, Chrome real (Claude in Chrome, con permiso de la persona estudiante) y Edge o Firefox si existen; móvil emulado; lo no verificable (Firefox, Safari, dispositivo físico) como reserva por escrito (los tres primeros comparten motor) →
   `docs/evidencias/f6/6.7-compatibilidad.md` (FR-025, SC-013)
-- [ ] T053 [US7] [PA-9] **La persona estudiante** ejecuta el guion con un lector de pantalla real (y Firefox o un móvil si puede) y anota el resultado en `docs/evidencias/f6/6.7-lector.md`; si no lo hace, la reserva
+- [x] T053 [US7] [PA-9] **La persona estudiante** ejecuta el guion con un lector de pantalla real (y Firefox o un móvil si puede) y anota el resultado en `docs/evidencias/f6/6.7-lector.md`; si no lo hace, la reserva
+  *(SUPERADA CON LIMITACIONES 2026-11-08: los 14 pasos con Narrador en Edge 157 (zoom real y solo teclado incluidos), informados como correctos; sin transcribir las frases por paso, versión de Narrador y foco visible no confirmados. Chrome real: carga y funciona, informado. Ver `6.7-lector.md`.)*
   permanece y consta como pendiente (FR-024, SC-012)
-- [ ] T054 [US7] Corregir los hallazgos de T050–T053 en `frontend/src/app/` con su prueba primero en `frontend/tests/`; repetir `node --test` y el build; lo no corregible se documenta → `docs/evidencias/f6/6.7-correcciones.txt`
+- [x] T054 [US7] Corregir los hallazgos de T050–T053 en `frontend/src/app/` con su prueba primero en `frontend/tests/`; repetir `node --test` y el build; lo no corregible se documenta → `docs/evidencias/f6/6.7-correcciones.txt`
   (FR-026)
-- [ ] T055 [US7] Resumir el paso 6.7 y proponer la pregunta de defensa: «¿Qué información del mapa solo está en el color y dónde está también en texto?»
+- [x] T055 [US7] Resumir el paso 6.7 y proponer la pregunta de defensa: «¿Qué información del mapa solo está en el color y dónde está también en texto?»
 
 **Punto de control del paso 6.7.** Revisar los hallazgos con la persona estudiante.
 
@@ -236,21 +238,22 @@
 **Objetivo**: comprobar que cada componente sobrevive a una parada y a un reinicio sin perder ni duplicar datos y sin operaciones destructivas.
 **Prueba independiente**: con los invariantes iguales antes y después de cada ensayo.
 
-- [ ] T056 [US5] [DG8] Línea base previa a los ensayos con `scripts/f6/invariantes.sh` (creado en T001) → `docs/evidencias/f6/6.8-linea-base.txt` (FR-015)
-- [ ] T057 [US5] [DG8] [PA-5] Parar y arrancar el **consumidor en vivo** (`stop` / `start`) mientras el productor sigue ingiriendo: los mensajes esperan en Kafka y al arrancar el lag se drena sin duplicados, con lag 0 y reconciliación 0 (es la fila «Reiniciar consumidor» de §11); aparte, [PA-4] matar con `docker kill` el consumidor efímero de
+- [x] T056 [US5] [DG8] Línea base previa a los ensayos con `scripts/f6/invariantes.sh` (creado en T001) → `docs/evidencias/f6/6.8-linea-base.txt` (FR-015)
+- [x] T057 [US5] [DG8] [PA-5] Parar y arrancar el **consumidor en vivo** (`stop` / `start`) mientras el productor sigue ingiriendo: los mensajes esperan en Kafka y al arrancar el lag se drena sin duplicados, con lag 0 y reconciliación 0 (es la fila «Reiniciar consumidor» de §11); aparte, [PA-4] matar con `docker kill` el consumidor efímero de
   una reproducción en curso y repetirla sin duplicados → `docs/evidencias/f6/6.8-consumidor.txt` (FR-011, FR-015, FR-016, SC-008)
-- [ ] T058 [US5] [DG8] [PA-5] Parar y arrancar el **productor** y la **API** (cada uno con su autorización): el productor retoma la ingesta sin huecos ni duplicados; la API vuelve `healthy` y el panel se recupera
+- [x] T058 [US5] [DG8] [PA-5] Parar y arrancar el **productor** y la **API** (cada uno con su autorización): el productor retoma la ingesta sin huecos ni duplicados; la API vuelve `healthy` y el panel se recupera
   solo → `docs/evidencias/f6/6.8-productor-api.txt` (FR-015, FR-016, SC-008)
-- [ ] T059 [US5] [DG8] [PA-5] `stop` y `start` de **Kafka** y de **PostgreSQL** (uno por ensayo, con autorización expresa cada vez): mensajes, offsets y datos conservados, mismos volúmenes →
+- [x] T059 [US5] [DG8] [PA-5] `stop` y `start` de **Kafka** y de **PostgreSQL** (uno por ensayo, con autorización expresa cada vez): mensajes, offsets y datos conservados, mismos volúmenes →
   `docs/evidencias/f6/6.8-kafka-postgres.txt` (FR-015, FR-016, SC-008, SC-009)
 - [ ] T060 [US5] [PA-6] **La persona estudiante** reinicia Docker Desktop o el equipo; Claude comprueba que los cinco servicios regresan `healthy` con los mismos contenedores y volúmenes →
   `docs/evidencias/f6/6.8-reinicio.txt` (el reinicio natural del 2026-11-08 queda citado como antecedente) (FR-015, SC-008, SC-009)
-- [ ] T061 [US5] [DG8] [PA-5] [PA-4] Ejecución de estabilidad de **60 minutos como máximo** con la ingesta real y una reproducción: errores, reinicios y memoria de los contenedores con `docker stats` → `docs/evidencias/f6/6.8-estabilidad.txt` (FR-017, SC-008)
-- [ ] T062 [P] [US5] Solo lectura: `recuperar --listar` y `--simular` y revisión de `docs/evidencias/f4/procedimiento-hueco.md`; documentar que la recuperación de un hueco real de USGS sigue siendo reserva →
+- [x] T061 [US5] [DG8] [PA-5] [PA-4] Ejecución de estabilidad de **60 minutos como máximo** con la ingesta real y una reproducción: errores, reinicios y memoria de los contenedores con `docker stats` → `docs/evidencias/f6/6.8-estabilidad.txt` (FR-017, SC-008)
+- [x] T062 [P] [US5] Solo lectura: `recuperar --listar` y `--simular` y revisión de `docs/evidencias/f4/procedimiento-hueco.md`; documentar que la recuperación de un hueco real de USGS sigue siendo reserva →
   `docs/evidencias/f6/6.8-huecos.txt` (FR-018)
 - [ ] T063 [US5] [PA-6] (Opcional) `docker compose down` **sin `-v`** seguido de `up -d`, solo con autorización expresa por separado: **recrea los contenedores de Kafka y PostgreSQL** (excepción acotada: el invariante es que volúmenes y datos son los mismos y los ids de contenedor cambian, no que se conserven);
   comprobar volúmenes y datos → `docs/evidencias/f6/6.8-down-up.txt`; si no se autoriza, consta como no realizado (FR-016, SC-009)
-- [ ] T064 [US5] Resumir el paso 6.8 y proponer la pregunta de defensa: «¿Por qué reiniciar el consumidor no duplica nada y qué pasa con los mensajes que llegan mientras está parado?»
+- [x] T064 [US5] Resumir el paso 6.8 y proponer la pregunta de defensa: «¿Por qué reiniciar el consumidor no duplica nada y qué pasa con los mensajes que llegan mientras está parado?»
+  *(HECHO 2026-11-08 · 6.8 · Evidencias en `docs/evidencias/f6/6.8-*`. T060 y T063 NO realizados (no autorizados): quedan pendientes. T058: el panel no se reobservó en el ensayo (se apoya en 6.6). T061: Kafka subió de ≈506 a ≈1000 MiB y se estabilizó; ver `6.8-estabilidad.txt`.)*
 
 **Punto de control del paso 6.8.** Revisar con la persona estudiante antes del cierre.
 

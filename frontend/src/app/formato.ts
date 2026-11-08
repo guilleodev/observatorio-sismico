@@ -19,6 +19,26 @@ export function colorProfundidad(profundidad: unknown): string {
   return p === null ? '#64748b' : p < 70 ? '#e8a317' : p < 300 ? '#e35b37' : '#7b3fb6';
 }
 
+/** Borde oscuro de los círculos (F6, 6.7): el relleno amarillo/naranja por profundidad tenía 1,3:1 frente al mar y al continente de OpenStreetMap; con este borde la forma se distingue a >= 3:1 (WCAG 1.4.11). */
+export const BORDE_MAPA = '#1f2937';
+
+/** Estilo de un círculo del mapa: relleno por profundidad (sin cambios), mismo tamaño y borde oscuro de 1,5 px. */
+export function estiloCirculo(color: string, radio: number) {
+  return { radius: radio, color: BORDE_MAPA, fillColor: color, fillOpacity: 0.75, weight: 1.5 };
+}
+
+/** Razón de contraste WCAG entre dos colores `#rrggbb` (NaN si alguno no es válido). */
+export function razonContraste(a: string, b: string): number {
+  const luz = (h: string): number => {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h);
+    if (!m) return NaN;
+    const [r, g, bl] = [m[1], m[2], m[3]].map((x) => { const v = parseInt(x, 16) / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [l1, l2] = [luz(a), luz(b)];
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
 /** Radio del círculo: creciente con la magnitud (no representa energía ni área); sin magnitud, el mínimo visible (4). */
 export function radioMagnitud(magnitud: unknown): number {
   const m = numeroFinito(magnitud);

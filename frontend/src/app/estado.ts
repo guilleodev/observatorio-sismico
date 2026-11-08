@@ -9,7 +9,7 @@ export const AVISO_SIN_EJECUCIONES =
   'Todavía no hay ninguna reproducción guardada: no es un fallo de conexión. Lánzala con «bash scripts/f6/ensayo_replay.sh» o con el productor de replay ' +
   '(docker compose run --rm --no-deps producer python -m observatorio.replay.reproducir) y vuelve a pulsar «Reproducción».';
 
-export type CodigoAviso = 'sin-ejecuciones' | 'sin-conexion' | 'filtros-rechazados' | 'datos-desactualizados' | 'sin-eventos' | 'truncado' | 'huecos' | 'recuperado';
+export type CodigoAviso = 'acceso-denegado' | 'sin-ejecuciones' | 'sin-conexion' | 'filtros-rechazados' | 'datos-desactualizados' | 'sin-eventos' | 'truncado' | 'huecos' | 'recuperado';
 export type Aviso = { codigo: CodigoAviso; severidad: 'error' | 'aviso' | 'info'; rol: 'alert' | 'status'; titulo: string; texto: string };
 export type ErrorPanel = { tipo: TipoError; mensaje: string; detalle?: string };
 
@@ -76,7 +76,10 @@ export function avisos(e: EntradaEstado): Aviso[] {
   const conLectura = e.hayLectura && e.edadLecturaMs !== null
     ? `Se muestran los últimos datos válidos, leídos hace ${formatoEdad(e.edadLecturaMs)}: pueden estar desactualizados y no son la situación actual.` + (e.modo === 'replay' ? ' Son una reproducción histórica, no actividad actual.' : '')
     : 'Todavía no hay ninguna lectura válida que mostrar.';
-  if (e.error && e.error.tipo === 'validacion') {
+  if (e.error && e.error.tipo === 'autorizacion') {
+    lista.push({ codigo: 'acceso-denegado', severidad: 'aviso', rol: 'alert', titulo: 'Acceso restringido',
+      texto: 'La API exige una clave de acceso y no se ha aceptado la enviada (o falta). Escríbela en el campo «Clave de acceso»: solo se guarda en la memoria de esta pestaña.' });
+  } else if (e.error && e.error.tipo === 'validacion') {
     lista.push({ codigo: 'filtros-rechazados', severidad: 'aviso', rol: 'alert', titulo: 'La API rechazó los filtros',
       texto: `${e.error.detalle ?? e.error.mensaje} Se conserva la última lectura válida y los filtros anteriores.` });
   } else if (e.error) {
@@ -115,6 +118,7 @@ export type EstadoGeneral = { nivel: 'ok' | 'desactualizado' | 'sin-conexion'; t
 
 /** Resumen de una línea: sin conexión > datos desactualizados > al día. */
 export function estadoGeneral(e: EntradaEstado): EstadoGeneral {
+  if (e.error && e.error.tipo === 'autorizacion') return { nivel: 'sin-conexion', texto: 'Acceso restringido: falta la clave de acceso' };
   if (e.error && e.error.tipo !== 'validacion') return { nivel: 'sin-conexion', texto: 'Sin conexión con el backend' };
   if (e.salud && e.salud.stale === true) return { nivel: 'desactualizado', texto: 'Datos desactualizados' };
   if (e.modo === 'replay') return { nivel: 'ok', texto: e.sinEjecuciones ? 'Reproducción: sin ejecuciones' : 'Reproducción histórica (no es actividad actual)' };

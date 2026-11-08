@@ -1,7 +1,9 @@
 // Tipos compartidos del panel (F5, paso 5.4). Solo tipos: se borran al compilar, así que los módulos puros pueden importarlos con `import type`
 // sin que Node (pruebas con `node --test`) ni Angular tengan que resolver nada en tiempo de ejecución.
 
-export type Config = { mode: 'demo' | 'api'; apiUrl: string; refreshMs: number; skipNgrokWarning: boolean };
+export type Config = { mode: 'demo' | 'api'; apiUrl: string; refreshMs: number; skipNgrokWarning: boolean;
+  /** F6: solo en el despliegue público; suspende la consulta automática mientras la pestaña no es visible. Ausente = false (como en F5). */
+  pausarSiOculta?: boolean };
 
 /** Propiedades de cada evento según CONTRATO-API.md (+ país de F4). `null` = desconocido; nunca NaN. */
 export type Propiedades = {
@@ -48,7 +50,7 @@ export type FiltrosEstado = { preajuste: Preajuste; desde: string; hasta: string
 /** Periodo resuelto en milisegundos Unix UTC a partir del instante `generated` de la API. */
 export type Ventana = { startMs: number; endMs: number };
 
-export type TipoError = 'validacion' | 'servidor' | 'red' | 'tiempo' | 'formato' | 'cancelado';
+export type TipoError = 'autorizacion' | 'validacion' | 'servidor' | 'red' | 'tiempo' | 'formato' | 'cancelado';
 export type PaisCatalogo = { id: string; nombre: string };
 
 // --- F5, paso 5.5: estadísticas (contracts/api-f5.md) y datos de la tabla y las gráficas ---------------------------------------------------------------

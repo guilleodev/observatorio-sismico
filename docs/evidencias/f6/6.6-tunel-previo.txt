@@ -1,0 +1,35 @@
+# 6.6 T047 · túnel real abierto, verificación previa a publicar 2026-11-08T18:59:46Z
+ngrok actualizado 3.3.1 -> 3.39.13 con 'ngrok update' (mínimo de la cuenta: 3.28.0; ERR_NGROK_121 con la 3.3.1). Dominio real: grandpa-bunkbed-spree.ngrok-free.dev (el nombre 'granada-…' usado antes estaba mal transcrito: ERR_NGROK_313 'custom subdomain' al intentar con él; corregido en docs, pruebas y build).
+Túnel: ngrok http --url=https://grandpa-bunkbed-spree.ngrok-free.dev 8000 (proceso oculto lanzado por Claude; inspector 127.0.0.1:4040 reporta 1 túnel -> http://localhost:8000).
+
+# clave de acceso: cargada del .env (no se muestra)
+# 6.6 T047 - verificación de la publicación (fase abierta)
+## Túnel abierto: https://grandpa-bunkbed-spree.ngrok-free.dev · sitio https://observatorio-sismico.netlify.app
+  OK    SIN clave: /api/salud -> 401 (la protección funciona a través del túnel) -> 401
+  OK    SIN clave: /api/eventos -> 401 y sin datos -> 401
+  OK    SIN clave: modo replay -> 401 -> 401
+  OK    HTTPS (el túnel debe ser HTTPS)
+  OK    GET /api/salud responde 200 con status ok -> 200
+  OK    GET /api/eventos devuelve un FeatureCollection con metadata.mode=live -> 200
+  OK    GET /api/eventos?mode=replay funciona (modo reproducción) -> 200
+  OK    mode inválido -> 422 
+  OK    GET con Origin del sitio de Netlify lleva access-control-allow-origin exacto (https://observatorio-sismico.netlify.app)
+  OK    preflight real desde Netlify -> 200
+  OK    preflight desde un origen ajeno rechazado -> 400
+  FALLA el sitio de Netlify responde 200 con la aplicación -> 200
+  FALLA config.json publicado: URL del túnel, refresco >= 10 min, pausa con la pestaña oculta y sin secretos {}
+  OK    /docs oculta (404) -> 404
+  OK    /redoc oculta (404) -> 404
+  OK    /openapi.json oculta (404) -> 404
+  OK    /admin no existe -> 404
+  OK    /metrics no existe -> 404
+  OK    /.env no existe -> 404
+  OK    /api/otro no existe -> 404
+  OK    POST /api/eventos -> 405 
+  OK    PUT /api/eventos -> 405 
+  OK    DELETE /api/eventos -> 405 
+  OK    ngrok reenvía exactamente un túnel y solo al puerto 8000 ['http://localhost:8000']
+
+RESULTADO: FALLAN 2
+
+Los 2 FALLA son esperados en este punto: el sitio de Netlify aún contiene solo la página provisional (sin <app-root> ni config.json); se repiten tras publicar.

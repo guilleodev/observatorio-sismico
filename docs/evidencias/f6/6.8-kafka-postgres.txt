@@ -1,0 +1,14 @@
+# 6.8 T059 · Kafka y PostgreSQL: parada y arranque (2026-11-08)
+
+Método: `CONFIRMO_ENSAYO=<servicio> bash scripts/f6/ensayo_parada.sh <servicio> 90` (solo `stop`/`start`; nunca down/-v/up). Detalle: `6.8-ensayo-kafka.txt`, `6.8-ensayo-postgres.txt`.
+
+| Servicio | Parado | Recuperación | Datos | Resultado |
+|---|---|---|---|---|
+| kafka | 90 s | healthy en ≈15 s; lag 0 y reconciliación 0 en ≈10 s | mensajes y offsets conservados (offset 974→976, 0 duplicados); mismo contenedor `8334b55b327c`; volumen `observatorio_kafkadata` mismo nombre y fecha | OK |
+| postgres | 90 s | healthy en ≈10 s; lag 0 y reconciliación 0 en ≈10 s | datos conservados (950/966/634 antes y después); mismo contenedor `046081f539aa`; volumen `observatorio_pgdata` mismo nombre y fecha; huellas de historico (`057f8f4e…`) y sintetico (`5b9d041e…`, 18 filas) idénticas | OK |
+
+Mientras uno estaba parado, el resto de servicios siguió `healthy` (según `docker compose ps`); no se observó reinicio alguno (RestartCount 0), y la API siguió protegida (401 sin clave).
+
+Limitaciones honestas:
+- Durante la parada de Kafka/PostgreSQL solo se muestreó el estado de los demás servicios, no el lag (no es consultable con el sistema caído).
+- No se recrearon contenedores (T063 no autorizado): SC-009 se demuestra para `stop`/`start` y volúmenes persistentes, no para `down`/`up`.

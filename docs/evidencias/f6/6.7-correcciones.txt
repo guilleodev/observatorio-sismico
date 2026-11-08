@@ -1,0 +1,17 @@
+# 6.7 T054 - correcciones de los hallazgos de T050-T053 · 2026-11-08
+Método: prueba primero (frontend/tests/accesibilidad.test.ts), comprobada en ROJO antes de tocar el código (error `no exporta BORDE_MAPA`, 0 pruebas pasadas), después la corrección y las pruebas en verde. Solo se tocó frontend/src/app/ y frontend/tests/ (FR-026): package.json, tsconfig*, angular.json y config.json intactos.
+
+| # | Hallazgo (origen) | Corrección | Archivo(s) | Verificación |
+|---|---|---|---|---|
+| H1 | «Actualizar ahora» (6.6) medía 112×21 px: objetivo < 24 px (WCAG 2.5.8) | `min-height: 24px` y relleno | app.component.css | prueba de estilo + DOM: 0 controles < 24 px en los 6 anchos |
+| H2 | Botones de opción del selector de modo (6.2) de 13×13 px | radio de 24×24 px sin encogerse (`flex: none`), etiqueta con `min-height: 24px`, área clicable = etiqueta | selector-modo.component.ts | prueba de estilo + DOM |
+| H3 | A 320 px la página se desbordaba 4 px (scrollWidth 324): columnas mínimas fijas de 280/240 px en las rejillas del estado y del selector, y `min-width: 280px` del buscador de la tabla (esta última de F5) | `minmax(min(280px, 100%), 1fr)`, `minmax(min(240px, 100%), 1fr)` y `min-width: min(280px, 100%)` | estado.component.ts, selector-modo.component.ts, tabla.component.ts | pruebas de estilo + DOM: scrollWidth 320 a 320 px, en vivo y REPRODUCCIÓN |
+| H4 | Los círculos del mapa (relleno amarillo/naranja por profundidad) tenían 1,29:1-2,25:1 de contraste frente al mar/tierra (WCAG 1.4.11 pide 3:1) | Se conserva el relleno por profundidad, el tamaño y la opacidad; se añade borde oscuro #1f2937 de 1,5 px. `BORDE_MAPA`, `estiloCirculo` y `razonContraste` (funciones puras) | formato.ts, app.component.ts | 6.7-contraste-mapa.txt: borde 9,15:1 (100 % de los píxeles >= 3:1); pruebas con los colores medidos |
+
+## No corregido (decisión y alternativa)
+- La CLASE de profundidad sigue codificada solo por el color de relleno, que frente al mar es < 3:1. Cambiarlo (paleta o patrones) altera el diseño original del mapa del profesor. Alternativa textual completa: columnas de profundidad y clase de la tabla, ficha del evento, gráfica de profundidad con su tabla y leyenda con texto. Documentado en 6.7-contraste-mapa.txt.
+- El mapa no es operable con teclado ni lector de pantalla (Leaflet; sin cambios): la tabla es la vía equivalente (ENUNCIADO §8.7).
+- No verificados por falta de medios (reserva en 6.7-compatibilidad.md): lector de pantalla real (T053, tuyo), Chrome real (PA-9), Edge/Firefox/Safari, dispositivo físico, zoom real del navegador.
+
+## Regresión
+frontend: `node --test tests/*.test.ts` → 122 pruebas, 122 correctas (116 previas + 6 nuevas); `npm run build` correcto. Sin cambios en backend en este paso. Los 6 anchos se volvieron a medir con el build final (6.7-responsive.txt, tabla DESPUÉS).

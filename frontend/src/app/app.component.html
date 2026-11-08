@@ -4,10 +4,12 @@
     @if (esApi()) {
       <p>Filtros activos: {{ resumenFiltros() }} · Periodo consultado (UTC): {{ periodo() }} · {{ count() }} de {{ total() ?? 'ND' }} eventos dibujados</p>
       @if (cargando()) { <p>Actualizando…</p> }
+      <p>{{ textoAct() }} <button type="button" class="actualizar" (click)="actualizarAhora()" [disabled]="cargando()">Actualizar ahora</button>@if (enPausa()) { <strong> · En pausa: la pestaña no está visible.</strong> }</p>
     }
   </section>
   @if (esApi()) { <app-selector-modo [modo]="modoVista()" [ejecucion]="ejecucion()" (cambio)="cambiarModo($event)" /> }
   <p class="oculto" role="status" aria-live="polite">{{ anuncioModo() }}</p>
+  @if (esApi() && pideClave()) { <app-acceso [rechazada]="claveRechazada()" (enviar)="enviarClave($event)" /> }
   @if (esApi()) { <app-estado [entrada]="entradaEstado()" [ultimoAcceso]="ultimoAcceso()" [periodo]="periodo()" [filtros]="resumenFiltros()" [cargandoResto]="cargandoResto()" [ejecucion]="ejecucion()" (cargarResto)="cargarResto()" /> }
   @if (esApi()) { @if (esReplay()) { <app-filtros [replay]="true" [paises]="paises()" [referencia]="ventana()" (aplicado)="aplicarFiltros($event)" /> } @else { <app-filtros [paises]="paises()" [referencia]="ventana()" (aplicado)="aplicarFiltros($event)" /> } }
   <div class="mapa-envoltorio">

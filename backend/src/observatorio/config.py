@@ -2,7 +2,7 @@
 
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -66,6 +66,16 @@ def _entero(nombre: str, defecto: int, minimo: int = 1) -> int:
         raise ConfigError(f"{nombre} debe ser un entero, no {texto!r}") from None
     if valor < minimo:
         raise ConfigError(f"{nombre} debe ser >= {minimo}, no {valor}")
+    return valor
+
+
+def _clave_acceso() -> str | None:
+    """API_CLAVE_ACCESO (F6, FR-041): vacía = sin protección; si existe, >= 32 caracteres de [A-Za-z0-9_-]. El mensaje de error NO repite el valor."""
+    valor = os.environ.get("API_CLAVE_ACCESO", "").strip()
+    if not valor:
+        return None
+    if len(valor) < 32 or not re.fullmatch(r"[A-Za-z0-9_-]+", valor):
+        raise ConfigError("API_CLAVE_ACCESO debe tener al menos 32 caracteres de [A-Za-z0-9_-] (la genera scripts/f6/preparar_api_publica.sh --aplicar)")
     return valor
 
 
@@ -188,6 +198,8 @@ class ConfigApi:
     obsoleta_s: int  # antigüedad de la última ingesta a partir de la cual /api/salud marca stale (DF4)
     statement_timeout_s: int  # tiempo máximo de cada consulta; al superarlo la API responde 503
     margen_publicacion_s: int  # margen del motivo «hasta_ahora» de la comparación (a confirmar con medidas reales)
+    docs_habilitadas: bool = True  # F6: False oculta /docs, /redoc y /openapi.json (API publicada por el túnel); por defecto, como en F5
+    clave_acceso: str | None = field(default=None, repr=False)  # F6 (FR-041): si existe, /api/* exige la cabecera X-Observatorio-Clave; None = sin protección (local). Nunca en repr ni en registros
 
     @classmethod
     def desde_entorno(cls) -> "ConfigApi":
@@ -197,6 +209,8 @@ class ConfigApi:
             obsoleta_s=_entero("INGESTA_OBSOLETA_S", 300),
             statement_timeout_s=_entero("API_STATEMENT_TIMEOUT_S", 10),
             margen_publicacion_s=_entero("API_MARGEN_PUBLICACION_S", 900, minimo=0),
+            docs_habilitadas=_booleano("API_DOCS", True),
+            clave_acceso=_clave_acceso(),
         )
 
 

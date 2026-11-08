@@ -31,9 +31,10 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
     .modo { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 0 0 20px; }
     h2 { margin: 0 0 8px; font-size: 1.1rem; }
     .opciones { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 24px; padding: 2px 0; }
+    input[type="radio"] { width: 24px; height: 24px; margin: 0; flex: none; }
     .insignia { margin: 12px 0 6px; padding: 6px 10px; background: #5b21b6; color: white; display: inline-block; border-radius: 4px; }
-    dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 6px 18px; margin: 6px 0 0; font-size: .85rem; }
+    dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 6px 18px; margin: 6px 0 0; font-size: .85rem; }
     dl div { display: flex; flex-direction: column; }
     dt { font-weight: 700; color: #42596b; } dd { margin: 0; overflow-wrap: anywhere; }
     .aviso { font-size: .85rem; background: #f3e8ff; border-left: 3px solid #5b21b6; margin: 10px 0 0; padding: 8px 10px; color: #3b0764; }

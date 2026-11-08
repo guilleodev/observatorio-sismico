@@ -66,7 +66,7 @@ import { DISTINTIVO_CASO } from '../modo';
     .tabla { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 20px 0; }
     h2 { margin: 0 0 10px; font-size: 1.1rem; }
     .barra { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: end; }
-    label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; font-weight: 600; min-width: 280px; }
+    label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; font-weight: 600; min-width: min(280px, 100%); }
     input { font: inherit; font-weight: 400; padding: 6px 8px; border: 1px solid #9fb3c0; border-radius: 4px; }
     .resumen { margin: 0; font-size: .85rem; color: #42596b; }
     .desplazable { overflow: auto; max-height: 520px; margin-top: 10px; border: 1px solid #c3d0da; }

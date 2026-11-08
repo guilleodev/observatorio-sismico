@@ -1,0 +1,93 @@
+# 6.6 FR-041 - clave de acceso de la API: pruebas y verificaciones 2026-11-08T18:25:50Z
+
+Implementación: backend/src/observatorio/api/main.py (middleware con hmac.compare_digest; 401 {error: no_autorizado}; CORS por fuera: el preflight no pide clave ni da datos y el 401 lleva el origen CORS), config.py (API_CLAVE_ACCESO >= 32 caracteres [A-Za-z0-9_-], fuera del repr), frontend (acceso.component.ts, api.service.ts: cabecera X-Observatorio-Clave, solo en memoria).
+Pruebas primero: backend/tests/unit/test_acceso_api.py y frontend/tests/acceso.test.ts se comprobaron en ROJO (ImportError por CABECERA_CLAVE) antes de implementar.
+
+## Pruebas de backend (acceso autorizado, denegado, aislamiento live/replay, CORS, fugas, configuración)
+test_acceso_api.py: 76 passed; conjunto api|cors|config|aislamiento|acceso: 499 correctas
+## Pruebas de frontend: acceso.test.ts 8 pruebas; node --test: 130 correctas (122 previas + 8); npm run build correcto
+
+## Integración sobre una API TEMPORAL con datos reales de solo lectura y clave aleatoria de la ejecución (scripts/f6/verificar_acceso_api.py)
+# 6.6 FR-041 - verificación de la clave de acceso (API temporal; clave aleatoria de esta ejecución, no la real)
+
+## 1. Sin clave o con clave incorrecta: 401 y sin datos
+  OK    /api/salud: sin clave 401, mala 401 
+  OK    /api/eventos: sin clave 401, mala 401 
+  OK    /api/estadisticas: sin clave 401, mala 401 
+  OK    /api/eventos?mode=replay: sin clave 401, mala 401 
+  OK    /api/estadisticas?mode=replay: sin clave 401, mala 401 
+  OK    /api/salud?mode=replay: sin clave 401, mala 401 
+  OK    /api/eventos?mode=otro: sin clave 401, mala 401 
+  OK    /api/eventos?mode=live&run=x: sin clave 401, mala 401 
+  OK    la clave en la URL no vale 
+  OK    la clave en Authorization/Cookie no vale 
+  OK    POST sin clave -> 401 
+  OK    PUT sin clave -> 401 
+  OK    DELETE sin clave -> 401 
+
+## 2. Con la clave: funciona, también live frente a replay
+  OK    live: 200 y mode=live 
+  OK    replay: 200, mode=replay y ejecución de replay (r-f6-prueba-b)
+  OK    aislamiento: 0 ids de replay en live (live 206, replay 35)
+  OK    estadísticas de replay: comparación «no aplica» 
+  OK    parámetro inválido con clave -> 422 
+  OK    salud de replay con bloque replay 
+  OK    gzip con clave (10847 B)
+
+## 3. CORS: preflight sin clave y sin datos; el 401 legible desde el panel
+  OK    preflight de Netlify con la cabecera de clave -> 200 sin cuerpo de datos 
+  OK    preflight de otro origen -> 400 
+  OK    el 401 lleva el origen exacto de Netlify (el panel puede leerlo y pedir la clave) 
+  OK    el 401 a un origen ajeno no lleva cabecera CORS 
+
+## 4. Documentación y rutas
+  OK    /docs -> 404 
+  OK    /redoc -> 404 
+  OK    /openapi.json -> 404 
+  OK    /docs/oauth2-redirect -> 404 
+  OK    / -> 404 
+  OK    /admin -> 404 
+  OK    /metrics -> 404 
+  OK    /.env -> 404 
+  OK    /api -> 404 (bajo /api/ sin clave se contesta 401: no se revela qué rutas existen)
+  OK    /api/otro -> 401 (bajo /api/ sin clave se contesta 401: no se revela qué rutas existen)
+
+## 5. La clave no se filtra
+  OK    la clave (completa ni su prefijo) no aparece en el registro del servidor, salvo en la línea de la sonda que la puso a propósito en la URL (52 líneas; 1 de la sonda de URL, excluida)
+  OK    el registro de accesos no contiene la cabecera 
+
+RESULTADO: OK
+
+## Mutaciones (scripts/f6/mutaciones_clave.py)
+# Mutaciones de la clave de acceso (backend)
+  DETECTADA la protección se desactiva
+  DETECTADA la comparación acepta cualquier clave
+  DETECTADA la comparación no es en tiempo constante (==)
+  DETECTADA solo se protege /api/eventos
+  DETECTADA el rechazo es 403 en vez de 401
+  DETECTADA el middleware queda por fuera de CORS (el preflight daría 401)
+  DETECTADA CORS no admite la cabecera de la clave
+  DETECTADA la clave sale en el repr de la configuración
+  DETECTADA se acepta una clave débil
+  DETECTADA el error de configuración repite el valor
+restaurado: OK | mutaciones: 10 | detectadas: 10 | supervivientes: ninguna
+# Mutaciones de la clave de acceso (frontend)
+  DETECTADA la clave no se envía en la cabecera
+  DETECTADA la clave viaja en la URL
+  DETECTADA el 401 se trata como error de servidor
+  DETECTADA la clave rechazada no se olvida
+  DETECTADA la clave se guarda en sessionStorage
+  DETECTADA el campo no es de tipo contraseña
+  DETECTADA sin clave se reintenta en bucle
+  DETECTADA el aviso de acceso se confunde con una caída
+restaurado: OK | mutaciones: 8 | detectadas: 8 | supervivientes: ninguna
+
+## Panel en el navegador integrado contra una API temporal con clave (contenedor api-clave-f6-temp en 127.0.0.1:8101, eliminado; clave de prueba aleatoria, borrada)
+- Sin clave: el panel muestra «Acceso restringido a la API», el campo (type=password, autocomplete=off), el aviso (role=alert) «La API exige una clave de acceso…», estado general «Acceso restringido: falta la clave de acceso», 0 eventos y NO reintenta en bucle.
+- Clave incorrecta: «La clave no es correcta. Inténtalo de nuevo.», el campo se vacía, sigue sin datos.
+- Clave correcta: desaparece el formulario, «Datos al día», 206 eventos (mapa = tabla = estadísticas). Cambiar a REPRODUCCIÓN: «REPRODUCCIÓN · ejecución r-f6-prueba-b …», 35 eventos; volver a vivo: 206, sin etiquetas ni restos.
+- «Actualizar ahora»: las tres peticiones (salud, eventos, estadísticas) llevan la cabecera de la clave (comprobado interceptando fetch).
+- Memoria solamente: localStorage 0, sessionStorage 0, cookies 0 y la clave no aparece en el HTML tras enviarla.
+- Hallazgo corregido durante la prueba: en REPRODUCCIÓN sin clave el rótulo decía «sin ejecuciones» (no se sabía); ahora dice «REPRODUCCIÓN · acceso restringido (falta la clave)».
+## Qué NO se ha verificado todavía
+La API REAL sigue sin clave y con el código anterior: se aplica con scripts/f6/preparar_api_publica.sh --aplicar (PA-3, pendiente de autorización). Nada de esto se ha probado a través de ngrok (túnel cerrado).

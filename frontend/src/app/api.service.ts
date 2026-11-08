@@ -3,6 +3,9 @@
 // cabecera `ngrok-skip-browser-warning`) y añade errores tipados, carga de todas las páginas de un periodo y descarte de respuestas tardías.
 import type { Estadisticas, EventosCompletos, RespuestaEventos, Salud, TipoError } from './modelos';
 
+/** F6 (FR-041): cabecera con la clave de acceso de la API publicada. Solo cabecera: nunca en la URL. */
+export const CABECERA_CLAVE = 'X-Observatorio-Clave';
+
 export class ErrorApi extends Error {
   tipo: TipoError;
   estado?: number;
@@ -26,6 +29,7 @@ export class ApiService {
   private readonly fetchFn: typeof fetch;
   private readonly maxPaginas: number;
   private generadoEnSalud?: boolean; // undefined = aún no sondeado
+  private clave: string | null = null; // F6: SOLO en memoria; se pierde al recargar y nunca se guarda ni se registra
 
   constructor(apiUrl: string, opciones: OpcionesApi = {}) {
     this.base = apiUrl.replace(/\/$/, '');
@@ -35,12 +39,22 @@ export class ApiService {
     this.maxPaginas = opciones.maxPaginas ?? 20;
   }
 
+  /** Fija (o olvida, con null) la clave de acceso que se enviará en la cabecera de todas las peticiones. */
+  establecerClave(clave: string | null): void {
+    this.clave = clave && clave.trim() !== '' ? clave.trim() : null;
+  }
+
+  tieneClave(): boolean {
+    return this.clave !== null;
+  }
+
   /** GET de una ruta de la API con parámetros; devuelve el JSON o lanza `ErrorApi` (422 → validacion, 5xx/4xx → servidor, sin respuesta → red/tiempo). */
   async obtener<T>(ruta: string, params: Record<string, string> = {}, externa?: AbortSignal): Promise<T> {
     const consulta = new URLSearchParams(params).toString();
     const url = `${this.base}${ruta}${consulta ? `?${consulta}` : ''}`;
     const headers: Record<string, string> = {};
     if (this.omitirAvisoNgrok) headers['ngrok-skip-browser-warning'] = '1';
+    if (this.clave !== null) headers[CABECERA_CLAVE] = this.clave;
     const señales = [AbortSignal.timeout(this.timeoutMs)];
     if (externa) señales.push(externa);
     let respuesta: Response;
@@ -138,6 +152,7 @@ export class ApiService {
       const cuerpo = await respuesta.json();
       detalle = typeof cuerpo?.detail === 'string' ? cuerpo.detail : undefined;
     } catch { /* cuerpo no JSON: se informa solo del código */ }
+    if (respuesta.status === 401) return new ErrorApi('autorizacion', 'La API exige una clave de acceso válida (401).', 401, detalle);
     if (respuesta.status === 422) return new ErrorApi('validacion', detalle ?? 'La API rechazó los filtros (422).', 422, detalle);
     return new ErrorApi('servidor', respuesta.status === 503 ? 'La API no puede consultar su base de datos (503).' : `Error HTTP ${respuesta.status} de la API.`, respuesta.status, detalle);
   }

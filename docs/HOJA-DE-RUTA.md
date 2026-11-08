@@ -188,7 +188,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §8, `CONTRATO-API.md`): filtros `start`, `end`, `min_mag` y `country_id` coherentes entre mapa y gráficos; la magnitud nula no cumple `min_mag` y se cuenta aparte; `truncated` con paginación y sin estadísticas globales sobre una muestra truncada; estadísticas con periodo, filtros, unidad y registros sin valor; comparación histórica con el mismo filtro y días con cero eventos en el denominador; agregaciones calculadas desde el estado actual, no con contadores por mensaje; error explícito si la base falla; panel de estado con último acceso a la API, última ingesta y aviso de datos desactualizados; tabla consultable como alternativa al mapa; primeras mediciones de consultas con y sin índice.
 
-### F6 — Replay, pruebas y despliegue · SDD aprobado el 2026-11-08 (`specs/005-replay-despliegue-final/`); preparación T001–T002 hecha; DG10 aprobada y constitución v1.0.4 aplicada; 6.1, 6.2 y 6.3 hechos (6.3 aprobada); 6.4 aprobada; 6.5 hecha (a falta de la revisión humana y de los datos de costes)
+### F6 — Replay, pruebas y despliegue · SDD aprobado el 2026-11-08 (`specs/005-replay-despliegue-final/`); preparación T001–T002 hecha; DG10 aprobada y constitución v1.0.4 aplicada; 6.1, 6.2 y 6.3 hechos (6.3 aprobada); 6.4 aprobada; 6.5 hecha (a falta de la revisión humana y de los datos de costes); 6.6 hecha (publicada y verificada; ngrok cerrado); 6.7 hecha (T053 superada con limitaciones: Narrador en Edge 157, 14 pasos; Chrome real informado)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -197,9 +197,9 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 | 6.3 | Ejecutar pruebas integradas y de aceptación del profesor | ✅ (a falta de la revisión humana) |
 | 6.4 | Medir tiempo y memoria con tres tamaños de datos | ✅ mediciones hechas; umbrales propuestos pendientes de confirmar |
 | 6.5 | Comparar búsqueda secuencial/diccionario y SQL con/sin índice | ✅ análisis hecho; datos de costes pendientes de la persona estudiante |
-| 6.6 | Configurar ngrok, desplegar Angular en Netlify y verificar acceso (preparación local primero; publicar solo tras autorización) | ⬜ |
-| 6.7 | Accesibilidad, diseño responsive y compatibilidad del panel | ⬜ |
-| 6.8 | Estabilidad, recuperación y persistencia sin operaciones destructivas | ⬜ |
+| 6.6 | Configurar ngrok, desplegar Angular en Netlify y verificar acceso (preparación local primero; publicar solo tras autorización) | ✅ publicado y verificado (Netlify + ngrok + clave de acceso); ngrok cerrado; falta probar desde otro dispositivo |
+| 6.7 | Accesibilidad, diseño responsive y compatibilidad del panel | ✅ hecho y corregido; T053 superada con limitaciones (Narrador+Edge, 14 pasos; Chrome real informado) |
+| 6.8 | Estabilidad, recuperación y persistencia sin operaciones destructivas | 🟡 parcial: ensayos stop/start de los 5 servicios y estabilidad 60 min superados; pendientes T060 (reinicio de Docker/PC) y T063 (down/up, opcional) |
 | 6.9 | Entregables, reproducibilidad y cierre de F6 | ⬜ |
 | 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ⬜ pendiente |
 

@@ -1,0 +1,56 @@
+# Ensayo de parada/arranque de 'consumer' · 2026-11-08T19:43:09Z · parado ≈ 180 s
+## ANTES
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=961 versiones=945 cuarentena=16 | offset/final/lag=971/971/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=631 | versiones=945 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+versiones=945 publicadas=961 actuales=631 · contenedor consumer=81212326a3f3 (arrancado 2026-11-08T17:38:08.991715171Z)
+  OK    condiciones previas: cinco servicios healthy, lag 0, reconciliación 0, 0 offsets duplicados
+## PARADA (19:43:42)
+ Container observatorio-consumer-1 Stopped 
+estado: consumer=exited
+  [19:44:06] publicadas=961 versiones=945 offset/final/lag=971/971/0  · API sin clave: HTTP 401
+  [19:44:54] publicadas=961 versiones=945 offset/final/lag=971/971/0  · API sin clave: HTTP 401
+  [19:45:42] publicadas=961 versiones=945 offset/final/lag=971/971/0  · API sin clave: HTTP 401
+  [19:46:30] publicadas=961 versiones=945 offset/final/lag=971/971/0  · API sin clave: HTTP 401
+## DURANTE (última muestra)
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=961 versiones=945 cuarentena=16 | offset/final/lag=971/971/0
+## ARRANQUE (19:47:26)
+ Container observatorio-consumer-1 Started 
+  consumer healthy tras 10 s aprox. · api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+## DRENADO del lag
+  lag 0 y reconciliación 0 tras ≈ 10 s: offset/final/lag=971/971/0
+## DESPUÉS
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=962 versiones=946 cuarentena=16 | offset/final/lag=972/972/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+contenedores (servicio=id): api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+live: eventos actuales=631 | versiones=946 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+versiones=946 publicadas=962 actuales=631 (antes 945 / 961 / 631)
+## COMPROBACIONES
+  OK    reconciliación 0
+  OK    0 offsets duplicados
+  OK    0 filas actuales desfasadas
+  OK    lag 0
+  OK    el contenedor de consumer es el mismo (no se recreó)
+  OK    volúmenes de Kafka y PostgreSQL: mismos (nombre y fecha de creación)
+  OK    huellas de historico y sintetico idénticas
+  OK    esquema replay sin cambios
+  OK    live no pierde versiones, publicaciones ni eventos (solo puede crecer)
+  OK    no quedan mensajes publicados sin guardar (publicadas − versiones no crece)
+  OK    los cinco servicios healthy
+  OK    ningún contenedor se reinició solo (RestartCount 0)
+  OK    la API sigue protegida (sin clave: 401)
+
+RESULTADO: OK

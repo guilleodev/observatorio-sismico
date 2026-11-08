@@ -1,0 +1,18 @@
+# 6.8 T062 · recuperación de huecos, SOLO LECTURA 2026-11-08T19:37:18Z
+Contenedor de pruebas temporal (--rm); --listar solo lee la base; --simular consulta a USGS y cuenta sin publicar ni modificar nada (si no hay huecos pendientes, no hay nada que simular).
+## recuperar --listar
+huecos pendientes: 0
+## recuperar --simular
+sin huecos pendientes: nada que recuperar
+## huecos registrados en live.hueco (SELECT)
+ninguno registrado
+## datos de la ingesta: consultas correctas 1464, la más antigua 2026-11-05 20:25:32.482+00
+
+## Revisión de docs/evidencias/f4/procedimiento-hueco.md (sin modificarlo)
+El procedimiento sigue vigente: la detección es automática (el productor anota en live.hueco un intervalo cuando pasan más de 24 h − HUECO_MARGEN_S entre dos consultas correctas, no en modo seco ni en la primera consulta) y la recuperación es SIEMPRE a demanda
+(`recuperar --listar` → `--simular` → `recuperar`), con consumidor y Kafka en marcha y lag 0; omite solo versiones ya GUARDADAS y entra por el canal real con source usgs-fdsn-recuperacion. Ninguna orden borra datos ni recrea Kafka.
+Cambios de F6 que no lo afectan: API con clave de acceso (la recuperación no pasa por la API), imágenes de consumer y producer renovadas (mismo código propio).
+Datos del sistema: 1 464 consultas correctas desde 2026-11-05 20:25 UTC; 0 huecos registrados.
+
+## Conclusión (FR-018)
+`--listar` y `--simular` funcionan en solo lectura y confirman 0 huecos pendientes. La recuperación de un hueco REAL de USGS NO se ha ejecutado (no hay ninguno): sigue siendo **reserva**, respaldada por las pruebas de F4 (docs/evidencias/f4/) y el procedimiento; consta como tal y no se declara probada en producción.

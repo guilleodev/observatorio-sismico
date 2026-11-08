@@ -147,13 +147,16 @@ services:
       INGESTA_OBSOLETA_S: ${INGESTA_OBSOLETA_S:-300}
       API_STATEMENT_TIMEOUT_S: ${API_STATEMENT_TIMEOUT_S:-10}
       API_MARGEN_PUBLICACION_S: ${API_MARGEN_PUBLICACION_S:-900}
+      API_CLAVE_ACCESO: ${API_CLAVE_ACCESO:-}  # F6 (FR-041): vacía = sin protección (local); con valor, /api/* exige la cabecera X-Observatorio-Clave
+      API_DOCS: ${API_DOCS:-true}  # F6: false oculta /docs, /redoc y /openapi.json (API publicada por el túnel)
     ports:
       - "127.0.0.1:${API_PUERTO:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/salud', timeout=3)"]
+      # F6 (FR-041): con la clave de acceso activa /api/salud responde 401 sin ella; el healthcheck usa la clave del propio entorno del contenedor (no se imprime)
+      test: ["CMD", "python", "-c", "import os, urllib.request; r = urllib.request.Request('http://localhost:8000/api/salud'); k = os.environ.get('API_CLAVE_ACCESO'); k and r.add_header('X-Observatorio-Clave', k); urllib.request.urlopen(r, timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 10

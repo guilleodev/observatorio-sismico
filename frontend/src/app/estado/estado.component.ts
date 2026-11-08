@@ -45,7 +45,7 @@ import type { EjecucionReplay } from '../modelos';
     .general { margin: 0 0 10px; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
     .punto { width: 12px; height: 12px; border-radius: 50%; background: #64748b; display: inline-block; }
     .ok .punto { background: #15803d; } .desact .punto { background: #c2410c; } .sin .punto { background: #b91c1c; }
-    dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 6px 18px; margin: 0; font-size: .85rem; }
+    dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 6px 18px; margin: 0; font-size: .85rem; }
     dl div { display: flex; flex-direction: column; }
     dt { font-weight: 700; color: #42596b; } dd { margin: 0; overflow-wrap: anywhere; }
     .aviso { margin: 10px 0 0; padding: 8px 10px; font-size: .88rem; background: #fff7e0; border-left: 3px solid #e8a317; color: #4a3b0a; }

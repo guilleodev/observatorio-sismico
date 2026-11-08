@@ -1,0 +1,34 @@
+# 6.8 T056 · línea base previa a los ensayos 2026-11-08T19:36:04Z
+== invariantes [linea-base-6.8] 2026-11-08T19:36:06Z ==
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=957 versiones=941 cuarentena=16 | offset/final/lag=967/967/0
+geo: reparto live=interior=517, sin_pais=111 | incoherentes=0
+historico: consultas=12 ok=12 eventos=18302 cuarentena=0 archivos=12
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+exportados: 12 archivos | sha256sum -c: fallos=0 | md5(SHA256SUMS)=6d84665df4b23adbeff4cb052d776542
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+== estado del sistema [linea-base-6.8] 2026-11-08T19:36:17Z ==
+contenedores (servicio=id): api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+imágenes en uso (contenedor=imagen): api=sha256:b01d21a40b6e97db19ba073cc22e9130423b9f1f039a59f59aa9c454f1d11887 consumer=sha256:7315878924492e3a28ec6882ed019b0c7597a3322411e02a7d6ba32b47b5591e kafka=sha256:852a0d49fc4e656b022e7f23785411802c9a088c78a7c5e39f33
+volúmenes (nombre=creado): observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+puertos publicados en el equipo: api=127.0.0.1:8000->8000/tcp 
+esquemas presentes: geo,historico,live,replay,sintetico
+live: eventos actuales=628 | versiones=941 | cuarentena=16 | huecos pendientes=0
+live: modos distintos de live=0 | filas de prueba (prueba-%)=0
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2
+bases temporales (obs_*): 0
+contenedores temporales (api-f5, *-f6-*, limpio): 0
+topics distintos de los permanentes: 
+grupos distintos de los permanentes: 
+topics presentes: __consumer_offsets terremotos.live terremotos.replay 
+
+## memoria y estado de los contenedores (docker stats, una muestra)
+observatorio-api-1 CPU=2.49% MEM=45.82MiB / 15.15GiB reinicios=2pids
+observatorio-producer-1 CPU=0.00% MEM=33.71MiB / 15.15GiB reinicios=2pids
+observatorio-consumer-1 CPU=2.27% MEM=41.1MiB / 15.15GiB reinicios=17pids
+observatorio-postgres-1 CPU=0.07% MEM=143MiB / 15.15GiB reinicios=10pids
+observatorio-kafka-1 CPU=60.54% MEM=1.079GiB / 15.15GiB reinicios=144pids
+reinicios de Docker por contenedor (RestartCount): api=0 consumer=0 kafka=0 postgres=0 producer=0 
+inicio de cada contenedor: api=2026-11-08T18:32:03.768325296Z consumer=2026-11-08T17:38:08.991715171Z kafka=2026-11-08T08:54:49.578350644Z postgres=2026-11-08T08:54:49.575457999Z producer=2026-11-08T17:38:23.171160866Z 
+API protegida: sin clave -> HTTP 401
+ngrok: 0 procesos; túnel público -> HTTP 404

@@ -1,0 +1,25 @@
+# Guion de accesibilidad: teclado y lector de pantalla (F6 · 6.7 · T049)
+
+Para ejecutar **tú** (T053) con NVDA (Windows, gratuito) o Narrador (`Win + Ctrl + Intro`), y con el teclado solo. Anota en `6.7-lector.md` lo que **observas** en la columna «Observado»; si no puedes hacerlo, queda como pendiente.
+Preparación: `docker compose ps` con los cinco servicios `healthy`; abre `http://localhost:4200` (`cd frontend && npm start`) en Chrome o Edge; ratón guardado. Haz el recorrido en **modo en vivo** y repítelo en **REPRODUCCIÓN** (pasos 3, 5–9).
+Teclas: `Tab` / `Mayús+Tab` mueven el foco; `Intro` o `Espacio` activan; flechas cambian de opción en los botones de radio; `Insert+F7` (NVDA) lista encabezados y regiones; `H` salta por encabezados en modo exploración.
+
+| # | Qué haces | Esperado (teclado) | Esperado (lector) | Observado |
+|---|---|---|---|---|
+| 1 | Carga la página; `Tab` una vez | El foco aparece visible (contorno azul de 3 px) en el primer control. No hay trampas de foco | Anuncia el título «Observatorio sísmico», idioma español y un encabezado de nivel 1 «Observatorio de actividad sísmica» | |
+| 2 | Escucha la región de información | — | La región «info» (aria-live) anuncia el estado de la consulta («API accesible · consulta completada») sin que se mueva el foco | |
+| 3 | **Selector de modo**: `Tab` hasta «Modo de datos» y cambia con las flechas a «REPRODUCCIÓN» | Un solo `Tab` entra en el grupo; las flechas cambian entre «En vivo (USGS)» y «REPRODUCCIÓN (histórico acelerado)»; el cambio lanza la consulta | Anuncia «grupo de opciones Modo de datos», cada opción y su estado marcado/no marcado; tras elegir REPRODUCCIÓN anuncia «Modo REPRODUCCIÓN: datos históricos reproducidos, no actividad actual» | |
+| 4 | Vuelve a «En vivo» | Los datos se sustituyen por los de vivo; no queda nada de la reproducción | Anuncia «Modo en vivo: datos actuales de USGS» | |
+| 5 | **Estado del sistema**: recorre sus datos y avisos | Los botones («Cargar el resto…» si aparece) se activan con `Intro` | Lee «Estado del sistema» (H2), la línea general («Datos al día» / «Reproducción histórica (no es actividad actual)»), las parejas término/definición y los avisos como alerta (errores) o estado (resto) | |
+| 6 | **Filtros**: `Tab` por Periodo, Desde, Hasta, Magnitud mínima, País, «Aplicar filtros», «Restablecer» | Orden lógico; «Desde/Hasta» solo se habilitan con «Personalizado»; `Intro` en «Aplicar» consulta | Cada campo se anuncia con su etiqueta; un error de validación se anuncia como alerta; en REPRODUCCIÓN la primera opción dice «Toda la ejecución» | |
+| 7 | **«Actualizar ahora»** | Se activa con `Intro`/`Espacio`; se deshabilita mientras carga | Anuncia el botón y el texto «Actualización automática cada … Puedes actualizar a mano» | |
+| 8 | **Mapa**: `Tab` por los controles de Leaflet (zoom +/−, capas, enlaces de atribución) | Los controles se activan con teclado; los círculos del mapa NO son enfocables (el mapa no es operable con teclado: la tabla es la alternativa) | Anuncia «Mapa interactivo de terremotos»; no lee los eventos uno a uno: debe llevarte a la tabla | |
+| 9 | **Gráficas** (cuatro) | Cada una tiene una región desplazable enfocable (`Tab`) y un «Ver los datos como tabla» con `Intro` | Lee el título, la descripción, «Registros sin valor: n» y, al abrir la tabla de datos, cada valor | |
+| 10 | **Comparación con 2025** | — | Lee el título (H2), el ámbito, la tabla con su encabezado (concepto/valor/fuente) y los avisos. En REPRODUCCIÓN lee el aviso «no aplica en una reproducción» | |
+| 11 | **Tabla de terremotos**: busca un lugar; ordena con los encabezados; pagina; elige una fila | `Intro` en un encabezado ordena y cambia `aria-sort`; el botón de la fila la selecciona (`aria-pressed`) y el mapa se centra y abre su ficha; paginación con «Anterior/Siguiente» | Anuncia «Tabla de terremotos» (en REPRODUCCIÓN con la etiqueta), el número de resultados («n de m») como estado, el orden y qué fila está seleccionada. «sin valor» (nunca 0) en datos ausentes | |
+| 12 | **Casos controlados** (solo REPRODUCCIÓN) | — | En la tabla se lee «caso controlado / sintético: <caso>» junto al lugar | |
+| 13 | **Zoom al 200 %** (`Ctrl +` hasta 200 %) y al 400 % (ancho equivalente a 320 px) | No aparece desplazamiento horizontal de la PÁGINA (solo dentro de la tabla y las gráficas, con foco por teclado); nada se corta | — | |
+| 14 | **Solo teclado, sin ratón**: ¿puedes hacer TODO lo anterior? | Sí, salvo seleccionar un círculo del mapa (alternativa: la fila de la tabla) | — | |
+
+Criterio de aceptación (T053): los pasos 1–12 se pueden completar y entender solo con el lector; las desviaciones se anotan con el paso y lo que oíste. Lo que no puedas probar (Firefox, un móvil con TalkBack/VoiceOver) consta como pendiente.
+Qué cubre ya el script de `6.7-responsive.txt` (sin lector): nombres accesibles de los 64 controles, contraste del texto, objetivos de 24 px, tablas con título y encabezados con alcance, SVG con título, regiones activas (6). No lo sustituye: no puede decir qué oye una persona.

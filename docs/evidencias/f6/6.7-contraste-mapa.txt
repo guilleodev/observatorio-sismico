@@ -1,0 +1,28 @@
+# 6.7 T051 - contraste de la capa del mapa · 2026-11-08
+Método (scripts/f6/a11y_dom.js → __contrasteMapa): se descargan con fetch CORS los teselados de OpenStreetMap que el mapa ya muestra (12 a 1440 px de ancho, 6 en móvil), se muestrean sus píxeles (112 356 en escritorio) y se calcula la razón de contraste WCAG de cada color de la leyenda
+(relleno al 75 % de opacidad mezclado con el fondo, y borde sólido) frente a ellos. Criterio WCAG 1.4.11 (elementos gráficos): 3:1. A zoom 2 el fondo es mar (170,211,223) en el 66-71 % de los píxeles y tierra (242,239,233) en el 25-29 %; el resto son 36 colores con <= 0,4 % cada uno.
+
+## ANTES (estado F5/F6.6: borde del mismo color que el relleno, 1 px)
+| Elemento (color) | Relleno frente al fondo (mín.) | Borde frente al fondo (mín.) | Píxeles bajo 3:1 (relleno) |
+|---|---|---|---|
+| < 70 km (#e8a317), el más frecuente | 1,29:1 | 1,35:1 | 100 % |
+| 70–299 km (#e35b37) | 1,95:1 | 2,25:1 | 100 % |
+| >= 300 km (#7b3fb6) | 2,84:1 | 4,06:1 | 72 % |
+| sin profundidad (#64748b) | 2,18:1 | 2,97:1 | 100 % |
+| fronteras (#334155) | 6,46:1 | 6,46:1 | 0 % |
+| selección (#111827, 4 px) | 11,06:1 | — | 0 % |
+Hallazgo H4: los círculos amarillos y naranjas (los de menos de 300 km, casi todos los eventos) quedaban casi invisibles frente al mar o la tierra (1,3:1 a 2,3:1), muy por debajo de 3:1; el color por sí solo no bastaba.
+
+## Corrección (T054)
+Se mantienen el color de relleno por profundidad, el tamaño por magnitud y la opacidad del 75 % (diseño original) y se añade un borde oscuro #1f2937 de 1,5 px (`estiloCirculo` en formato.ts). La selección conserva su borde #111827 de 4 px (más grueso y oscuro).
+DESPUÉS: borde #1f2937 frente al fondo: 9,15:1 (mínimo; 100 % de los píxeles muestreados >= 3:1) sobre mar y tierra. La forma de cada evento se distingue; las fronteras ya cumplían (6,46:1).
+
+## Lo que sigue dependiendo solo del color (y su alternativa en texto)
+- La CLASE de profundidad (< 70 km / 70–299,99 km / >= 300 km) se codifica solo con el color de relleno. Ese relleno amarillo/naranja sigue sin llegar a 3:1 frente al mar: el borde garantiza la forma, no la distinción entre clases.
+  Alternativas con la MISMA información: columnas «Clase de profundidad» y «Profundidad (km)» de la tabla; la ficha del evento («Profundidad: 35 km»); la gráfica «Distribución de la profundidad (km)» con su tabla de datos; y la leyenda con el texto de cada clase (los emojis son decorativos).
+- El tamaño por magnitud (radio 3–18 px) es forma, no color; la magnitud numérica está en la ficha y en la tabla. «Sin magnitud» usa radio mínimo y gris, con «sin valor» en texto.
+- En REPRODUCCIÓN, el distintivo «caso controlado / sintético» y la etiqueta de ejecución son texto (mapa, ficha, tabla); no dependen del color.
+- El mapa (Leaflet) tiene etiqueta accesible `aria-label="Mapa interactivo de terremotos"` pero no es operable con lector de pantalla: la tabla es la vía equivalente (ENUNCIADO §8.7).
+
+## Limitaciones
+Se mide el relleno contra los píxeles del teselado, no contra la imagen compuesta real (círculos superpuestos entre sí o sobre fronteras no se evalúan). Solo el nivel mundial del panel (zoom 2): con más zoom aparecen carreteras, bosques y otros fondos que no se muestrearon. El mapa base lo sirve OpenStreetMap y puede cambiar.

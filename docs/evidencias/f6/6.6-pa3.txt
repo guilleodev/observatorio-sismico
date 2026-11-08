@@ -1,0 +1,52 @@
+# 6.6 T047 · PA-3 aplicado 2026-11-08T18:32:25Z
+## Incidencias reales del proceso (sin ocultar)
+1) Primer intento: api NO recuperó 'healthy' porque el healthcheck de Compose llamaba a /api/salud sin clave y recibía 401. El script aplicó la vuelta atrás automática (.env restaurado, imagen anterior): cinco servicios healthy, sin pérdida de datos. Corrección: el healthcheck envía la clave del propio entorno del contenedor (compose.yaml) y el script comprueba que lo hace.
+2) Segundo intento: la api quedó healthy y los 401 se verificaron, pero curl (Windows) no podía leer los archivos temporales con ruta MSYS (-H @/tmp/...) y 7 comprobaciones fallaron por el entorno de prueba, no por la API. El script volvió a deshacer. Corrección: rutas con cygpath -m.
+3) Tercer intento: correcto (abajo).
+
+# API pública (PA-3) · APLICAR · 2026-11-08T18:32:00Z
+## Requisitos
+  OK    .env ignorado por Git
+  OK    los cinco servicios healthy
+  OK    existe la imagen actual (observatorio-backend:latest) para etiquetarla como vuelta atrás
+  OK    compose.yaml pasa API_CLAVE_ACCESO a la API y su healthcheck usa la clave (con la clave activa /api/salud da 401 sin ella)
+  OK    compose.yaml válido
+  --    CORS actual: http://localhost:4200 | API_DOCS actual: (sin definir: true) | clave de acceso: sin definir
+copia del .env: /c/Users/guill/.observatorio-backup/env-api-20261108-193201 · imagen anterior etiquetada: observatorio-backend:previo-f6-api
+clave nueva generada (no se muestra): está en el .env local y COPIADA AL PORTAPAPELES
+## Recreación de api (solo api)
+  OK    api healthy · api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+## Verificación contra la API recreada (la clave se lee del .env y viaja desde un archivo temporal, no por argumentos)
+  OK    sin clave: /api/salud -> 401
+  OK    sin clave: /api/eventos -> 401
+  OK    sin clave: /api/estadisticas -> 401
+  OK    sin clave: mode=replay -> 401
+  OK    sin clave: parámetro inválido -> 401 (no 422)
+  OK    clave incorrecta -> 401
+  OK    clave por la URL no vale -> 401
+  OK    clave correcta: /api/salud -> 200
+  OK    clave correcta: /api/eventos (live) -> 200
+  OK    clave correcta: mode=replay -> 200
+  OK    clave correcta: /api/estadisticas -> 200
+  OK    clave correcta + parámetro inválido -> 422
+  OK    preflight de Netlify sin clave -> 200
+  OK    preflight de otro origen -> 400
+  OK    el 401 lleva el origen CORS exacto de Netlify
+  OK    /docs oculta -> 404
+  OK    /redoc oculta -> 404
+  OK    /openapi.json oculta -> 404
+  OK    gzip activo en /api/eventos
+  OK    la clave no aparece en los registros de la API
+  OK    los cinco servicios healthy
+RESULTADO: OK
+
+## Servicios y volúmenes tras PA-3
+antes : api=dfe602629ecf consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+después: api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+(solo cambia api; kafka=8334b55b327c y postgres=046081f539aa, consumer=81212326a3f3 y producer=a08f771a27de conservan su contenedor)
+volúmenes: observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=937 versiones=921 cuarentena=16 | offset/final/lag=947/947/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+servicios: api:healthy consumer:healthy kafka:healthy postgres:healthy producer:healthy 
+replay: ejecuciones=2 | actuales=70 | versiones=74 | cuarentena=2

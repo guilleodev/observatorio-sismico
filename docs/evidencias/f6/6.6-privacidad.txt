@@ -1,0 +1,9 @@
+# 6.6 - privacidad del sitio de Netlify y decisión (2026-11-08)
+Línea base observada con una petición SIN sesión: GET https://observatorio-sismico.netlify.app/ -> HTTP 200, 541 bytes, «Observatorio sísmico · en preparación» (Cache-Status: Netlify Edge).
+Informado por la persona estudiante: en Project configuration → Visitor access su cuenta muestra «Password Protection → Upgrade to unlock». Decisión suya: no contratar ni cambiar el plan y no seguir investigando los planes de Netlify.
+Documentación consultada antes (no vinculante, la cuenta manda): la visibilidad «privada» y la contraseña compartida dependen del plan y de la antigüedad del equipo; no se usan.
+Resultado: el sitio es PÚBLICO. No se considera privado. Medidas adoptadas:
+ 1. El dashboard real NO se publica en Netlify hasta autorización expresa (el sitio solo contiene la página provisional, sin datos ni secretos).
+ 2. Los datos se protegen en la API con clave de acceso (FR-041; evidencias en 6.6-acceso-api.txt): aunque se publique el panel, sin la clave la API da 401 y el panel solo muestra el formulario de acceso.
+ 3. `noindex`/URL difícil NO se usan como protección. El túnel de ngrok permanece cerrado.
+No verificado: nada sobre el túnel real (cerrado) ni sobre el panel publicado (no existe).

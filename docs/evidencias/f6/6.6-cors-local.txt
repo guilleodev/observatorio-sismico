@@ -1,0 +1,72 @@
+# 6.6 T044 - verificación local previa a publicar (APIs temporales; la real no se toca)
+
+## 1. Preflight con Origin simulado (configuración pública: Netlify de ejemplo + localhost:4200)
+  OK    preflight desde https://sitio-de-ejemplo.netlify.app -> 200, allow-origin=https://sitio-de-ejemplo.netlify.app
+  OK      permite la cabecera ngrok-skip-browser-warning y solo GET/OPTIONS (https://sitio-de-ejemplo.netlify.app) 
+  OK    preflight desde http://localhost:4200 -> 200, allow-origin=http://localhost:4200
+  OK      permite la cabecera ngrok-skip-browser-warning y solo GET/OPTIONS (http://localhost:4200) 
+  OK    preflight rechazado desde https://otro.netlify.app -> 400
+  OK    preflight rechazado desde http://localhost:4201 -> 400
+  OK    preflight rechazado desde https://sitio-de-ejemplo.netlify.app.malo.com -> 400
+  OK    preflight rechazado desde http://sitio-de-ejemplo.netlify.app -> 400
+  OK    preflight rechazado desde null -> 400
+  OK    preflight rechazado desde * -> 400
+  OK    preflight de POST rechazado -> 400
+  OK    preflight con cabecera no declarada (authorization) rechazado -> 400
+  OK    GET real con Origin de Netlify lleva el origen exacto 
+  OK    GET real con un origen ajeno no recibe cabecera CORS (el navegador lo bloquea) (CORS no es autenticación: un cliente sin navegador, como curl, SÍ recibe los datos)
+  OK    POST /api/eventos -> 405 
+  OK    PUT /api/eventos -> 405 
+  OK    DELETE /api/eventos -> 405 
+
+## 2. Compresión HTTP sobre datos reales (API temporal, /api/eventos de las últimas 24 h y estadísticas)
+  OK    /api/eventos: sin compresión 57353 B, con gzip 10431 B (ahorro 82 %)
+  OK    /api/estadisticas: sin compresión 2904 B, con gzip 913 B (ahorro 69 %)
+  OK    /api/salud: sin compresión 187 B, con gzip 187 B (demasiado pequeña: no se comprime)
+  OK    el JSON descomprimido es idéntico al sin comprimir (203 eventos)
+  --    transferencia por refresco del panel: 59.0 KB sin comprimir → 11.3 KB con gzip (ahorro 81 %)
+
+## 3. Rutas que saldrían por el túnel
+  API de desarrollo (docs activas) · rutas de datos publicadas en OpenAPI: GET /api/estadisticas; GET /api/eventos; GET /api/salud
+  OK    /docs: desarrollo 200, pública 404 
+  OK    /redoc: desarrollo 200, pública 404 
+  OK    /openapi.json: desarrollo 200, pública 404 
+  OK    /docs/oauth2-redirect: desarrollo 200, pública 404 
+  OK    ruta inexistente / -> 404 
+  OK    ruta inexistente /admin -> 404 
+  OK    ruta inexistente /metrics -> 404 
+  OK    ruta inexistente /api -> 404 
+  OK    ruta inexistente /api/otro -> 404 
+  OK    ruta inexistente /.env -> 404 
+  OK    ruta inexistente /api/eventos/../.env -> 404 
+  OK    la API pública solo atiende 3 rutas 
+
+## 4. Errores sin filtrar información interna
+  OK    422 con {error, detail} y sin rutas internas, SQL ni credenciales -> {"error":"parametro_invalido","detail":"limit debe ser un entero, no 'abc'"}
+
+RESULTADO: OK
+
+## 5. Qué está publicado en el equipo (la API real no se ha tocado)
+docker compose ps (puertos): api=127.0.0.1:8000->8000/tcp consumer= kafka=9092/tcp postgres=5432/tcp producer= 
+servicios con puertos publicados: api  (esperado: solo api)
+sockets en escucha en el equipo para 8000/5432/9092/2181/9093:
+  127.0.0.1:8000 (PID 28164)
+intentos de conexión desde el equipo (127.0.0.1 y la IP local): 
+  127.0.0.1:8000 -> ACEPTA
+  127.0.0.1:5432 -> rechazada/sin respuesta
+  127.0.0.1:9092 -> rechazada/sin respuesta
+  192.168.1.149:8000 -> rechazada/sin respuesta
+  192.168.1.149:5432 -> rechazada/sin respuesta
+  192.168.1.149:9092 -> rechazada/sin respuesta
+(la API escucha solo en 127.0.0.1: desde la IP local debe rechazar el 8000; ngrok se conecta por 127.0.0.1)
+
+## 6. Protecciones y límites revisados
+- CORS: origen exacto de Netlify + http://localhost:4200, sin comodines (se valida al arrancar: un comodín, una ruta o una barra final hacen fallar el arranque). CORS NO es autenticación: protege al navegador del visitante,
+  no a la API; cualquiera con la URL del túnel (curl, otro script) recibe los mismos datos públicos. Aceptable aquí porque los datos son públicos de solo lectura y la API no tiene escritura, pero no es una protección frente al abuso.
+- Rutas: solo GET /api/eventos, /api/estadisticas y /api/salud. /docs, /redoc, /openapi.json y /docs/oauth2-redirect pasan a 404 con API_DOCS=false (valor para la API publicada); por defecto siguen activas en local.
+- Límites propios de la API (ya existentes): limit <= 5 000 eventos por respuesta, ventana de la serie horaria <= 744 h, tiempo máximo por consulta 10 s (503 al superarlo), 4 conexiones al pool, solo lectura (default_transaction_read_only).
+- Límites del túnel (plan gratuito de ngrok, consultado el 2026-11-08): 20 000 peticiones/mes, 1 GB/mes de salida y 4 000 peticiones/minuto. Al agotarse, el túnel deja de responder y el panel muestra «Sin conexión» con los últimos datos.
+  Con refresco de 10 minutos (3 peticiones cada 10 min = 18/h) y compresión gzip (11,3 KB por refresco): ≈ 1 100 pestaña-horas/mes por las peticiones y ≈ 15 000 pestaña-horas por el volumen: manda el número de peticiones.
+  Con 60 s (valor de desarrollo) una sola pestaña agotaría las peticiones en ≈ 4,6 días: por eso el build público fija 600 000 ms y suspende las consultas con la pestaña oculta.
+- Sin limitador de peticiones propio en la API (no se añade una dependencia): el tope de ngrok (4 000/min y 20 000/mes) actúa como límite práctico; se vigila en el panel de ngrok durante la defensa.
+- Datos que viajan: solo eventos públicos de USGS y estadísticas agregadas; ningún dato personal ni credencial (verificado con el escaneo de 6.6-secretos.txt).

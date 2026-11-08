@@ -1,12 +1,16 @@
 """API de consulta (FastAPI): GET /api/eventos (con filtros y paginación, F5) y GET /api/salud."""
 
+import hmac
 import logging
+import re
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from psycopg_pool import AsyncConnectionPool
 
 from observatorio.api.filtros import PARAMETROS_FILTRO, PARAMETROS_MODO, ErrorParametro, Filtros, paginacion, validar_modo
@@ -17,10 +21,24 @@ from observatorio.modos import MODO_LIVE, MODO_REPLAY
 from observatorio.tiempo import ahora_ms
 
 log = logging.getLogger("api")
+CABECERA_CLAVE = "X-Observatorio-Clave"  # F6 (FR-041): clave de acceso de la API publicada; solo por cabecera, nunca por la URL
 PARAMETROS_EVENTOS = (*PARAMETROS_FILTRO, "limit", "offset", *PARAMETROS_MODO)
 PARAMETROS_ESTADISTICAS = (*PARAMETROS_FILTRO, *PARAMETROS_MODO)
 DESCRIPCION_MODE = "live (por defecto) o replay (reproducción histórica aislada, F6)."
 DESCRIPCION_RUN = "Solo con mode=replay: run_id de la ejecución (por defecto, la más reciente)."
+
+
+_ORIGEN = re.compile(r"^https?://[A-Za-z0-9.-]+(:\d{1,5})?$")  # esquema + servidor [+ puerto]: sin ruta, sin barra final y sin comodines
+
+
+def validar_origenes(origenes: list[str]) -> list[str]:
+    """CORS exacto (F6, FR-028): cada origen debe ser `https://servidor` o `http://servidor[:puerto]`. Un comodín, una ruta o una barra final se rechazan al arrancar."""
+    if not origenes:
+        raise ValueError("API_CORS_ORIGINS no puede estar vacío: se necesita al menos un origen exacto")
+    for o in origenes:
+        if not _ORIGEN.match(o):
+            raise ValueError(f"origen CORS no válido: {o!r} (use el origen exacto, p. ej. https://sitio.netlify.app; sin comodines, rutas ni barra final)")
+    return origenes
 
 
 def comprobar_parametros(peticion: Request, admitidos: tuple[str, ...]) -> None:
@@ -43,12 +61,28 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
         yield
         await repositorio.cerrar()
 
-    app = FastAPI(title="Observatorio sísmico", lifespan=ciclo_de_vida)
+    origenes = validar_origenes(origenes)
+    docs = None if config.docs_habilitadas else False  # F6: con API_DOCS=false /docs, /redoc y /openapi.json dan 404 (para la API publicada por el túnel)
+    app = FastAPI(title="Observatorio sísmico", lifespan=ciclo_de_vida, **({} if docs is None else {"docs_url": None, "redoc_url": None, "openapi_url": None}))
+    clave = config.clave_acceso
+    if clave:
+        clave_bytes = clave.encode()
+
+        async def exigir_clave(peticion: Request, siguiente):
+            """FR-041: sin la clave correcta, 401 antes de validar parámetros o tocar la base (así tampoco se filtra el contrato). CORS va por fuera: el preflight
+            (OPTIONS) lo contesta CORSMiddleware sin llegar aquí y sin dar datos, y el 401 lleva las cabeceras CORS para que el panel pueda leerlo."""
+            if peticion.url.path.startswith("/api/") and not hmac.compare_digest(peticion.headers.get(CABECERA_CLAVE, "").encode(), clave_bytes):
+                return JSONResponse(status_code=401, content={"error": "no_autorizado", "detail": "La API exige una clave de acceso válida."})
+            return await siguiente(peticion)
+
+        app.add_middleware(BaseHTTPMiddleware, dispatch=exigir_clave)  # el más interno: después de CORS y gzip
+    # Compresión HTTP (F6): solo si el cliente la pide y la respuesta supera 1 000 B. Se añade antes que CORS para que CORS quede por fuera y sus cabeceras se conserven.
+    app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=6)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origenes,
         allow_methods=["GET", "OPTIONS"],
-        allow_headers=["ngrok-skip-browser-warning"],
+        allow_headers=["ngrok-skip-browser-warning", CABECERA_CLAVE],
         allow_credentials=False,
     )
 
@@ -171,5 +205,5 @@ def crear_repositorio(conninfo: str, config: ConfigApi) -> RepositorioApi:
 
 def crear_app_desde_entorno() -> FastAPI:
     config = ConfigApi.desde_entorno()
-    origenes = [o.strip() for o in leer_obligatoria("API_CORS_ORIGINS").split(",") if o.strip()]
+    origenes = validar_origenes([o.strip() for o in leer_obligatoria("API_CORS_ORIGINS").split(",") if o.strip()])
     return crear_app(crear_repositorio(ConfigPostgres.desde_entorno().conninfo(), config), origenes, config=config)

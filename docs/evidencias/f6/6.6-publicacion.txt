@@ -1,0 +1,51 @@
+# 6.6 T047 · publicación real y verificación (2026-11-08)
+
+## 1. Publicación del dashboard (Netlify CLI, sin build)
+- Intentos por arrastre en Deploys (2): FALLARON con «Failed during stage 'building site'» (log: `/opt/build/repo`, `netlify.toml` con `command: hugo`, «hugo: command not found»). La API de Netlify los registra con origen `api` (subida), NO Git: el sitio no tiene repositorio vinculado (`repo_url` vacío; ajustes de build del sitio sin comando). Causa exacta no determinada; lo más probable es que la subida contuviera un `netlify.toml` de Hugo (la carpeta `publico-netlify` no tiene ninguno); no se investigó más por indicación de la persona estudiante.
+- Solución: Netlify CLI 27.16.2 instalado FUERA del proyecto (carpeta temporal; `package.json` y `package-lock.json` del proyecto sin cambios), sesión iniciada por la persona estudiante en el navegador (ticket de un solo uso), sitio identificado por nombre y URL (`observatorio-sismico`, `https://observatorio-sismico.netlify.app`, sin repositorio; el resto de sitios de la cuenta no se tocó) y despliegue con:
+  `netlify deploy --prod --dir frontend/dist/publico-netlify --site <ID de observatorio-sismico> --no-build`
+- Resultado: deploy `6af0cbc3bee7002e941af403`, estado `ready`, origen `cli`, sin commit ni rama, sin build; 11 archivos (3 subidos, el resto ya existía); Production URL `https://observatorio-sismico.netlify.app`.
+- Comprobado en la URL real: GET / → 200 con `<app-root>` (la página provisional ya no está); `config.json` publicado = URL de ngrok `https://grandpa-bunkbed-spree.ngrok-free.dev`, refreshMs 600000, skipNgrokWarning, pausarSiOculta; `main-V2B7K4H6.js` 200 (352 958 B); SPA con `_redirects`; la clave de acceso NO aparece en ningún archivo publicado (0 coincidencias).
+- Al terminar se cerró la sesión del CLI (`netlify logout`): el token ya no está en el equipo; para volver a publicar hay que iniciar sesión de nuevo.
+
+## 2. Verificación con el túnel abierto (scripts/f6/verificar_publicacion.py, clave leída del .env sin imprimir)
+# clave de acceso: cargada del .env (no se muestra)
+# 6.6 T047 - verificación de la publicación (fase abierta)
+## Túnel abierto: https://grandpa-bunkbed-spree.ngrok-free.dev · sitio https://observatorio-sismico.netlify.app
+  OK    SIN clave: /api/salud -> 401 (la protección funciona a través del túnel) -> 401
+  OK    SIN clave: /api/eventos -> 401 y sin datos -> 401
+  OK    SIN clave: modo replay -> 401 -> 401
+  OK    HTTPS (el túnel debe ser HTTPS)
+  OK    GET /api/salud responde 200 con status ok -> 200
+  OK    GET /api/eventos devuelve un FeatureCollection con metadata.mode=live -> 200
+  OK    GET /api/eventos?mode=replay funciona (modo reproducción) -> 200
+  OK    mode inválido -> 422 
+  OK    GET con Origin del sitio de Netlify lleva access-control-allow-origin exacto (https://observatorio-sismico.netlify.app)
+  OK    preflight real desde Netlify -> 200
+  OK    preflight desde un origen ajeno rechazado -> 400
+  OK    el sitio de Netlify responde 200 con la aplicación -> 200
+  OK    config.json publicado: URL del túnel, refresco >= 10 min, pausa con la pestaña oculta y sin secretos {'mode': 'api', 'apiUrl': 'https://grandpa-bunkbed-spree.ngrok-free.dev', 'refreshMs': 600000, 'skipNgrokWarning': True, 'pausarSiOculta': True}
+  OK    /docs oculta (404) -> 404
+  OK    /redoc oculta (404) -> 404
+  OK    /openapi.json oculta (404) -> 404
+  OK    /admin no existe -> 404
+  OK    /metrics no existe -> 404
+  OK    /.env no existe -> 404
+  OK    /api/otro no existe -> 404
+  OK    POST /api/eventos -> 405 
+  OK    PUT /api/eventos -> 405 
+  OK    DELETE /api/eventos -> 405 
+  OK    ngrok reenvía exactamente un túnel y solo al puerto 8000 ['http://localhost:8000']
+
+RESULTADO: OK
+
+
+## 3. Panel real en Netlify (navegador integrado, `https://observatorio-sismico.netlify.app`)
+- Sin clave: «Acceso restringido a la API», estado «Acceso restringido: falta la clave de acceso», 0 eventos (el 401 es legible gracias al CORS exacto). Texto de actualización: «cada 10 min… se suspende mientras la pestaña no está visible… Actualizar ahora».
+- Con clave (pegada por la persona estudiante; yo no la manejé): «Datos al día», 203 eventos (mapa = tabla = estadísticas = API), última ingesta de USGS hace 20 s. localStorage 0, sessionStorage 0, cookies 0, el campo de clave desaparece del DOM.
+- REPRODUCCIÓN: «REPRODUCCIÓN · ejecución r-f6-prueba-b · ×127,6 · terminada», 35 eventos, comparación «no aplica», 1 caso controlado visible en la página 1 de la tabla, estado «Reproducción histórica (no es actividad actual)».
+- Vuelta a vivo: 203 eventos, 0 etiquetas de reproducción, 0 casos, comparación en vivo visible.
+Escenarios del túnel: ver 6.6-tunel.md.
+
+## 4. Estado final
+ngrok cerrado (sin proceso, inspector cerrado, `https://grandpa-bunkbed-spree.ngrok-free.dev/api/salud` → HTTP 404 de ngrok «endpoint offline»); API real con clave activa, CORS definitivo, API_DOCS=false y gzip; sitio de Netlify PÚBLICO con el dashboard (decisión aceptada por la persona estudiante: los archivos Angular son públicos, los datos exigen la clave); Kafka, PostgreSQL, consumer y producer sin cambios.

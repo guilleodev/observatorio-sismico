@@ -1,0 +1,14 @@
+# 6.8 T058 · productor y API: parada y arranque (2026-11-08)
+
+Método: `CONFIRMO_ENSAYO=<servicio> bash scripts/f6/ensayo_parada.sh <servicio> <s>` (solo `stop`/`start`). Detalle: `6.8-ensayo-producer.txt`, `6.8-ensayo-api.txt`.
+
+| Servicio | Parado | Durante | Tras `start` | Resultado |
+|---|---|---|---|---|
+| producer | 120 s | Sin publicaciones nuevas (962 constantes), lag 0, API 401 | healthy en ≈10 s; lag 0 y reconciliación 0 en ≈10 s; publicadas 962→964 y versiones 946→948 (retomó la ingesta, 0 duplicados, 0 desfasadas) | OK |
+| api | 60 s | Puerto sin respuesta (HTTP 000), ingesta y consumidor siguen: lag 0 | healthy en ≈10 s; API de nuevo protegida (401 sin clave); datos 948/964/633 intactos | OK |
+
+Comprobaciones comunes superadas: mismo contenedor, mismos volúmenes, huellas de historico/sintetico idénticas, replay sin cambios, cinco servicios healthy, RestartCount 0.
+
+Limitaciones honestas:
+- «El panel se recupera solo» (T058) NO se observó de nuevo en este ensayo con el navegador: el panel no estaba abierto. Se apoya en la recuperación automática ya comprobada en 6.6 (`6.6-tunel.md`: reintento tras fallo y aviso «Conexión recuperada»), y aquí solo se comprueba que la API vuelve healthy y protegida.
+- «Sin huecos»: el productor consulta USGS por ventana, así que lo no publicado mientras estuvo parado se recupera en su siguiente consulta; reconciliación 0 y `huecos pendientes=0` al final. Un hueco real de USGS sigue siendo reserva (`6.8-huecos.txt`).
