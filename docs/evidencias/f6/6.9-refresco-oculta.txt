@@ -1,0 +1,14 @@
+# 6.9 · refresco automático con una pestaña REALMENTE oculta (2026-11-09) · reserva de 6.6/6.7
+
+Procedimiento: el mismo bundle publicado (`main-V2B7K4H6.js`, idéntico byte a byte) servido en `http://localhost:4200` desde una carpeta temporal fuera del repositorio, con un `config.json` propio de la prueba: `apiUrl=http://127.0.0.1:8000`, `refreshMs=30000` (el mínimo permitido; el publicado usa 600000), `pausarSiOculta=true`. La persona estudiante abrió el panel en su Chrome, escribió la clave (yo no la manejé) y minimizó/restauró la ventana. Yo conté en el registro de la API las peticiones `GET /api/salud` que NO vienen del healthcheck interno (127.0.0.1).
+
+| Fase | Intervalo (UTC) | Peticiones automáticas | Esperado | Resultado |
+|---|---|---|---|---|
+| Ventana minimizada (pestaña oculta, modo En vivo) | 16:38:39 – 16:41:43 (185 s) | **0** | 0 (con 30 s se habrían hecho ≈ 6) | SUPERADA |
+| Ventana restaurada, sin pulsar nada | desde 16:42:12 | ciclo completo (`salud`, `eventos`, `estadisticas`) hacia 16:42:3x y otro hacia 16:43:0x (≈ 30 s entre ellos) | se reanuda sola | SUPERADA |
+
+Observaciones y límites:
+- Antes de la fase oculta hubo un intento de medir la fase visible en modo REPRODUCCIÓN: 0 peticiones en 80 s; la persona estudiante confirmó después que el panel estaba en reproducción; no se investigó por qué no hubo ciclos en esos 80 s (posible ventana tapada y por tanto oculta). No se saca conclusión sobre el refresco en modo REPRODUCCIÓN. La fase visible en vivo quedó demostrada por la reanudación posterior (ciclos cada ≈ 30 s).
+- Prueba local con refresco de 30 s, no con el de 10 min del sitio publicado ni a través de ngrok/Netlify: el código es el mismo; la configuración difiere solo en esos valores.
+- Navegador: Chrome de la persona estudiante (minimizar la ventana). No se probó una pestaña en segundo plano dentro de la misma ventana ni otro navegador.
+- El servidor estático temporal y la carpeta de la prueba no forman parte del repositorio.

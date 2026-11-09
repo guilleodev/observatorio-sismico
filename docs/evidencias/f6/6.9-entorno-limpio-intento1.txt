@@ -1,0 +1,67 @@
+# 6.9 T065 · entorno limpio paralelo · 2026-11-09T15:35:22Z
+Proyecto: -p observatorio_limpio · API_PUERTO=8010 · BACKEND_IMAGE=observatorio-backend-limpio · INGESTA_PUBLICAR=false · contraseña generada solo para este ensayo (archivo fuera del repositorio; no se imprime)
+Nombres temporales ≠ reales: contenedores observatorio_limpio-*, red observatorio_limpio_observatorio, volúmenes observatorio_limpio_pgdata y observatorio_limpio_kafkadata, imagen observatorio-backend-limpio (los reales: observatorio-*, observatorio_observatorio, observatorio_pgdata/kafkadata, observatorio-backend)
+## ANTES (sistema real)
+ids: api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+imagen real: sha256:b01d2
+volúmenes reales: observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+healthy: 5
+## compose config del proyecto limpio (servicios, puerto, imagen)
+api consumer kafka postgres producer 
+        published: "8010"         target: 8000     image: observatorio-backend-limpio name: observatorio_limpio 
+## 1. build desde cero (--no-cache: instala requirements.txt de nuevo)
+ Image observatorio-backend-limpio Built 
+ Image observatorio-backend-limpio Built 
+build: 13 s
+## 2. up -d --wait (README, paso 2)
+ Container observatorio_limpio-postgres-1 Waiting 
+ Container observatorio_limpio-kafka-1 Waiting 
+ Container observatorio_limpio-producer-1 Waiting 
+ Container observatorio_limpio-kafka-1 Healthy 
+ Container observatorio_limpio-postgres-1 Healthy 
+ Container observatorio_limpio-api-1 Healthy 
+ Container observatorio_limpio-producer-1 Healthy 
+container observatorio_limpio-consumer-1 is unhealthy
+hasta healthy: 58 s
+api=running/healthy puertos=127.0.0.1:8010->8000/tcp
+consumer=running/unhealthy puertos=
+kafka=running/healthy puertos=9092/tcp
+postgres=running/healthy puertos=5432/tcp
+producer=running/healthy puertos=
+## 3. esquemas creados al inicializar el volumen (sql/001-004)
+geo,historico,live,replay
+## 4. catálogo de países (README, paso 3)
+Catálogo paises.geojson sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+geo.catalogo: versión nueva registrada
+geo.pais: nuevos=177 actualizados=0 sin_cambios=0
+catálogo: 2 s
+## 5. carga histórica (README: Histórico de 2025; exportación a una carpeta temporal para no tocar data/historico real)
+2026-11-09 15:36:49,513 INFO tramo 2025-08-01..2025-09-01: esperado 2222, obtenidos 2222, nuevos 2222, cuarentena 0, duplicados 0, fuera 0 | descarga 0.6 s, proceso 0.2 s
+2026-11-09 15:36:51,244 INFO tramo 2025-09-01..2025-10-01: esperado 1604, obtenidos 1604, nuevos 1604, cuarentena 0, duplicados 0, fuera 0 | descarga 1.1 s, proceso 0.1 s
+2026-11-09 15:36:52,670 INFO tramo 2025-10-01..2025-11-01: esperado 1509, obtenidos 1509, nuevos 1509, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-09 15:36:53,557 INFO tramo 2025-11-01..2025-12-01: esperado 1321, obtenidos 1321, nuevos 1321, cuarentena 0, duplicados 0, fuera 0 | descarga 0.5 s, proceso 0.1 s
+2026-11-09 15:36:55,055 INFO tramo 2025-12-01..2026-01-01: esperado 1277, obtenidos 1277, nuevos 1277, cuarentena 0, duplicados 0, fuera 0 | descarga 1.1 s, proceso 0.1 s
+RESUMEN {"tramos_nuevos": 12, "tramos_reutilizados": 0, "tramos_subdivididos": 0, "tramos_con_error": 0, "errores": [], "obtenidos": 18302, "duplicados": 0, "fuera_de_tramo": 0, "eventos_nuevos": 18302, "cuarentena_nueva
+carga histórica: 17 s
+## 6. comprobaciones del proyecto limpio
+historico.evento=18302 · geo.pais=177 · replay.ejecucion=0 · live.evento_actual=0
+API limpia (127.0.0.1:8010) /api/salud → HTTP 200 · /api/eventos?mode=replay → HTTP 200
+puertos publicados: api=127.0.0.1:8010->8000/tcp 
+ps final: api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+## 7. bajar SOLO el proyecto limpio, sin -v
+ Container observatorio_limpio-postgres-1 Stopped 
+ Container observatorio_limpio-postgres-1 Removing 
+ Container observatorio_limpio-postgres-1 Removed 
+ Container observatorio_limpio-kafka-1 Stopped 
+ Container observatorio_limpio-kafka-1 Removing 
+ Container observatorio_limpio-kafka-1 Removed 
+ Network observatorio_limpio_observatorio Removing 
+ Network observatorio_limpio_observatorio Removed 
+volúmenes del proyecto limpio conservados (sin PA-11 no se eliminan): observatorio_limpio_kafkadata observatorio_limpio_pgdata 
+## DESPUÉS (sistema real)
+ids: api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+imagen real: sha256:b01d2
+volúmenes reales: observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+healthy: 5
+contenedores limpios restantes: 0 · red limpia restante: 0
+FIN 2026-11-09T15:37:05Z

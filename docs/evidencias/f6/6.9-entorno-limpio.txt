@@ -1,0 +1,80 @@
+# 6.9 T065 · entorno limpio paralelo · 2026-11-09T15:38:06Z
+Proyecto: -p observatorio_limpio_2 · API_PUERTO=8010 · BACKEND_IMAGE=observatorio-backend-limpio · INGESTA_PUBLICAR=false · contraseña generada solo para este ensayo (archivo fuera del repositorio; no se imprime)
+Nombres temporales ≠ reales: contenedores observatorio_limpio_2-*, red observatorio_limpio_2_observatorio, volúmenes observatorio_limpio_2_pgdata y observatorio_limpio_2_kafkadata, imagen observatorio-backend-limpio (los reales: observatorio-*, observatorio_observatorio, observatorio_pgdata/kafkadata, observatorio-backend)
+## ANTES (sistema real)
+ids: api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+imagen real: sha256:b01d2
+volúmenes reales: observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+healthy: 5
+## compose config del proyecto limpio (servicios, puerto, imagen)
+api consumer kafka postgres producer 
+        published: "8010"         target: 8000     image: observatorio-backend-limpio name: observatorio_limpio_2 
+## 1. build desde cero (--no-cache: instala requirements.txt de nuevo)
+ Image observatorio-backend-limpio Built 
+ Image observatorio-backend-limpio Built 
+build: 13 s
+## 2. up --build -d --wait postgres kafka (README, paso 2)
+ Container observatorio_limpio_2-postgres-1 Waiting 
+ Container observatorio_limpio_2-kafka-1 Waiting 
+ Container observatorio_limpio_2-postgres-1 Healthy 
+ Container observatorio_limpio_2-kafka-1 Healthy 
+postgres y kafka healthy: 7 s
+## 3. esquemas creados al inicializar el volumen (sql/001-004)
+geo,historico,live,replay
+## 4. catálogo de países (README, paso 3)
+Catálogo paises.geojson sha256=d2aec98bfd1ffda2d8adea42b7ec473365eef38defc48e83afb7d58ae60bfe7c entidades=177
+geo.catalogo: versión nueva registrada
+geo.pais: nuevos=177 actualizados=0 sin_cambios=0
+catálogo: 1 s
+## 5. carga histórica (README: Histórico de 2025; exportación a una carpeta temporal para no tocar data/historico real)
+2026-11-09 15:38:49,613 INFO tramo 2025-11-01..2025-12-01: esperado 1321, obtenidos 1321, nuevos 1321, cuarentena 0, duplicados 0, fuera 0 | descarga 0.9 s, proceso 0.1 s
+2026-11-09 15:38:49,616 ERROR exportación fallida: /exportacion/usgs-fdsn_20251101T000000Z_20251201T000000Z_m4.geojson.gz ya existe con otro contenido: no se sobrescribe
+2026-11-09 15:38:51,185 INFO tramo 2025-12-01..2026-01-01: esperado 1277, obtenidos 1277, nuevos 1277, cuarentena 0, duplicados 0, fuera 0 | descarga 1.0 s, proceso 0.1 s
+2026-11-09 15:38:51,187 ERROR exportación fallida: /exportacion/usgs-fdsn_20251201T000000Z_20260101T000000Z_m4.geojson.gz ya existe con otro contenido: no se sobrescribe
+RESUMEN {"tramos_nuevos": 12, "tramos_reutilizados": 0, "tramos_subdivididos": 0, "tramos_con_error": 12, "errores": ["exportación 2025-01-01: /exportacion/usgs-fdsn_20250101T000000Z_20250201T000000Z_m4.geojson.gz ya ex
+
+carga histórica: 20 s
+## 5b. up -d --wait de los cinco servicios (README, paso 4)
+ Container observatorio_limpio_2-consumer-1 Waiting 
+ Container observatorio_limpio_2-postgres-1 Healthy 
+ Container observatorio_limpio_2-kafka-1 Healthy 
+ Container observatorio_limpio_2-producer-1 Healthy 
+ Container observatorio_limpio_2-api-1 Healthy 
+ Container observatorio_limpio_2-consumer-1 Healthy 
+cinco servicios healthy: 7 s tras cargar datos · total desde el primer comando (sin contar el build): 36 s
+api=running/healthy puertos=127.0.0.1:8010->8000/tcp
+consumer=running/healthy puertos=
+kafka=running/healthy puertos=9092/tcp
+postgres=running/healthy puertos=5432/tcp
+producer=running/healthy puertos=
+## 6. comprobaciones del proyecto limpio
+historico.evento=18302 · geo.pais=177 · replay.ejecucion=0 · live.evento_actual=0
+API limpia (127.0.0.1:8010) /api/salud → HTTP 200 · /api/eventos?mode=replay → HTTP 200
+puertos publicados: api=127.0.0.1:8010->8000/tcp 
+ps final: api=healthy consumer=healthy kafka=healthy postgres=healthy producer=healthy 
+## 7. bajar SOLO el proyecto limpio, sin -v
+ Container observatorio_limpio_2-postgres-1 Stopped 
+ Container observatorio_limpio_2-postgres-1 Removing 
+ Container observatorio_limpio_2-postgres-1 Removed 
+ Container observatorio_limpio_2-kafka-1 Stopped 
+ Container observatorio_limpio_2-kafka-1 Removing 
+ Container observatorio_limpio_2-kafka-1 Removed 
+ Network observatorio_limpio_2_observatorio Removing 
+ Network observatorio_limpio_2_observatorio Removed 
+volúmenes del proyecto limpio conservados (sin PA-11 no se eliminan): observatorio_limpio_2_kafkadata observatorio_limpio_2_pgdata 
+## DESPUÉS (sistema real)
+ids: api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de 
+imagen real: sha256:b01d2
+volúmenes reales: observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+healthy: 5
+contenedores limpios restantes: 0 · red limpia restante: 0
+FIN 2026-11-09T15:39:09Z
+
+## Lectura (añadida tras la ejecución)
+- Resultado: con el README corregido, los cinco servicios del proyecto paralelo `observatorio_limpio_2` llegaron a `healthy` sin pasos no documentados: build sin caché 13 s, postgres+kafka 7 s, catálogo 1 s, histórico 20 s (18 302 eventos, 12 tramos, 0 duplicados), los cinco healthy 7 s después; 36 s en total sin contar el build. API en 127.0.0.1:8010 (200), Kafka y PostgreSQL sin puertos publicados al equipo.
+- Defecto REAL hallado y corregido en el README (intento 1: `6.9-entorno-limpio-intento1.txt`, proyecto `observatorio_limpio`): (1) el paso 2 era `up --build -d --wait` de los cinco servicios y en una instalación nueva el consumidor no pasa a `healthy` hasta cargar el catálogo, de modo que el comando fallaba («consumer is unhealthy»); (2) el paso de esquemas manuales omitía `004_esquema_f6.sql`. Ahora: `up --wait postgres kafka` → catálogo → histórico → `up --wait` de los cinco. En el intento 1 el consumidor se recuperó solo tras cargar el catálogo.
+- Desviaciones respecto a «README tal cual»: `-p observatorio_limpio_2 --env-file <archivo temporal fuera del repositorio>` (contraseña generada, `API_PUERTO=8010`, `BACKEND_IMAGE=observatorio-backend-limpio`, `INGESTA_PUBLICAR=false`) y la exportación del histórico a una carpeta temporal en vez de `data/historico` (para no tocar la real). El segundo intento usó otro nombre de proyecto porque los volúmenes del primero se conservaron (eliminarlos requiere PA-11).
+- Sistema real: mismos ids de contenedor, misma imagen (`observatorio-backend:latest`), mismos volúmenes (nombre y fecha), cinco healthy, antes y después. Los datos de `live`, `historico`, `sintetico` y `replay` reales no se tocaron.
+- Quedan 4 volúmenes temporales SIN eliminar (sin PA-11): `observatorio_limpio_pgdata`, `observatorio_limpio_kafkadata`, `observatorio_limpio_2_pgdata`, `observatorio_limpio_2_kafkadata`, más la imagen `observatorio-backend-limpio`. Para eliminarlos haría falta tu autorización expresa por nombre exacto. La ingesta real del proyecto limpio estaba en modo seco (`live.evento_actual=0`), así que la ingesta continua no se probó ahí (sí en el sistema real: 6.8).
+- Limitación: mide una sola máquina con las imágenes base ya descargadas (no se probó con la caché de imágenes de Docker vacía).
+- RESERVA hallada por QA: en este 2.º intento el paso 5 muestra 12 líneas `ERROR exportación fallida … ya existe con otro contenido: no se sobrescribe` y `tramos_con_error: 12`. Causa: se reutilizó la MISMA carpeta temporal de exportación del intento 1 (con los `.geojson.gz` y `SHA256SUMS` ya escritos) y la carga protege los archivos existentes de ser sobrescritos. NO afecta a los datos (18 302 eventos en la base, 0 duplicados) ni al arranque; es un artefacto de mi montaje, no del README. El intento 1 (carpeta vacía) terminó con `tramos_con_error: 0`. No se repitió el 2.º intento por coste.

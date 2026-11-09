@@ -69,7 +69,7 @@ ok "$(q "select count(*) from live.evento_actual where run_id is not null" 2>/de
 ok "$(grep -rlE --include='*.py' 'replay\.(evento_actual|evento_version|cuarentena|ejecucion)' backend/src/observatorio/consumer backend/src/observatorio/producer backend/src/observatorio/api | sed 's#.*/##' | sort | tr '
 ' ' ')" "filtros.py replay.py " "módulos que nombran tablas de replay con su nombre literal: solo el selector y el SQL de lectura de la API (el consumidor las compone con el destino parametrizado)"
 ok "$(grep -c 'replay' backend/src/observatorio/api/comparacion.py)" 0 "comparacion.py (único lector de historico) sin menciones de replay"
-ok "$(q "select count(*) from replay.ejecucion")" 2 "ejecuciones de replay conservadas (r-f6-prueba-a y r-f6-prueba-b)"
+ok "$(q "select string_agg(run_id, ',' order by run_id) from replay.ejecucion")" "r-f6-estab-11082023,r-f6-prueba-a,r-f6-prueba-b" "ejecuciones de replay conservadas (las dos de prueba de 6.1 y la de estabilidad de 6.8; ninguna se borra)"
 ok "$(q "select count(*) from replay.evento_actual where run_id in ('r-f6-prueba-a','r-f6-prueba-b')")" 70 "eventos actuales de las dos ejecuciones conservadas"
 API_R=$(apicurl -s "http://127.0.0.1:8000/api/eventos?mode=replay&limit=5000")
 IDS_R=$(echo "$API_R" | grep -o '"id":"[^"]*"' | sed 's/"id":"//; s/"$//' | sed "s/.*/'&'/" | paste -sd, -)

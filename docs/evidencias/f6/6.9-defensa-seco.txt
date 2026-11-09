@@ -1,0 +1,31 @@
+# 6.9 T067 · ensayo en seco de los cinco pasos de la Guía 3.2 · 2026-11-09T15:32:36Z (sin abrir ngrok, sin publicar, sin escribir en la base)
+## 1. Compose y servicios
+api=running/healthy consumer=running/healthy kafka=running/healthy postgres=running/healthy producer=running/healthy 
+## 2. Base e ingesta
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=1157 versiones=1141 cuarentena=16 | offset/final/lag=1167/1167/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18
+live: eventos actuales=795 | versiones=1141 | cuarentena=16 | huecos pendientes=0
+replay: ejecuciones=3 | actuales=105 | versiones=111 | cuarentena=3
+historico eventos=18302 · ingesta hace 41 s
+## 3. ngrok y URL (solo comprobaciones locales y públicas de lectura)
+ngrok instalado: ngrok version 3.39.13 · procesos ngrok: 0 · comando previsto: ngrok http --url=https://grandpa-bunkbed-spree.ngrok-free.dev 8000
+túnel público cerrado → HTTP 404 (404 = endpoint offline, esperado)
+API local sin clave → HTTP 401 (401 esperado)
+apiUrl del sitio publicado: "apiUrl": "https://grandpa-bunkbed-spree.ngrok-free.dev"
+## 4. Panel
+sitio de Netlify → HTTP 200 (el panel se abre; sin túnel mostrará «Sin conexión con el backend», ver 6.6-tunel.md)
+## 5. Reproducción (solo plan, sin publicar ni registrar)
+ Container observatorio-producer-run-ea5d08c7a3f9 Creating 
+ Container observatorio-producer-run-ea5d08c7a3f9 Created 
+{
+  "run_id": "r-20261109T153307Z",
+  "dia": "2025-07-30",
+  "eventos_reales": 30,
+  "mensajes": 39,
+  "casos": 9,
+  "intervalo_s": 2.0,
+  "velocidad": 31.903,
+  "topic": "terremotos.replay",
+  "duracion_prevista_s": 76.0,
+contenedores temporales sin eliminar: 0

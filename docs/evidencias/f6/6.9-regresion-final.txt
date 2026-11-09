@@ -1,0 +1,15 @@
+# 6.9 T074 - regresión final 2026-11-09T15:31:10Z
+## backend (Kafka real temporal, contenedor efímero)
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+964 passed, 1 warning in 61.91s (0:01:01)
+grupo eliminado: test-f6-grupo-bd0915aa90
+topics que quedan: __consumer_offsets terremotos.live terremotos.replay 
+grupos que quedan: consumidor-live consumidor-replay 
+## frontend
+ℹ tests 130
+ℹ pass 130
+ℹ fail 0
+Application bundle generation complete. [2.273 seconds]
+FIN 2026-11-09T15:32:38Z

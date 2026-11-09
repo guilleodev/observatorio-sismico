@@ -1,0 +1,21 @@
+# 6.9 PA-11 · eliminación de los recursos temporales del entorno limpio · 2026-11-09T16:48:31Z
+Autorización expresa de la persona estudiante («Autorizo PA-11 con esos cinco nombres exactos, siempre que compruebes nuevamente que no están en uso. No borres ningún otro recurso ni utilices comandos de limpieza general»). Comprobado justo antes: ningún contenedor (en ningún estado) usa los volúmenes ni la imagen.
+## ANTES
+observatorio_kafkadata observatorio_limpio_2_kafkadata observatorio_limpio_2_pgdata observatorio_limpio_kafkadata observatorio_limpio_pgdata observatorio_pgdata 
+observatorio-backend-limpio:latest d7edc7df9f86;observatorio-backend:latest b01d21a40b6e;observatorio-backend:previo-f6-api 731587892449;observatorio-backend:previo-f6-consumer d1a568b553a7;observatorio-backend:previo-f6-producer d1a568b553a7;
+## docker volume rm (4 nombres exactos, sin -f)
+observatorio_limpio_kafkadata
+observatorio_limpio_pgdata
+observatorio_limpio_2_kafkadata
+observatorio_limpio_2_pgdata
+## docker image rm (nombre exacto, sin -f)
+Untagged: observatorio-backend-limpio:latest
+Deleted: sha256:d7edc7df9f8601f5e845537cce150471846610ae1f5619c085233a0af5086009
+## DESPUÉS
+observatorio_kafkadata observatorio_pgdata 
+observatorio-backend:latest b01d21a40b6e;observatorio-backend:previo-f6-api 731587892449;observatorio-backend:previo-f6-consumer d1a568b553a7;observatorio-backend:previo-f6-producer d1a568b553a7;
+reales: ids=api=a380a434a678 consumer=81212326a3f3 kafka=8334b55b327c postgres=046081f539aa producer=a08f771a27de  healthy=5
+observatorio_kafkadata=2026-11-06T16:51:57Z observatorio_pgdata=2026-11-04T18:34:02Z 
+F3: reconciliacion=0 | offsets duplicados=0 | actual desfasado=0 | publicadas=1185 versiones=1169 cuarentena=16 | offset/final/lag=1195/1195/0
+historico huellas: md5(eventos)=057f8f4ebaaf142ebe3eda20346c65f7 | md5(sha256 de archivos)=05384f90d5cfda2cea2160b621db0b3c | sha256 recalculado distinto de lo guardado=0
+sintetico: md5=5b9d041e8ff21ee9822d336b53ee8aff filas=18

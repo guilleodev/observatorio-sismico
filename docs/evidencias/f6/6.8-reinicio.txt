@@ -1,0 +1,33 @@
+# 6.8 T060 · persistencia tras el reinicio NATURAL del ordenador (2026-11-09)
+
+IMPORTANTE: NO fue un reinicio controlado de Docker Desktop. Fue el arranque normal del PC (LastBootUpTime 2026-11-09 15:50:43 hora local) tras apagarse; Docker Desktop volvió a levantar el motor y los contenedores por su política de arranque. Se usó con la autorización de la persona estudiante para no provocar un segundo reinicio. Solo consultas de solo lectura; no se ejecutó `up`, `down`, `start` ni `stop`.
+
+Referencia anterior: `6.8-estabilidad.txt` (final, 2026-11-08 21:27Z) y `6.8-linea-base.txt`. No hay una línea base tomada justo antes del apagado (el apagado no estaba planificado): se compara con la última medición de ayer.
+
+## Observado a 2026-11-09 14:55Z (≈5 min tras el arranque del PC)
+| Comprobación | Antes (2026-11-08) | Después | Resultado |
+|---|---|---|---|
+| Servicios | cinco healthy | api, consumer, kafka, postgres, producer: running/healthy | OK |
+| Ids de contenedor | api a380a434a678, consumer 81212326a3f3, kafka 8334b55b327c, postgres 046081f539aa, producer a08f771a27de | idénticos (no se recrearon) | OK |
+| Volúmenes | kafkadata 2026-11-06T16:51:57Z, pgdata 2026-11-04T18:34:02Z | iguales (nombre y fecha) | OK |
+| Huella historico | md5(eventos)=057f8f4e…, md5(sha256)=05384f90…, recalculado distinto=0 | idéntica | OK |
+| Huella sintetico | md5=5b9d041e…, 18 filas | idéntica | OK |
+| Replay | 3 ejecuciones, 105 actuales, 111 versiones, 3 cuarentena | idéntico | OK |
+| Live | versiones 982, cuarentena 16, huecos 0 | versiones 1132 (crece: la ingesta real siguió), cuarentena 16, huecos 0, modos≠live 0, filas de prueba 0 | OK |
+| Offsets / lag | 1008/1008/0 | 1158/1158/0 | OK (lag 0) |
+| Reconciliación y duplicados | 0 / 0 / desfasadas 0 | 0 / 0 / 0 (publicadas 1148 = versiones 1132 + 16 cuarentena) | OK |
+| Continuidad de la ingesta | ≤ 60 s | última consulta OK hace 49 s y, 2 min después, hace 37 s (ciclo de 60 s activo); publicadas sin cambio en ese intervalo (USGS no trajo nada nuevo) | OK |
+| API protegida | 401 sin clave | 401 sin clave | OK |
+| ngrok | cerrado | sin proceso; túnel público → HTTP 404 | OK |
+| Contenedores temporales | 0 | 0 | OK |
+| OOMKilled | — | false en los cinco | OK |
+
+## Observaciones honestas
+- `RestartCount`: consumer=1, resto 0. Es el reinicio automático de Docker (política de reinicio) del consumidor porque Kafka aún no aceptaba conexiones al arrancar el motor; esperado en un arranque en frío y el consumidor quedó healthy solo. Esto contradice el «0 reinicios» de ensayos anteriores solo en este caso concreto.
+- Registros desde el arranque con líneas de error (consumer 36, producer 9, postgres 5, kafka 11, api 0): corresponden a la ventana 14:52-14:53Z en la que Kafka no estaba listo («Unable connect to kafka:9092», `ConsumerStoppedError` del consumidor antes de su reinicio). El productor emitió «Kafka no disponible» y siguió reintentando. Después no hay más errores y el sistema quedó consistente. No se revisó línea a línea el detalle de postgres/kafka.
+- Con el apagado no controlado no se pudo comprobar un «antes» inmediato, ni se midió el tiempo exacto hasta estar los cinco healthy (≈ 3 min entre el arranque del PC y el motor listo, estimado).
+- No se probó un reinicio solo de Docker Desktop. Las evidencias de 6.8 (los cinco `stop`/`start`) cubren la parada de cada servicio; esta cubre el arranque en frío del equipo con los mismos contenedores y volúmenes.
+
+## Veredicto
+T060: SUPERADA con un reinicio natural del ordenador (no un reinicio controlado de Docker Desktop). FR-015, SC-008 y SC-009 (volúmenes y datos conservados sin recrear contenedores).
+T063 (`down`/`up`): NO realizada por decisión de la persona estudiante. SC-010 de F3 (más de 24 h): aplazada.
