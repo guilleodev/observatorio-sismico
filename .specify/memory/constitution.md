@@ -6,7 +6,7 @@
 El enunciado (`docs/referencias/ENUNCIADO.md`) y el contrato de la API
 (`docs/referencias/CONTRATO-API.md`) son las fuentes de requisitos principales. La FAQ y la guía
 de entregables los aclaran, pero no añaden requisitos. La hoja de ruta (`docs/HOJA-DE-RUTA.md`),
-Spec Kit, las fases F0–F7 y los subagentes son decisiones propias del proyecto: si chocan con el
+Spec Kit, las fases F0–F8 y los subagentes son decisiones propias del proyecto: si chocan con el
 enunciado, gana el enunciado. Los documentos originales del profesor MUST NOT modificarse.
 *Motivo:* la evaluación se hace con la rúbrica del profesor, no con nuestra planificación.
 
@@ -94,7 +94,7 @@ de defensa. Las explicaciones se dan en español, de forma clara y progresiva.
 
 - **SDD con Spec Kit:** constitución → especificación → plan → tareas → implementación →
   verificación → revisión humana. No se implementa una funcionalidad sin especificación aprobada.
-- **Fases:** F0–F7 según `docs/HOJA-DE-RUTA.md`; el cierre de cada fase exige requisitos
+- **Fases:** F0–F8 según `docs/HOJA-DE-RUTA.md`; el cierre de cada fase exige requisitos
   cubiertos, pruebas ejecutadas, evidencias, código comprendido y revisión de cambios.
 - **Git:** los commits son manuales, en español, agrupados por fases con identificador
   (`[F1]`, `[F2]`…; el commit histórico `[F0.1]` no se reescribe). Claude Code MUST NOT crear commits ni hacer push sin autorización expresa, ni
@@ -113,4 +113,4 @@ material una guía, PATCH para aclaraciones. Cada especificación, plan y revisi
 comprobar el cumplimiento de estos principios; cualquier desviación se justifica por escrito.
 La guía operativa diaria está en `CLAUDE.md` y `docs/HOJA-DE-RUTA.md`.
 
-**Versión**: 1.0.4 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-08 (PATCH: aclaración de los casos controlados del replay)
+**Versión**: 1.0.5 | **Ratificada**: 2026-11-03 | **Última enmienda**: 2026-11-09 (PATCH: las fases pasan a F0–F8 por la reorganización —nueva F7 de mejoras y F8 de documentación, entrega y vídeo—, solicitada por la persona estudiante; sin cambios en los principios). Anterior: 2026-11-08 (PATCH: aclaración de los casos controlados del replay)

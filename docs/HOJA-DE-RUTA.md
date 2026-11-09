@@ -5,6 +5,8 @@
 > **Segunda implementación:** Codex (una vez finalizada la primera)  
 > **Metodología:** GitHub Spec Kit (SDD) + MVP + agentes + pruebas + aprendizaje
 
+> **Reorganización del 2026-11-09:** F0–F6 son historial completado. La antigua «F7 — Memoria y defensa» pasa a ser **F8 — Documentación, entrega académica y vídeo**, y la nueva **F7** es una fase flexible de **mejoras y evolución**. Mapa de fases y carpetas SDD en [`specs/INDICE.md`](../specs/INDICE.md). Los documentos históricos no se reescriben: un «F7» antiguo debe leerse como F8.
+
 Esta hoja es **orientativa**: no sustituye a los requisitos del profesor (`docs/referencias/ENUNCIADO.md`, `CONTRATO-API.md`, `FAQ-ALUMNADO.md`, `Guia-entregables-observatorio-sismico.md`). Si hay conflicto, **gana el profesor**. Las fases, los pasos, Spec Kit y los subagentes son decisiones nuestras de desarrollo. La nomenclatura de fases, pasos y commits se reorganizó el 3 de noviembre de 2026 (sección 3).
 
 ## 1. Objetivo y estrategia
@@ -16,7 +18,7 @@ Orden de trabajo:
 1. Estudiar los requisitos y entender la arquitectura.
 2. Desarrollar el proyecto completo con **Claude Code** mediante SDD, empezando por un MVP.
 3. Revisar el código por bloques, ejecutar pruebas y reunir evidencias durante todas las fases.
-4. Preparar la memoria y la defensa individual.
+4. Mejorar progresivamente la aplicación (F7) y preparar la documentación, la entrega y el vídeo de demostración (F8); la explicación individual se mantiene preparada hasta aclarar el formato de evaluación.
 5. Desarrollar una **segunda versión independiente con Codex**, partiendo del mismo material inicial y sin copiar el código generado por Claude.
 
 **Principios:** no programar el proyecto entero en un único prompt; trabajar por hitos verificables; distinguir los requisitos obligatorios de las recomendaciones técnicas; evitar complejidad innecesaria.
@@ -53,7 +55,7 @@ USGS (feed reciente e histórico) + Natural Earth
 
 ## 3. Nomenclatura y fases
 
-- **Fases:** F0, F1, F2, F3, F4, F5, F6 y F7.
+- **Fases:** F0, F1, F2, F3, F4, F5, F6, F7 y F8.
 - **Pasos:** `1.1`, `1.2`…; `2.1`, `2.2`…; etc. El primer número es la fase. Un paso es una unidad de trabajo revisable y validable antes de continuar.
 - **Commits:** `[F1]`, `[F2]`, `[F3]`…, con prefijo Git apropiado (`docs:`, `feat:`, `chore:`). Un número entre corchetes identifica la **fase que se cierra**, no una versión del software.
 
@@ -68,9 +70,10 @@ USGS (feed reciente e histórico) + Natural Earth
 | **F4 — Geografía e histórico** | Integrar países mediante punto-en-polígono y cargar el histórico de 2025. | Eventos enriquecidos, histórico reutilizable y recuperación tras paradas documentada. |
 | **F5 — API y dashboard** | Filtros, estadísticas, ventanas, comparaciones y panel completo. | Observatorio analítico funcional, filtros coherentes y estado visible. |
 | **F6 — Replay, pruebas y despliegue** | Replay aislado, pruebas de aceptación, mediciones, ngrok y Netlify. | Demostración reproducible desde otro dispositivo y mediciones completas. |
-| **F7 — Memoria y defensa** | Consolidar documentación, benchmarks, costes, conclusiones y evidencias. | Entrega completa y explicación individual preparada. |
+| **F7 — Mejoras y evolución** | Mejorar de forma progresiva la aplicación ya construida (diseño, UX, accesibilidad, filtros, mapas, gráficas, ajustes técnicos, comodidad de desarrollo) con mejoras que la persona estudiante propone y aprueba una a una. | Cada mejora aprobada verificada con evidencia; fase ampliable sin reescribir la planificación; se cierra cuando lo decide la persona estudiante. |
+| **F8 — Documentación, entrega académica y vídeo** | Revisar literalmente la rúbrica y la guía, README final, memoria o notebook si es obligatoria, matriz de trazabilidad, observación de >24 h (SC-010 de F3), guion, entorno y vídeo de demostración, y acceso del profesor al repositorio. | Entrega completa y comprobable; vídeo grabado y revisado; acceso concedido. |
 
-> **Nota:** la documentación, las pruebas y el estudio del código se hacen **durante todas las fases**; no se posponen hasta F7.
+> **Nota:** la documentación, las pruebas y el estudio del código se hacen **durante todas las fases**; no se posponen hasta F8.
 
 ### MVP inicial
 
@@ -201,19 +204,46 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 | 6.7 | Accesibilidad, diseño responsive y compatibilidad del panel | ✅ hecho y corregido; T053 superada con limitaciones (Narrador+Edge, 14 pasos; Chrome real informado) |
 | 6.8 | Estabilidad, recuperación y persistencia sin operaciones destructivas | ✅ (T060 con reinicio natural del PC, no controlado de Docker Desktop; T063 down/up no realizada por decisión; SC-010 >24 h aplazada) |
 | 6.9 | Entregables, reproducibilidad y cierre de F6 | ✅ cerrada técnicamente (entorno limpio verificado tras corregir el README; regresión 964 + 130; aislamiento OK; Architect y QA «aprobado con reservas»); reservas en `docs/evidencias/f6/resultados.md` |
-| 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ⬜ pendiente |
+| 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ⬜ pendiente (no se ejecutó en F6; **se realiza en F8, paso 8.5**, con PA-10 expresa; T075–T077 de `specs/005-…` se reutilizan allí) |
 
 **Se mantiene además** (`ENUNCIADO.md` §9, §10, §11): replay por Kafka con topic y tablas separados, tiempo original y de reproducción, etiqueta «REPRODUCCIÓN» y casos controlados de duplicado y revisión; las pruebas de aceptación del enunciado §11 (incluido cerrar y reabrir el túnel); mediciones también de la integración geográfica y de la agregación por ventanas, con datos sintéticos marcados y fuera del análisis real, y razonamiento para 100 millones de registros; CORS con el origen exacto de Netlify; authtoken de ngrok fuera de Git y de Angular; solo la API expuesta.
 
-### F7 — Memoria y defensa · ⬜ pendiente
+### F7 — Mejoras y evolución · 🟡 marco creado el 2026-11-09 (`specs/006-mejoras-evolucion/`); ninguna mejora aprobada
+
+Fase **flexible**: las mejoras se descubren mientras se usa y estudia el proyecto y se implementan **solo cuando la persona estudiante las aprueba**, en pasos pequeños `7.1`, `7.2`… con su propia mini-especificación (requisitos, alcance, criterios de aceptación y pruebas proporcionales) y commit manual `[F7.n]`. Reglas: no se cambia la arquitectura obligatoria ni el contrato del profesor, no se debilita la seguridad (clave, CORS), no se tocan F0–F6 ni sus evidencias, y publicar en Netlify o abrir ngrok requiere autorización expresa.
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 7.1 | Consolidar arquitectura, modelos de datos, decisiones y calidad | ⬜ |
-| 7.2 | Documentar benchmarks, costes y tres conclusiones | ⬜ |
-| 7.3 | Preparar demostración, evidencias y preguntas de defensa | ⬜ |
+| 7.0 | Marco SDD: spec, plan, tareas, backlog y plantilla de mejora | ✅ creado (pendiente de la revisión humana y del commit de la reorganización) |
+| C-01 | *(candidata)* Entrar en `localhost:4200` sin teclear la clave de la API cada vez, sin debilitar FastAPI ni Netlify | ⬜ candidata, **sin aprobar** |
+| C-02 | *(candidata)* Mostrar de forma más perceptible cuándo el dashboard se ha actualizado correctamente (observación f de `docs/evidencias/f6/6.9-revision-humana.md`) | ⬜ candidata, **sin aprobar** |
+| C-03 | *(candidata)* Crear un subagente **Frontend Engineer** (Angular, TypeScript, diseño, accesibilidad y responsive) | ⬜ candidata, **sin aprobar** |
+| C-04 | *(candidata)* Explorar skills con `npx skills find`, revisando procedencia y contenido **antes** de instalar; estudiar su aplicación al frontend | ⬜ candidata, **sin aprobar** (no se instala nada) |
+| I-01…I-04 | *(ideas)* Data Engineer y MCP como posibilidades futuras solo si aportan valor concreto; investigar APIs sísmicas regionales y valorar Streamlit (opcionales, solo si aportan algo distinto al dashboard Angular) | 💡 anotadas, sin plan |
+| 7.n | Nuevas mejoras: se añaden al backlog (`specs/006-mejoras-evolucion/backlog.md`) y reciben número al aprobarse | — |
 
-**Se mantiene además** (`ENUNCIADO.md` §12, `Guia-entregables`): diccionario de datos, procedencia y registro de consultas, apartado de calidad con resultados antes y después, modelo conceptual/lógico/físico con SQL e índices, análisis con al menos tres conclusiones y capturas de los filtros, informe de complejidad y costes (hardware, electricidad, almacenamiento, transferencia, mantenimiento y desarrollo), evidencias de las pruebas y del replay, `README.md` reproducible, URL del panel, procedimiento para activar el sistema en la defensa y explicación individual del flujo completo y de una decisión técnica propia.
+**Política de trabajo de F7:** se desarrolla y prueba en `localhost:4200`; commits y push manuales al repositorio privado; **Netlify se mantiene con la versión de F6** (sin despliegues automáticos ni publicación de las mejoras); sin ngrok ni despliegues públicos sin autorización expresa; sin secretos en Git ni en bundles; **no se instalan skills, agentes, MCP ni dependencias** sin aprobación (las skills se revisan antes: procedencia y contenido). Las notas de clase del 2026-11-09 son orientaciones del profesor, **no requisitos obligatorios**.
+
+**Alcance posible** (cada punto, solo mediante una mejora aprobada): mejoras visuales y rediseño de Angular; experiencia de usuario y accesibilidad; filtros, navegación, mapas, estadísticas y gráficas; optimización y ajustes técnicos pequeños; funcionalidades nuevas propuestas por la persona estudiante; comodidad del entorno de desarrollo local.
+
+### F8 — Documentación, entrega académica y vídeo · ⬜ planificada el 2026-11-09 (`specs/007-documentacion-entrega-video/`); sin ejecutar
+
+Sustituye a la antigua «F7 — Memoria y defensa». El profesor ha indicado que la evaluación será mediante un **vídeo grabado** que muestre el funcionamiento y demuestre la rúbrica. **Ese requisito no consta en los materiales del repositorio** (`docs/referencias/`, que hablan de defensa y explicación individual y no mencionan vídeo): hasta tener la fuente literal del profesor, F8 mantiene preparada también la explicación individual y trata fechas, formato, plataforma, acceso al repositorio y formato de la memoria como **aclaraciones pendientes** (CA-01…CA-07 en la especificación). Los materiales oficiales **sí confirman** que se exige una memoria o notebook (el README no la sustituye). El formato exacto del vídeo está **pendiente de confirmación formal** (lo indicó el profesor en clase; no figura en los materiales). Refuerzos acordados el 2026-11-09 (orientaciones, no requisitos): evidencias visuales reales (capturas del frontend, fragmentos de código, resultados de pruebas y demostraciones), grabación como recorrido por la rúbrica (**requisito → funcionalidad → evidencia → demostración**) y README profesional con capturas y enlaces internos a las evidencias, además de la memoria o notebook.
+
+| Paso | Qué haremos | Estado |
+|---|---|---|
+| 8.1 | Revisión literal de rúbrica, guía, FAQ, enunciado y contrato; aclarar CA-01…CA-07 | ⬜ |
+| 8.2 | Matriz de trazabilidad: rúbrica → implementación → evidencia → minuto de vídeo | ⬜ |
+| 8.3 | Memoria o notebook: arquitectura y diagramas, modelo, diccionario, procedencia, calidad, pruebas, resultados, complejidad/costes, conclusiones | ⬜ |
+| 8.4 | README final profesional, verificado en un entorno limpio paralelo | ⬜ |
+| 8.5 | Observación de >24 h (SC-010 de F3, antes 6.10), con PA-10 expresa y resultado real | ⬜ |
+| 8.6 | Guion y recorrido de la grabación | ⬜ |
+| 8.7 | Entorno de grabación verificado (ensayo en seco, checklist) | ⬜ |
+| 8.8 | Grabación y revisión del vídeo (la graba la persona estudiante) | ⬜ |
+| 8.9 | Revisión final de los entregables | ⬜ |
+| 8.10 | Acceso del profesor al repositorio privado y entrega (persona estudiante) | ⬜ |
+
+**Se mantiene además** (`ENUNCIADO.md` §12, `Guia-entregables`): diccionario de datos, procedencia y registro de consultas, apartado de calidad con resultados antes y después, modelo conceptual/lógico/físico con SQL e índices, análisis con al menos tres conclusiones y capturas de los filtros, informe de complejidad y costes (hardware, electricidad, almacenamiento, transferencia, mantenimiento y desarrollo), evidencias de las pruebas y del replay, `README.md` reproducible, URL del panel, procedimiento para activar el sistema y explicación individual del flujo completo y de una decisión técnica propia (pendiente de aclarar su forma con el vídeo).
 
 ## 5. Plan de commits
 
@@ -233,7 +263,8 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 | **F4** | `feat: [F4] integrar geografía y carga histórica de 2025` | Países asignados e histórico reproducible. |
 | **F5** | `feat: [F5] completar API y dashboard analítico` | Endpoints, filtros y panel probados. |
 | **F6** | `feat: [F6] añadir replay, pruebas de aceptación y despliegue` | Replay aislado, pruebas ejecutadas y acceso desde otro dispositivo. |
-| **F7** | `docs: [F7] completar memoria técnica y evidencias` | Documentación final y defensa preparadas. |
+| **F7** | `feat: [F7.n] <mejora>` (un commit manual por mejora aprobada; `[F7.n]` identifica el paso de mejora) | Mejora verificada con evidencia y revisión humana. |
+| **F8** | `docs: [F8] completar documentación, entrega y vídeo` (y `[F8-WIP]` intermedios si hacen falta) | Entregables completos, vídeo revisado y acceso del profesor gestionado. |
 
 Ejemplo de mensaje completo (orientativo, para F1):
 
@@ -246,7 +277,7 @@ all_day.geojson de USGS y analiza la calidad de los datos.
 - Reorganiza la hoja de ruta en fases y pasos.
 ```
 
-**Estimación:** 2 commits iniciales (repositorio y documentación de referencia) + `[F0.1]` ya realizados; **7 commits previstos** (`[F1]` a `[F7]`) y los intermedios que hagan falta. Es una planificación flexible: se puede añadir un commit correctivo si aparece un error importante, por ejemplo `fix: [F3] corregir gestión de revisiones antiguas`.
+**Estimación:** 2 commits iniciales (repositorio y documentación de referencia) + `[F0.1]` ya realizados; **commits previstos** `[F1]` a `[F6]` (ya realizados), uno por cada mejora aprobada de F7 (`[F7.n]`, número variable) y `[F8]`, más los intermedios que hagan falta; la reorganización del 2026-11-09 se confirma con un commit propio de documentación. Es una planificación flexible: se puede añadir un commit correctivo si aparece un error importante, por ejemplo `fix: [F3] corregir gestión de revisiones antiguas`.
 
 **Regla práctica:** antes de cada commit, revisar `git status`, `git diff --check`, el diff y los resultados de las pruebas. El estudiante confirma el hito y realiza el `push` cuando corresponda.
 
@@ -258,9 +289,9 @@ all_day.geojson de USGS y analiza la calidad de los datos.
 |---|---|---|
 | **Architect** (creado) | Revisar arquitectura, requisitos, especificaciones y contratos. | F0–F2 |
 | **Data Engineer** | Kafka, productor/consumidor, PostgreSQL, calidad, geografía e histórico. | F2–F4 |
-| **Frontend Engineer** | Angular, Leaflet, filtros, panel y visualización. | F1 y F5–F6 |
-| **QA Engineer** (creado) | Tests, idempotencia, recuperación de fallos y criterios de aceptación. | F0–F7 |
-| **Technical Reviewer** | Explicación del código, decisiones técnicas, documentación y preguntas de defensa. | F2–F7 |
+| **Frontend Engineer** | Angular, Leaflet, filtros, panel y visualización. | F1 y F5–F6; creación como especialista de Angular/TypeScript/diseño/accesibilidad/responsive = candidata C-03 de F7, **sin aprobar** |
+| **QA Engineer** (creado) | Tests, idempotencia, recuperación de fallos y criterios de aceptación. | F0–F8 |
+| **Technical Reviewer** | Explicación del código, decisiones técnicas, documentación y preguntas de defensa. | F2–F8 |
 
 **Orden de incorporación:** Architect y QA Engineer ya existen en `.claude/agents/`; los demás se añaden cuando haya tareas especializadas. No invocar subagentes por rutina, para controlar el consumo de Claude Pro.
 
@@ -308,7 +339,9 @@ La entrega del profesor se organiza en **tres bloques**:
 
 1. **Repositorio reproducible:** código, Docker Compose, dependencias, SQL, configuración de ejemplo, instrucciones y pruebas.
 2. **Memoria o notebook:** procedencia de datos, dimensiones de calidad, modelado conceptual/lógico/físico, análisis, tres conclusiones fundamentadas, complejidad, medidas de rendimiento y costes.
-3. **Panel y defensa:** Angular publicado, procedimiento para levantar backend y ngrok, replay y explicación individual del flujo completo y de una decisión técnica propia.
+3. **Panel y defensa** (según los materiales del repositorio; el formato definitivo —defensa o vídeo— se aclara en F8): Angular publicado, procedimiento para levantar backend y ngrok, replay y explicación individual del flujo completo y de una decisión técnica propia.
+
+> **Nota (2026-11-09):** los materiales del repositorio describen una defensa con explicación individual; el profesor ha indicado después que la evaluación será por **vídeo grabado**. La fuente literal de ese cambio no está en `docs/referencias/` y se pide en F8 (paso 8.1). Hasta entonces se mantienen ambos formatos preparados. La memoria o notebook **sí** está exigida por los materiales oficiales.
 
 La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**. Para una buena entrega son prioritarias las pruebas de duplicados y revisiones, integración geográfica, filtros coherentes y conclusiones con cifras y periodos identificables.
 
@@ -320,22 +353,21 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 
 ## 11. Estado actual y próximo paso
 
-### Estado actual
-- Repositorios GitHub creados y conectados. Material del profesor en `docs/referencias/`. `CLAUDE.md` configurado.
-- **F0 completada** (commit `[F0.1]` realizado), con el paso 0.5 (skills propias) aplazado.
-- **F1 completada** (3 de noviembre de 2026): pasos 1.1 a 1.5 con evidencia en `docs/FASE-1-FUENTES-Y-FRONTEND.md`; la incidencia del formateo accidental de cuatro archivos del frontend está **resuelta**. **Pendiente: commit manual `[F1]`.**
-- F2 a F7: pendientes, sin cambios de estado.
+### Estado actual (2026-11-09)
+- **F0–F6 completadas** (commits `[F0.1]`, `[F1]`…`[F6]`; el último, `fd9e1a7`). Detalle por fase en sus `specs/` y `docs/evidencias/`. F6 cerrada técnicamente con reservas documentadas (`docs/evidencias/f6/resultados.md` §5): SC-010 de F3 (>24 h, 6.10), T063 (no autorizada), recuperación de un hueco real de USGS, otros navegadores y lector de pantalla, mediciones de una sola máquina.
+- **F7 — Mejoras y evolución**: marco creado (`specs/006-mejoras-evolucion/`); candidatas C-01 y C-02 **sin aprobar**; nada implementado.
+- **F8 — Documentación, entrega y vídeo**: planificada (`specs/007-documentacion-entrega-video/`); requisitos del vídeo y fechas pendientes de aclarar con el profesor.
 - Codex queda aparcado hasta terminar la versión Claude.
 
 ### Decisiones técnicas
-- **Python 3.13** es la versión candidata para las imágenes Docker. No se fija definitivamente hasta comprobar la compatibilidad con las dependencias del proyecto.
-- `.claude/settings.local.json` no se versiona; los subagentes y skills del proyecto sí.
-- `mode = "synthetic"` es una excepción temporal del MVP, que se retira o aísla en el paso 3.1.
+- **Python 3.13** en las imágenes Docker; `.claude/settings.local.json` no se versiona; los subagentes y skills del proyecto sí.
+- `mode = "synthetic"` fue una excepción temporal del MVP, retirada en el paso 3.1 (esquema `sintetico` archivado).
+- Reorganización 2026-11-09: antigua F7 (memoria y defensa) → F8; nueva F7 evolutiva. Constitución v1.0.5 (PATCH: fases F0–F8).
 
 ### Próximos pasos
-1. Con autorización expresa, continuar F3 en el paso 3.2 (consulta periódica a USGS), con especificación propia en Spec Kit (`specs/002-ingesta-real-calidad/`).
-2. El commit `[F3]` se realiza manualmente al cerrar la fase (evidencias en `docs/evidencias/f3/`).
-3. Crear las skills propias (`requirements-review`, `learning-explainer`, etc.) cuando haga falta.
+1. Revisión humana y commit manual de la reorganización (documentación únicamente).
+2. **F7**: la persona estudiante decide qué candidata (C-01, C-02) u otra mejora aprobar; se redacta su mini-especificación antes de implementar. Primer paso sugerido: aprobar y especificar C-02 (riesgo bajo).
+3. **F8**: empezar por el paso 8.1 (obtener el texto literal del profesor sobre el vídeo, fecha y canal) y valorar autorizar cuanto antes la observación de >24 h (PA-10), que no depende de las mejoras.
 
 ### Reglas
 - No implementar funcionalidades sin una especificación aprobada.

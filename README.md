@@ -3,8 +3,8 @@
 Proyecto académico de Sistemas de Big Data. Arquitectura: productor Python → Apache Kafka → consumidor Python →
 PostgreSQL → API FastAPI → mapa Angular/Leaflet, en cinco servicios de Docker Compose.
 
-**Estado:** fase F6 (replay, pruebas, mediciones y despliegue) técnicamente cerrada; pendientes la revisión humana y el commit `[F6]`, y las reservas listadas en
-[`docs/evidencias/f6/resultados.md`](docs/evidencias/f6/resultados.md) (SC-010 de F3 de más de 24 h, T063, lector de pantalla real, otros navegadores y la recuperación de un hueco real de USGS). F3, F4 y F5 ya están commiteadas. Resultados por criterio de éxito en
+**Estado:** F0–F6 completadas (F6 cerrada con reservas, listadas en
+[`docs/evidencias/f6/resultados.md`](docs/evidencias/f6/resultados.md): SC-010 de F3 de más de 24 h, T063, lector de pantalla real, otros navegadores y la recuperación de un hueco real de USGS). Siguen F7 (mejoras, `specs/006-mejoras-evolucion/`) y F8 (documentación, entrega y vídeo, `specs/007-documentacion-entrega-video/`); ver `docs/HOJA-DE-RUTA.md`. Resultados por criterio de éxito en
 [`docs/evidencias/f5/resultados.md`](docs/evidencias/f5/resultados.md) (F4 en [`docs/evidencias/f4/resultados.md`](docs/evidencias/f4/resultados.md)). El MVP de la fase F2 (un evento sintético que recorría todo el circuito) está
 **retirado del sistema** (paso 3.1) y se conserva en Git (commit `0a56f65`), en `docs/evidencias/mvp/` y en el esquema
 archivado `sintetico` de PostgreSQL, que ningún componente lee. El servicio `producer` consulta el feed de USGS cada 60 s, registra las consultas, conserva la respuesta original y publica en
