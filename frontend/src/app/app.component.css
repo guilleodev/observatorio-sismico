@@ -1,12 +1,62 @@
-main { max-width: 1200px; margin: auto; padding: 24px; } h1 { margin: 8px 0; font-size: clamp(1.6rem, 4vw, 2.5rem); } .eyebrow { letter-spacing: .15em; font-size: .75rem; font-weight: 700; color: #176b70; } .info { padding: 16px; border-left: 4px solid #176b70; background: white; margin: 20px 0; } .info p { margin: 8px 0; } .map { height: 60vh; min-height: 360px; background: #dceaf1; border-radius: 10px; } footer { padding: 18px 0; } footer span { display: inline-block; margin: 8px 12px; } footer p { font-size: .9rem; color: #42596b; } small { overflow-wrap: anywhere; }
-/* F5 (5.5): panel de análisis bajo el mapa (las reglas anteriores son las del frontend proporcionado) */
-.panel { margin-top: 20px; } .contador { background: white; border-left: 4px solid #176b70; padding: 10px 14px; margin: 0 0 12px; font-size: .9rem; }
-.graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-bottom: 8px; }
+/* F7: tema oscuro. Disposición en rejilla de una columna: cabecera → fila de control (refresco + modo) → información y estado → [acceso] → filtros → mapa → estado → análisis → leyenda. */
+main { max-width: 1480px; margin: auto; padding: var(--esp-4) var(--esp-4) var(--esp-5); display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); }
+/* cabecera compacta: título a la izquierda y subtítulo a la derecha en pantallas anchas */
+.cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 2px var(--esp-4); padding: var(--esp-1) 0 var(--esp-2); border-bottom: 1px solid var(--borde); }
+.cabecera > div { min-width: 0; }
+h1 { margin: 2px 0 0; font-size: clamp(1.35rem, 3vw, 1.8rem); line-height: 1.15; }
+.eyebrow { margin: 0; letter-spacing: .15em; font-size: var(--t-xs); font-weight: 700; color: var(--acento-texto); }
+.subtitulo { margin: 0; color: var(--texto-2); font-size: var(--t-m); text-wrap: balance; }
+
+/* fila de control: dos columnas desde 1000 px (refresco 5/12 · modo 7/12), apiladas en móvil; sin contenido (modo demostración) no ocupa espacio */
+.control { display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+.control:empty { display: none; }
+@media (min-width: 1000px) { .control { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+
+/* mapa: protagonista. El fondo del contenedor (oscuro o claro) lo fija styles.css según la clase mapa-oscuro / mapa-claro; el borde de los círculos se ajusta a cada fondo (formato.ts). */
+.mapa-envoltorio { position: relative; border: 1px solid var(--borde-control); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
+.map { height: 70vh; min-height: 420px; }
+.etiqueta-mapa { position: absolute; top: 10px; left: 50px; z-index: 1001; margin: 0; padding: 6px 10px; background: var(--replay-fuerte); color: #fff; font-weight: 700; font-size: .85rem; border-radius: var(--radio-s); border: 1px solid var(--replay-texto); box-shadow: var(--sombra-s); max-width: calc(100% - 70px); }
+/* pantallas estrechas: la etiqueta REPRODUCCIÓN pasa a franja sobre el mapa (no tapa los controles de la esquina superior derecha) y el mapa no queda aplastado ni desborda */
+@media (max-width: 700px) {
+  .etiqueta-mapa { position: static; max-width: none; border-width: 0 0 1px; border-radius: 0; box-shadow: none; }
+  .map { height: 65vh; height: 65svh; min-height: 380px; }
+}
+
+/* F7 (globo 3D): selector de vista (mismo patrón visual que el selector de modo: tarjetas con borde, la activa con fondo cian, marca ✓ y negrita; no solo color) */
+.vista-selector { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-2); }
+.vista-titulo { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); margin-right: var(--esp-1); }
+.vista-selector button { min-height: 36px; min-width: 36px; padding: 0 var(--esp-4); font: 600 var(--t-m) var(--fuente); background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde); border-radius: var(--radio-s); cursor: pointer; }
+.vista-selector button:hover:not(:disabled) { border-color: var(--borde-control); }
+.vista-selector button[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border: 2px solid var(--acento); font-weight: 700; }
+.vista-selector button:disabled { opacity: .55; cursor: not-allowed; }
+.vista-selector button:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+.vista-aviso { flex: 1 1 100%; margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--info-fondo); color: var(--info-texto); border: 1px solid var(--info); border-radius: var(--radio-s); font-size: var(--t-m); }
+.map[hidden] { display: none; }
+
+/* leyenda de profundidad: franja bajo el mapa; los puntos usan los MISMOS colores que colorProfundidad (formato.ts) con borde claro para verse sobre el fondo oscuro */
+.leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-4); padding: var(--esp-2) var(--esp-4); background: var(--superficie-1); border-top: 1px solid var(--borde); }
+.leyenda-titulo { font-size: var(--t-m); color: var(--texto); }
+.leyenda-lista { display: flex; flex-wrap: wrap; gap: var(--esp-1) var(--esp-4); margin: 0; padding: 0; list-style: none; min-width: 0; }
+.leyenda-lista li { display: flex; align-items: center; gap: var(--esp-2); min-width: 0; font-size: var(--t-m); color: var(--texto-2); }
+/* leyenda interactiva (solo vista 3D): botones >= 28 px, foco visible, estado pulsado con borde y peso (no solo color); sin transiciones */
+.leyenda-boton { display: inline-flex; align-items: center; gap: var(--esp-2); min-height: 28px; padding: 2px 10px; font: 600 var(--t-m) var(--fuente); font-variant-numeric: tabular-nums; background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); cursor: pointer; touch-action: manipulation; }
+.leyenda-boton:hover { border-color: var(--acento); }
+.leyenda-boton[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border: 2px solid var(--acento); font-weight: 700; }
+.leyenda-boton:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+.punto { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--punto-borde); }
+.punto-somera { background: #e8a317; }
+.punto-media { background: #e35b37; }
+.punto-profunda { background: #7b3fb6; }
+.punto-nd { background: #64748b; }
+
+.panel { display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); }
+.contador { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio-s); padding: 10px 14px; margin: 0; font-size: .9rem; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: var(--esp-4); }
 @media (max-width: 520px) { .graficas { grid-template-columns: minmax(0, 1fr); } }
+
 /* F6 (6.2): modo REPRODUCCIÓN visible en mapa, panel de información y aviso de comparación */
 .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.mapa-envoltorio { position: relative; }
-.etiqueta-mapa { position: absolute; top: 10px; left: 50px; z-index: 1001; margin: 0; padding: 6px 10px; background: #5b21b6; color: white; font-weight: 700; font-size: .85rem; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); max-width: calc(100% - 70px); }
-.etiqueta-replay-info { background: #f3e8ff; border-left: 3px solid #5b21b6; padding: 6px 10px; color: #3b0764; }
-.no-aplica { background: white; border-left: 4px solid #5b21b6; padding: 12px 16px; margin: 0 0 16px; } .no-aplica h2 { margin: 0 0 6px; font-size: 1.1rem; } .no-aplica p { margin: 0; font-size: .9rem; }
-.actualizar { min-height: 24px; padding: 3px 12px; font: inherit; cursor: pointer; } /* F6 (6.7): objetivo >= 24 px (WCAG 2.5.8) */
+.no-aplica { background: var(--replay-fondo); border: 1px solid var(--replay); border-left: 4px solid var(--replay); border-radius: var(--radio); padding: 12px 16px; margin: 0; color: var(--replay-texto); } .no-aplica h2 { margin: 0 0 6px; font-size: 1.1rem; } .no-aplica p { margin: 0; font-size: .9rem; }
+
+footer { padding: var(--esp-3) var(--esp-4); background: var(--superficie-1); border: 1px solid var(--borde); border-radius: var(--radio); display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-3); }
+footer p { flex: 1 1 100%; margin: 0; font-size: .85rem; color: var(--texto-2); }

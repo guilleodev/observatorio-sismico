@@ -61,32 +61,32 @@ import { DISTINTIVO_CASO } from '../modo';
     </section>
   `,
   styles: `
-    .etiqueta-replay { color: #5b21b6; }
-    .caso { display: inline-block; margin-left: 6px; padding: 1px 6px; font-size: .75rem; font-weight: 700; background: #f3e8ff; color: #3b0764; border: 1px solid #5b21b6; border-radius: 3px; }
-    .tabla { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 20px 0; }
+    :host { display: block; min-width: 0; }
+    .etiqueta-replay { color: var(--replay-texto); background: var(--replay-fondo); border: 1px solid var(--replay); border-radius: var(--radio-s); padding: 0 8px; font-size: .85rem; }
+    .caso { display: inline-block; margin-left: 6px; padding: 1px 6px; font-size: .75rem; font-weight: 700; background: var(--replay-fondo); color: var(--replay-texto); border: 1px solid var(--replay); border-radius: 3px; }
+    .tabla { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 16px; margin: 0; }
     h2 { margin: 0 0 10px; font-size: 1.1rem; }
     .barra { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: end; }
     label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; font-weight: 600; min-width: min(280px, 100%); }
-    input { font: inherit; font-weight: 400; padding: 6px 8px; border: 1px solid #9fb3c0; border-radius: 4px; }
-    .resumen { margin: 0; font-size: .85rem; color: #42596b; }
-    .desplazable { overflow: auto; max-height: 520px; margin-top: 10px; border: 1px solid #c3d0da; }
+    input { font: inherit; font-weight: 400; padding: 6px 8px; min-height: 32px; border: 1px solid var(--borde-control); border-radius: var(--radio-s); background-color: var(--fondo); color: var(--texto); }
+    .resumen { margin: 0; font-size: .85rem; color: var(--texto-2); }
+    .desplazable { overflow: auto; max-height: 520px; margin-top: 10px; border: 1px solid var(--borde); border-radius: var(--radio-s); overscroll-behavior: contain; }
     table { border-collapse: collapse; font-size: .82rem; width: 100%; }
-    th, td { border-bottom: 1px solid #e1e8ee; padding: 4px 8px; text-align: left; vertical-align: top; }
-    thead th { position: sticky; top: 0; background: #eef3f6; z-index: 1; }
+    th, td { border-bottom: 1px solid var(--borde); padding: 4px 8px; text-align: left; vertical-align: top; }
+    thead th { position: sticky; top: 0; background: var(--superficie-3); z-index: 1; }
     .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .fecha, .id { white-space: nowrap; }
-    .vacio { text-align: center; padding: 18px; background: #f6f9fb; }
+    .vacio { text-align: center; padding: 18px; background: var(--superficie-2); color: var(--texto-2); }
     button { font: inherit; cursor: pointer; }
     /* objetivos táctiles de al menos 24×24 px (WCAG 2.2, criterio 2.5.8) */
-    .orden { background: none; border: 0; font-weight: 700; padding: 3px 4px; min-height: 24px; min-width: 24px; text-align: left; color: #132b40; }
-    .fila { background: none; border: 0; padding: 3px 0; min-height: 24px; text-align: left; color: #0b5cad; text-decoration: underline; }
-    tr.seleccionada td { background: #fff3c4; }
+    .orden { background: none; border: 0; font-weight: 700; padding: 3px 4px; min-height: 24px; min-width: 24px; text-align: left; color: var(--texto); }
+    .fila { background: none; border: 0; padding: 3px 0; min-height: 24px; text-align: left; color: var(--acento-texto); text-decoration: underline; }
+    tr.seleccionada td { background: #3a3413; } /* ámbar oscuro: la fila seleccionada se distingue también por el texto en negrita y aria-pressed */
     tr.seleccionada .fila { font-weight: 700; }
-    .paginas { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-size: .9rem; }
-    .paginas button { padding: 5px 12px; border: 1px solid #176b70; border-radius: 4px; background: white; color: #176b70; }
+    .paginas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 10px; font-size: .9rem; }
+    .paginas button { padding: 5px 12px; min-height: 28px; border: 1px solid var(--borde-control); border-radius: var(--radio-s); background: var(--superficie-2); color: var(--acento-texto); }
     .paginas button:disabled { opacity: .45; cursor: not-allowed; }
-    :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
   `,
 })
 export class TablaComponent {

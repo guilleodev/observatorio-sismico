@@ -1,0 +1,6 @@
+{
+  "mode": "api",
+  "apiUrl": "http://localhost:4200",
+  "refreshMs": 60000,
+  "skipNgrokWarning": false
+}

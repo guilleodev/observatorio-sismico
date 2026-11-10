@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { REFRESCO_PUBLICO_MS, debeRefrescarAlVolver, erroresDeConfig, formatoIntervalo, pausada, textoActualizacion } from '../src/app/actualizacion.ts';
+import { REFRESCO_PUBLICO_MS, avisoPausaOculta, debeRefrescarAlVolver, erroresDeConfig, formatoIntervalo, pausada, textoActualizacion, textoIntervalo } from '../src/app/actualizacion.ts';
 
 const leer = (ruta: string) => readFileSync(new URL(ruta, import.meta.url), 'utf8');
 
@@ -72,7 +72,24 @@ test('la aplicación aplica la política: pausa con la pestaña oculta, reanuda 
   assert.match(ts, /document\.removeEventListener\('visibilitychange', this\.alCambiarVisibilidad\)/);
   assert.match(ts, /debeRefrescarAlVolver\(performance\.now\(\), this\.lecturaPerf\(\), config\.refreshMs\)/);
   assert.match(ts, /actualizarAhora\(\): void/);
+  // F7: el botón vive en el indicador; app.component solo conecta su salida `(actualizar)` con actualizarAhora()
   const html = leer('../src/app/app.component.html');
-  assert.match(html, /\(click\)="actualizarAhora\(\)"/);
-  assert.match(html, /textoAct\(\)/);
+  assert.match(html, /\(actualizar\)="actualizarAhora\(\)"/);
+  assert.match(html, /\[intervalo\]="intervaloRef\(\)"/);
+  assert.match(html, /\[avisoPausa\]="avisoPausaRef\(\)"/);
+  const ind = leer('../src/app/indicador-refresco/indicador-refresco.component.ts');
+  assert.match(ind, /<button type="button" class="actualizar" \(click\)="actualizar\.emit\(\)" \[disabled\]="cargando\(\)">Actualizar ahora<\/button>/);
+  assert.match(ind, /\{\{ intervalo\(\) \}\}/);
+  assert.match(ind, /@if \(avisoPausa\(\); as a\)/);
+});
+
+test('F7: texto de intervalo («cada 60 s») y aviso de pausa con la pestaña oculta, solo si la configuración lo activa', () => {
+  assert.equal(textoIntervalo({ refreshMs: 60_000 }), 'cada 60 s');
+  assert.equal(textoIntervalo({ refreshMs: 600_000 }), 'cada 10 min');
+  assert.equal(textoIntervalo({ refreshMs: 0 }), 'intervalo no válido');   // sin «cada»: no se inventa un intervalo
+  assert.equal(avisoPausaOculta({}), null);
+  assert.equal(avisoPausaOculta({ pausarSiOculta: false }), null);
+  assert.match(avisoPausaOculta({ pausarSiOculta: true }) ?? '', /se suspende mientras la pestaña no está visible/);
+  // el mismo texto que la frase larga existente: no se pierde información ni se diverge
+  assert.ok(textoActualizacion({ refreshMs: 600_000, pausarSiOculta: true }).includes(avisoPausaOculta({ pausarSiOculta: true })!));
 });

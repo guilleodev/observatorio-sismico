@@ -49,20 +49,22 @@ import type { Comparacion } from '../modelos';
     </section>
   `,
   styles: `
-    .tarjeta { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 20px 0; }
+    :host { display: block; min-width: 0; }
+    .tarjeta { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 16px; margin: 0; overflow-x: auto; }
     h2 { margin: 0 0 6px; font-size: 1.1rem; }
-    .ambito { font-size: .85rem; color: #42596b; margin: 0 0 10px; }
+    .ambito { font-size: .85rem; color: var(--texto-2); margin: 0 0 10px; }
     table { border-collapse: collapse; font-size: .9rem; width: 100%; }
-    th, td { border: 1px solid #c3d0da; padding: 5px 9px; text-align: left; vertical-align: top; }
+    th, td { border: 1px solid var(--borde); padding: 5px 9px; text-align: left; vertical-align: top; }
+    thead th { background: var(--superficie-2); }
     td:nth-child(2) { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
     tbody th { font-weight: 400; }
     .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .aviso { font-size: .85rem; margin: 10px 0 0; padding: 8px 10px; background: #fff7e0; border-left: 3px solid #e8a317; color: #4a3b0a; }
+    .aviso { font-size: .85rem; margin: 10px 0 0; padding: 8px 10px; background: var(--aviso-fondo); border-left: 3px solid var(--aviso); color: var(--aviso-texto); border-radius: 0 var(--radio-s) var(--radio-s) 0; }
     .aviso p { margin: 4px 0; }
     .aviso ul { margin: 4px 0 4px 18px; padding: 0; }
-    .aviso.malo { background: #fdecec; border-color: #b91c1c; color: #7f1d1d; }
-    .aviso.incompleto { background: #fff1d6; border-color: #c2410c; }
-    .aviso.cobertura { background: #e9f1fb; border-color: #1d4ed8; color: #17325c; }
+    .aviso.malo { background: var(--error-fondo); border-color: var(--error); color: var(--error-texto); }
+    .aviso.incompleto { background: var(--aviso-fondo); border-color: var(--aviso); }
+    .aviso.cobertura { background: var(--info-fondo); border-color: var(--info); color: var(--info-texto); }
   `,
 })
 export class ComparacionComponent {

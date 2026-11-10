@@ -8,11 +8,12 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
   selector: 'app-selector-modo',
   standalone: true,
   template: `
-    <section class="modo" aria-labelledby="modo-titulo">
+    <section class="modo" [class.replay]="modo() === 'replay'" aria-labelledby="modo-titulo">
       <h2 id="modo-titulo">Modo de datos</h2>
+      <!-- radios REALES (flechas del teclado y lectores de pantalla): cada etiqueta es una tarjeta; la elegida lleva fondo, borde, marca ✓ y texto «Activo» (no solo color) -->
       <div class="opciones" role="radiogroup" aria-labelledby="modo-titulo">
-        <label><input type="radio" name="modo-datos" value="live" [checked]="modo() === 'live'" (change)="elegir('live')" /> En vivo (USGS)</label>
-        <label><input type="radio" name="modo-datos" value="replay" [checked]="modo() === 'replay'" (change)="elegir('replay')" /> REPRODUCCIÓN (histórico acelerado)</label>
+        <label class="live" [class.activa]="modo() === 'live'"><input type="radio" name="modo-datos" value="live" [checked]="modo() === 'live'" (change)="elegir('live')" /><span class="texto">En vivo (USGS)</span>@if (modo() === 'live') { <span class="sel" aria-hidden="true">✓ Activo</span> }</label>
+        <label class="repro" [class.activa]="modo() === 'replay'"><input type="radio" name="modo-datos" value="replay" [checked]="modo() === 'replay'" (change)="elegir('replay')" /><span class="texto">REPRODUCCIÓN (histórico acelerado)</span>@if (modo() === 'replay') { <span class="sel" aria-hidden="true">✓ Activo</span> }</label>
       </div>
       @if (modo() === 'replay') {
         <p class="insignia" role="note"><strong>{{ etiqueta() }}</strong></p>
@@ -28,17 +29,31 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
     </section>
   `,
   styles: `
-    .modo { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 0 0 20px; }
-    h2 { margin: 0 0 8px; font-size: 1.1rem; }
-    .opciones { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 24px; padding: 2px 0; }
-    input[type="radio"] { width: 24px; height: 24px; margin: 0; flex: none; }
-    .insignia { margin: 12px 0 6px; padding: 6px 10px; background: #5b21b6; color: white; display: inline-block; border-radius: 4px; }
+    :host { display: block; min-width: 0; }
+    :host { height: 100%; }
+    .modo { height: 100%; background: var(--superficie-1); border: 1px solid var(--borde); border-top: 3px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: var(--esp-3) var(--esp-4); margin: 0; }
+    .modo.replay { border-top-color: var(--replay); }
+    h2 { margin: 0 0 var(--esp-3); font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
+    /* control segmentado: dos tarjetas iguales; en pantallas estrechas se apilan */
+    .opciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-2); }
+    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 24px; min-width: 0; padding: 12px 14px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-s); }
+    label:hover { border-color: var(--borde-control); }
+    label.activa { border-width: 2px; padding: 11px 13px; }
+    label.live.activa { background: var(--acento-fondo); border-color: var(--acento); }
+    label.repro.activa { background: var(--replay-fondo); border-color: var(--replay); color: var(--replay-texto); }
+    label:has(input:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
+    input[type="radio"] { width: 24px; height: 24px; flex: none; margin: 0; accent-color: var(--acento); }
+    label.repro input[type="radio"] { accent-color: var(--replay); }
+    .texto { min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+    .sel { margin-left: auto; flex: none; font-size: var(--t-s); font-weight: 700; white-space: nowrap; }
+    label.live .sel { color: var(--acento-texto); }
+    label.repro .sel { color: var(--replay-texto); }
+    @media (max-width: 520px) { .opciones { grid-template-columns: minmax(0, 1fr); } }
+    .insignia { margin: 12px 0 6px; padding: 6px 10px; background: var(--replay-fuerte); color: #fff; border: 1px solid var(--replay-texto); display: inline-block; border-radius: var(--radio-s); }
     dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 6px 18px; margin: 6px 0 0; font-size: .85rem; }
     dl div { display: flex; flex-direction: column; }
-    dt { font-weight: 700; color: #42596b; } dd { margin: 0; overflow-wrap: anywhere; }
-    .aviso { font-size: .85rem; background: #f3e8ff; border-left: 3px solid #5b21b6; margin: 10px 0 0; padding: 8px 10px; color: #3b0764; }
-    :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    dt { font-weight: 700; color: var(--texto-2); } dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+    .aviso { font-size: .85rem; background: var(--replay-fondo); border-left: 3px solid var(--replay); margin: 10px 0 0; padding: 8px 10px; color: var(--replay-texto); border-radius: 0 var(--radio-s) var(--radio-s) 0; }
   `,
 })
 export class SelectorModoComponent {

@@ -3,7 +3,7 @@
 **Especificación**: [spec.md](spec.md) · **Backlog**: [backlog.md](backlog.md) · **Fecha**: 2026-11-09
 
 ## Resumen
-F7 es evolutiva: no hay una lista cerrada de funcionalidades. El plan fija **cómo** se trabaja (ciclo, reglas, pruebas proporcionales, evidencias y commits) y deja el **qué** en el backlog. Añadir una mejora = añadir una fila al backlog y, al aprobarla, una carpeta `mejoras/F7.n-<nombre>/`. No se reescribe este plan.
+F7 es evolutiva: no hay una lista cerrada de funcionalidades. El plan fija **cómo** se trabaja (ciclo, reglas, pruebas proporcionales, evidencias y commits) y deja el **qué** en el backlog. Añadir una idea = añadir una fila al backlog. Cuando la persona estudiante decide empezar un trabajo concreto se le asigna `F7.n` (puede agrupar varias candidatas) y, si hace falta, una carpeta `mejoras/F7.n-<nombre>/` con su encargo breve. No se reescribe este plan y no hay secuencia predefinida.
 
 ## Comprobación de la constitución (v1.0.5)
 - I (requisitos del profesor prevalecen): las mejoras no cambian arquitectura, contrato ni rúbrica. ✔ regla FR-003/FR-004 del marco.
@@ -35,13 +35,13 @@ Cada mejora justifica qué batería ejecuta y cuál no; no se repiten baterías 
 ## Política de trabajo (ver `spec.md`)
 Desarrollo y pruebas en `localhost:4200`; commits y push manuales; Netlify congelado en la versión de F6 (sin despliegues automáticos ni publicación de F7); ngrok y despliegues públicos solo con autorización expresa; sin secretos en Git ni en bundles; nada se instala (skills, agentes, MCP, dependencias) sin aprobación y revisión previa de procedencia y contenido.
 
-## Hitos
-1. **7.0 Marco** (esta planificación): estructura SDD, backlog y plantilla. ✅ al aprobarse la reorganización.
-2. **7.1, 7.2, …**: se crean cuando la persona estudiante aprueba una candidata. Orden sugerido (no vinculante): empezar por C-02 (riesgo bajo, mejora visible) y dejar C-01 (seguridad) para cuando se haya decidido el enfoque.
-3. **Cierre de F7**: lo decide la persona estudiante; condicionado por la fecha límite de entrega (pendiente de confirmar, F8 CA-02). Antes de cerrar: resumen de mejoras, reservas y estado real de la aplicación para F8.
+## Cómo avanza F7 (sin hitos fijos)
+- **No hay secuencia ni número de pasos.** Los `F7.n` se numeran en el orden en que la persona estudiante decide empezar trabajos; cada uno puede agrupar varias mejoras y ser amplio.
+- **No hay paso de cierre definido.** Se decidirá más adelante; la fecha límite de entrega (F8, CA-02, pendiente) será el factor que lo condicione.
+- El orden en que aparecen las ideas en `propuesta-rediseno-dashboard.md` es **orientativo y no vinculante**.
 
 ## Riesgos
 - **Regresión de seguridad** al tocar el acceso (C-01): mitigada por FR-004 y por las pruebas de F6 que se conservan.
 - **Deriva del diseño original** del profesor: toda mejora visual justifica por qué y qué se conserva.
-- **Crecimiento sin fin**: F7 se acota con la fecha de entrega y con que F8 no se bloquea por F7.
+- **Crecimiento sin fin**: asumido a propósito (fase abierta); se acotará con la fecha de entrega y con que F8 no se bloquee por F7.
 - **Publicar sin querer**: la publicación en Netlify y ngrok requieren autorización expresa en cada ocasión.

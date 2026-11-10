@@ -1,11 +1,11 @@
 # Plantilla de mini-especificación de una mejora (F7.n)
 
-Copiar a `specs/006-mejoras-evolucion/mejoras/F7.n-<nombre>/spec.md` **solo tras la aprobación** de la persona estudiante. Añadir después `plan.md` y `tasks.md` breves. Mantener corto y proporcional al cambio.
+Opcional y **ligera**: úsala (o resume en un mensaje) cuando se decide empezar un trabajo `F7.n`, que puede agrupar varias mejoras. Guardar como `specs/006-mejoras-evolucion/mejoras/F7.n-<nombre>/encargo.md` solo si aporta algo; no hacen falta `plan.md` ni `tasks.md` salvo cambios grandes o de riesgo (seguridad, arquitectura, datos). El encargo se actualiza con una línea cuando cambia el alcance.
 
 ```markdown
-# Mejora F7.n — <título>
+# Trabajo F7.n — <título>
 
-**Candidata de origen**: C-nn · **Aprobada**: AAAA-MM-DD por la persona estudiante · **Estado**: en curso | verificada | con reservas
+**Agrupa**: C-nn, C-nn… (o ninguna) · **Empezó**: AAAA-MM-DD por decisión de la persona estudiante · **Estado**: en curso | verificado | con reservas
 **Riesgo**: bajo | medio | alto (justificar: seguridad, arquitectura, regresión de interfaz o de datos)
 
 ## Problema y valor

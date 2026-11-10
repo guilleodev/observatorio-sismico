@@ -193,7 +193,8 @@ test('la plantilla etiqueta mapa, tabla, gráficas, estado y ficha, y oculta la 
   assert.match(html, /@else if \(esReplay\(\)\)[^\n]*avisoNoAplica/);                             // y en replay, el aviso de «no aplica»
   assert.match(html, /aria-live="polite">\{\{ anuncioModo\(\) \}\}/);                             // el cambio de modo se anuncia
   assert.match(html, /\[replay\]="true"/);                                                         // filtros de reproducción
-  assert.match(fuente('app.component.ts'), /popup\.textContent = fichaReplay\(/);                  // ficha
+  // F7 (mapa): la ficha ya no es un único texto; el bloque REPRODUCCIÓN se inserta con textContent como primer elemento de la ventana (estructura en tests/mapa.test.ts)
+  assert.match(fuente('app.component.ts'), /replay\.textContent = fichaReplay\(p, this\.ejecucion\(\), true\)/);                  // ficha
 });
 
 test('cambiar de modo cancela, descarta la lectura, reinicia los filtros y consulta de nuevo', () => {

@@ -40,21 +40,22 @@ import type { EjecucionReplay } from '../modelos';
     </section>
   `,
   styles: `
-    .estado { background: white; border-left: 4px solid #176b70; padding: 14px 16px; margin: 0 0 20px; }
+    :host { display: block; min-width: 0; }
+    .estado { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 16px; margin: 0; }
     h2 { margin: 0 0 8px; font-size: 1.1rem; }
     .general { margin: 0 0 10px; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
-    .punto { width: 12px; height: 12px; border-radius: 50%; background: #64748b; display: inline-block; }
-    .ok .punto { background: #15803d; } .desact .punto { background: #c2410c; } .sin .punto { background: #b91c1c; }
+    .punto { width: 12px; height: 12px; border-radius: 50%; background: var(--texto-2); display: inline-block; flex: none; } /* el texto del estado acompaña siempre al punto: el color no es el único canal */
+    .ok .punto { background: var(--ok); } .desact .punto { background: var(--aviso); } .sin .punto { background: var(--error); }
     dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 6px 18px; margin: 0; font-size: .85rem; }
     dl div { display: flex; flex-direction: column; }
-    dt { font-weight: 700; color: #42596b; } dd { margin: 0; overflow-wrap: anywhere; }
-    .aviso { margin: 10px 0 0; padding: 8px 10px; font-size: .88rem; background: #fff7e0; border-left: 3px solid #e8a317; color: #4a3b0a; }
-    .aviso.error { background: #fdecec; border-color: #b91c1c; color: #7f1d1d; }
-    .replay dd { color: #5b21b6; }
-    .aviso.info { background: #e9f1fb; border-color: #1d4ed8; color: #17325c; }
-    button { font: inherit; margin-left: 10px; padding: 4px 12px; border: 1px solid #176b70; border-radius: 4px; background: #176b70; color: white; cursor: pointer; }
+    dt { font-weight: 700; color: var(--texto-2); } dd { margin: 0; overflow-wrap: anywhere; }
+    .aviso { margin: 10px 0 0; padding: 8px 10px; font-size: .88rem; background: var(--aviso-fondo); border-left: 3px solid var(--aviso); color: var(--aviso-texto); border-radius: 0 var(--radio-s) var(--radio-s) 0; }
+    .aviso.error { background: var(--error-fondo); border-color: var(--error); color: var(--error-texto); }
+    .replay dd { color: var(--replay-texto); }
+    .replay dd strong { background: var(--replay-fondo); border: 1px solid var(--replay); border-radius: var(--radio-s); padding: 2px 8px; display: inline-block; }
+    .aviso.info { background: var(--info-fondo); border-color: var(--info); color: var(--info-texto); }
+    button { font: inherit; font-weight: 600; margin-left: 10px; padding: 4px 12px; min-height: 24px; border: 1px solid var(--acento); border-radius: var(--radio-s); background: var(--acento); color: var(--sobre-acento); cursor: pointer; }
     button:disabled { opacity: .6; cursor: progress; }
-    :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
   `,
 })
 export class EstadoComponent {

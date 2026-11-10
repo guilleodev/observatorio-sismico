@@ -1,4 +1,4 @@
-import { Component, OnDestroy, computed, signal } from '@angular/core';
+import { Component, Injector, OnDestroy, afterNextRender, computed, inject, signal } from '@angular/core';
 import { LeafletDirective } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
 import type { FeatureCollection } from 'geojson';
@@ -8,17 +8,25 @@ import { ComparacionComponent } from './comparacion/comparacion.component';
 import { EstadoComponent } from './estado/estado.component';
 import { FiltrosComponent } from './filtros/filtros.component';
 import { TablaComponent } from './tabla/tabla.component';
+import { GloboComponent } from './globo/globo.component';
+import { RANGOS_LEYENDA, alternarRango, nombreBotonRango, textoAnuncioRango } from './globo/leyenda';
+import type { ConteosRangos, DefRango, RangoProfundidad } from './globo/leyenda';
 import { SelectorModoComponent } from './selector-modo/selector-modo.component';
 import { AccesoComponent } from './acceso/acceso.component';
+import { IndicadorRefrescoComponent } from './indicador-refresco/indicador-refresco.component';
+import { EstadoDatosComponent } from './estado-datos/estado-datos.component';
+import { estadoRefresco, restanteMs, textoIngestaCompacto, textoSiguienteIntento, textoUltimoRefresco } from './refresco';
+import type { EntradaRefresco } from './refresco';
 import { itemsHora as itemsDeHora, itemsIntervalos, itemsPais } from './graficas';
 import { idDe } from './tabla';
 import { edadLecturaMs, retardoSiguiente } from './estado';
-import { debeRefrescarAlVolver, pausada, textoActualizacion } from './actualizacion';
+import { avisoPausaOculta, debeRefrescarAlVolver, pausada, textoIntervalo } from './actualizacion';
 import type { EntradaEstado, ErrorPanel } from './estado';
 import { estadoInicial, paisesDelCatalogo, parametros, resolverVentana, resumen } from './filtros';
-import { colorProfundidad, estiloCirculo, fechaUtc, numeroFinito, radioMagnitud, textoFicha } from './formato';
+import { BORDE_FRONTERA, ESTILO_MAPA_INICIAL, SELECCION_MAPA, bordeMapa, colorProfundidad, estiloCirculo, fechaUtc, filasFicha, numeroFinito, radioMagnitud } from './formato';
+import type { EstiloMapa } from './formato';
 import { AVISO_COMPARACION_NO_APLICA, MODO_INICIAL, conEtiqueta, etiquetaReplay, fichaReplay, lecturaVacia, parametrosModo, resumenReplay, ventanaReplay } from './modo';
-import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, FiltrosEstado, ModoVista, PaisCatalogo, Salud, Ventana } from './modelos';
+import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, FiltrosEstado, ModoVista, PaisCatalogo, Propiedades, Salud, Ventana } from './modelos';
 
 // Frontend proporcionado + F5 (paso 5.4): el mapa, las capas y la lectura robusta son los entregados; se añaden un servicio de API (`api.service.ts`),
 // un único estado de filtros (`filtros.ts`) y el componente de filtros. En modo `demo` no se llama a la API. Las funciones de formato se extrajeron
@@ -26,7 +34,7 @@ import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, Filtro
 type DatosDemo = FeatureCollection & { metadata?: { generated?: number } };
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, AccesoComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent],
+  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, AccesoComponent, IndicadorRefrescoComponent, EstadoDatosComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent, GloboComponent],
   templateUrl: './app.component.html', styleUrl: './app.component.css'
 })
 export class AppComponent implements OnDestroy {
@@ -54,6 +62,19 @@ export class AppComponent implements OnDestroy {
   readonly cargandoResto = signal(false);
   private readonly lecturaPerf = signal<number | null>(null);
   private readonly ahoraPerf = signal(performance.now());
+  // F7: instante (monotónico) previsto del siguiente intento automático; null si no hay ninguno programado (durante la carga, en pausa, sin clave).
+  private readonly proximoPerf = signal<number | null>(null);
+  // F7: «fallo de refresco» (red/tiempo/servidor/formato en refresh()) y «filtros rechazados» (validación) se separan de `errorPanel`, que también recoge fallos de «cargar el resto».
+  private readonly falloRefresco = signal(false);
+  private readonly filtrosRechazados = signal(false);
+  readonly marcaRefresco = computed(() => this.lecturaPerf()); // cambia solo con una lectura correcta: dispara el destello del indicador
+  readonly entradaRefresco = computed<EntradaRefresco>(() => ({
+    cargando: this.cargando(), hayError: this.falloRefresco(), filtrosRechazados: this.filtrosRechazados(), hayLectura: this.lecturaPerf() !== null, enPausa: this.enPausa(), pideClave: this.pideClave(),
+  }));
+  readonly estadoRef = computed(() => estadoRefresco(this.entradaRefresco()));
+  readonly ultimoRef = computed(() => textoUltimoRefresco(edadLecturaMs(this.ahoraPerf(), this.lecturaPerf())));
+  readonly siguienteRef = computed(() => textoSiguienteIntento(this.entradaRefresco(), restanteMs(this.ahoraPerf(), this.proximoPerf())));
+  readonly ingestaRef = computed(() => textoIngestaCompacto(this.salud()));
   readonly entradaEstado = computed<EntradaEstado>(() => ({
     error: this.errorPanel(), salud: this.salud(), hayLectura: this.lecturaPerf() !== null, edadLecturaMs: edadLecturaMs(this.ahoraPerf(), this.lecturaPerf()),
     cargados: this.eventos().length, total: this.estadisticas() ? this.estadisticas()!.total : null, siguiente: this.siguienteOffset(), recuperadoEn: this.recuperadoEn(),
@@ -86,8 +107,43 @@ export class AppComponent implements OnDestroy {
       ? `Serie por hora omitida: ${h.motivo === 'ventana_demasiado_amplia' ? `la ventana necesita más de ${h.max_casillas ?? 744} horas` : (h.motivo ?? 'motivo no indicado')}. Acorta el periodo para verla; el resto de estadísticas es válido.`
       : null;
   });
-  readonly options: L.MapOptions = { center: L.latLng(18, 0), zoom: 2, minZoom: 2, maxZoom: 8, preferCanvas: true, worldCopyJump: false };
+  readonly options: L.MapOptions = { center: L.latLng(18, 0), zoom: 2, minZoom: 2, maxZoom: 8, preferCanvas: true, worldCopyJump: false,
+    scrollWheelZoom: false }; // F7: la rueda sobre el mapa desplaza la PÁGINA; el zoom sigue con botones +/−, doble clic, teclado y gestos táctiles
   private map?: L.Map;
+  // F7 (globo 3D): vista alternativa al mapa. Leaflet sigue montado y solo se oculta (hidden); todo lo del globo vive en ./globo y se carga bajo demanda.
+  readonly vista = signal<'2d' | '3d'>('2d');
+  readonly globoNoDisponible = signal<string | null>(null); // motivo si el navegador no puede dibujarlo o no se pudo cargar: «Globo 3D» queda desactivado
+  private readonly injector = inject(Injector);
+  cambiarVista(vista: '2d' | '3d'): void {
+    if (vista === '3d' && this.globoNoDisponible() !== null) return;
+    this.vista.set(vista);
+    // al volver al 2D el contenedor de Leaflet recupera su tamaño: se recalcula cuando el DOM ya lo muestra
+    if (vista === '2d') afterNextRender(() => this.map?.invalidateSize(), { injector: this.injector });
+  }
+  globoSinSoporte(motivo: string): void { this.globoNoDisponible.set(motivo); this.cambiarVista('2d'); }
+  // F7 (leyenda interactiva, solo con la vista 3D): rango de profundidad resaltado en el globo. Solo en memoria; se conserva al volver al 2D pero allí no se aplica (la leyenda vuelve a ser estática).
+  readonly rangoLeyenda = signal<RangoProfundidad | null>(null);
+  readonly conteosRangos = signal<ConteosRangos | null>(null);   // lo emite el globo con los eventos dibujados
+  readonly rangosLeyenda = RANGOS_LEYENDA;
+  private readonly nfLeyenda = new Intl.NumberFormat('es-ES');
+  cuentaRango(id: RangoProfundidad): string { return this.nfLeyenda.format(this.conteosRangos()?.[id] ?? 0); }
+  nombreBoton(r: DefRango): string { return nombreBotonRango(r, this.cuentaRango(r.id)); }
+  alternarRango(r: RangoProfundidad): void { this.rangoLeyenda.update((a) => alternarRango(a, r)); }
+  /** «Mostrar todos»: el botón desaparece, así que el foco vuelve al botón del rango que estaba activo. */
+  mostrarTodosRangos(): void {
+    const previo = this.rangoLeyenda();
+    this.rangoLeyenda.set(null);
+    if (previo !== null) afterNextRender(() => document.getElementById('leyenda-rango-' + previo)?.focus(), { injector: this.injector });
+  }
+  readonly anuncioLeyenda = computed(() => {
+    const r = this.rangoLeyenda(); const c = this.conteosRangos();
+    return this.vista() === '3d' && r !== null && c ? textoAnuncioRango(r, c[r], c.total, (n) => this.nfLeyenda.format(n)) : '';
+  });
+  // F7 (mapa): estilo del mapa base. Solo en memoria (señal): no se guarda en el navegador y vuelve a «oscuro» al recargar.
+  readonly estiloMapa = signal<EstiloMapa>(ESTILO_MAPA_INICIAL);
+  private fronteras?: L.GeoJSON;
+  private controlEstilo?: L.Control;
+  private cajaEstilo?: HTMLElement;
   private events = L.layerGroup();
   private timer?: ReturnType<typeof setTimeout>;
   private controller = new AbortController();
@@ -106,7 +162,8 @@ export class AppComponent implements OnDestroy {
   // F6 (FR-041): clave de acceso de la API publicada; vive solo en ApiService (memoria)
   readonly pideClave = signal(false);
   readonly claveRechazada = signal(false);
-  readonly textoAct = signal('');
+  readonly intervaloRef = signal(''); // F7: «cada 60 s», para el indicador (sale de config.refreshMs)
+  readonly avisoPausaRef = signal<string | null>(null); // F7: aviso de suspensión con pestaña oculta (solo si config.pausarSiOculta)
   readonly enPausa = signal(false);
   private readonly alCambiarVisibilidad = (): void => {
     const config = this.config;
@@ -120,10 +177,12 @@ export class AppComponent implements OnDestroy {
 
   async onMapReady(map: L.Map): Promise<void> {
     this.map = map;
+    map.getContainer().classList.add(`mapa-${this.estiloMapa()}`); // el fondo y el filtro de las teselas dependen de esta clase (styles.css)
+    // UNA sola capa base (OpenStreetMap, misma URL y atribución). El estilo oscuro es un filtro CSS sobre sus teselas (clase `teselas-mapa`), no otro proveedor.
     const base = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, noWrap: true, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      maxZoom: 19, noWrap: true, className: 'teselas-mapa', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
-    const borders = L.geoJSON(undefined, { style: { color: '#334155', weight: 1, fill: false },
+    const borders = this.fronteras = L.geoJSON(undefined, { style: this.estiloFrontera,
       onEachFeature: (feature, layer) => {
         const name = document.createElement('span');
         name.textContent = feature.properties?.NAME_ES ?? feature.properties?.ADMIN ?? 'Sin nombre';
@@ -132,6 +191,7 @@ export class AppComponent implements OnDestroy {
     }).addTo(map);
     this.events.addTo(map);
     L.control.layers({ 'OpenStreetMap': base }, { 'Países (Natural Earth)': borders, 'Terremotos': this.events }).addTo(map);
+    this.controlEstilo = this.crearControlEstilo().addTo(map);
     map.attributionControl.addAttribution('Fronteras: Natural Earth · Datos reales: USGS');
     try {
       const catalogo = await this.readJson<FeatureCollection>('datos/paises.geojson');
@@ -147,11 +207,90 @@ export class AppComponent implements OnDestroy {
       if (!['demo', 'api'].includes(config.mode)) throw new Error('Modo inválido');
       this.config = config;
       this.esApi.set(config.mode === 'api');
-      if (config.mode === 'api') { this.relojEstado = setInterval(() => this.ahoraPerf.set(performance.now()), 1000); window.addEventListener('online', this.alVolverRed); document.addEventListener('visibilitychange', this.alCambiarVisibilidad); this.textoAct.set(textoActualizacion(config)); }
+      if (config.mode === 'api') { this.relojEstado = setInterval(() => this.ahoraPerf.set(performance.now()), 1000); window.addEventListener('online', this.alVolverRed); document.addEventListener('visibilitychange', this.alCambiarVisibilidad); this.intervaloRef.set(textoIntervalo(config)); this.avisoPausaRef.set(avisoPausaOculta(config)); }
       if (config.mode === 'api') this.api = new ApiService(config.apiUrl, { omitirAvisoNgrok: config.skipNgrokWarning });
       this.mode.set(config.mode === 'demo' ? 'DEMOSTRACIÓN · datos ficticios' : 'API · datos del backend');
       await this.refresh(config);
     } catch { this.status.set('Error: revisa public/config.json'); }
+  }
+
+  /** Trazado de las fronteras: mismo grosor y geometría en ambos estilos; solo el color se aclara en oscuro para que no se pierda. */
+  private readonly estiloFrontera = (): L.PathOptions => ({ color: BORDE_FRONTERA[this.estiloMapa()], weight: 1, fill: false });
+
+  /** Control propio de Leaflet (arriba a la derecha, bajo el de capas): dos botones con aria-pressed para elegir «Oscuro» o «Claro». */
+  private crearControlEstilo(): L.Control {
+    const control = new L.Control({ position: 'topright' });
+    control.onAdd = (): HTMLElement => {
+      const caja = L.DomUtil.create('div', 'leaflet-control selector-estilo');
+      caja.setAttribute('role', 'group');
+      caja.setAttribute('aria-label', 'Estilo del mapa base');
+      for (const [valor, texto] of [['oscuro', 'Oscuro'], ['claro', 'Claro']] as const) {
+        const boton = L.DomUtil.create('button', '', caja) as HTMLButtonElement;
+        boton.type = 'button';
+        boton.textContent = texto;
+        boton.dataset['estilo'] = valor;
+        boton.setAttribute('aria-pressed', String(valor === this.estiloMapa()));
+        L.DomEvent.on(boton, 'click', () => this.cambiarEstilo(valor));
+      }
+      L.DomEvent.disableClickPropagation(caja); // pulsar o arrastrar sobre el control no mueve ni hace zoom en el mapa
+      L.DomEvent.disableScrollPropagation(caja);
+      this.cajaEstilo = caja;
+      return caja;
+    };
+    return control;
+  }
+
+  /**
+   * Cambia el estilo del mapa base. Solo cambia el BORDE de los círculos (relleno por profundidad, tamaño y opacidad no se tocan) y el color de las fronteras;
+   * la selección conserva su resalte (más grueso y con su propio color en cada estilo).
+   */
+  private cambiarEstilo(estilo: EstiloMapa): void {
+    if (estilo === this.estiloMapa()) return;
+    this.estiloMapa.set(estilo);
+    const contenedor = this.map?.getContainer();
+    contenedor?.classList.remove('mapa-oscuro', 'mapa-claro');
+    contenedor?.classList.add(`mapa-${estilo}`);
+    this.cajaEstilo?.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset['estilo'] === estilo)));
+    this.fronteras?.setStyle(this.estiloFrontera);
+    const borde = bordeMapa(estilo);
+    const seleccionado = this.seleccionado();
+    for (const [id, estiloBase] of this.estilos) {
+      const nuevo: L.PathOptions = { ...estiloBase, color: borde }; // el estilo guardado sirve para restaurar el marcador al deseleccionarlo
+      this.estilos.set(id, nuevo);
+      if (id === seleccionado) this.resaltar(id); else this.marcadores.get(id)?.setStyle(nuevo);
+    }
+  }
+
+  /** Contenido de la ventana emergente creado con el DOM y textContent (nunca HTML): [REPRODUCCIÓN] · lugar · insignia de magnitud · filas etiqueta/valor. */
+  private construirFicha(p: Propiedades, profundidad: unknown, id: unknown): HTMLElement {
+    const ficha = filasFicha(p, profundidad, id);
+    const raiz = document.createElement('div');
+    raiz.className = 'ficha';
+    if (this.esReplay()) { // en reproducción la etiqueta (y el distintivo de caso controlado, si lo es) encabeza la ficha
+      const replay = document.createElement('p');
+      replay.className = 'ficha-replay';
+      replay.textContent = fichaReplay(p, this.ejecucion(), true).trim();
+      raiz.appendChild(replay);
+    }
+    const titulo = document.createElement('p');
+    titulo.className = 'ficha-titulo';
+    titulo.textContent = ficha.lugar;
+    const insignia = document.createElement('p');
+    insignia.className = 'ficha-magnitud';
+    insignia.textContent = ficha.insignia; // texto, no solo color
+    const lista = document.createElement('dl');
+    lista.className = 'ficha-filas';
+    for (const fila of ficha.filas) {
+      const grupo = document.createElement('div');
+      const etiqueta = document.createElement('dt');
+      etiqueta.textContent = fila.etiqueta;
+      const valor = document.createElement('dd');
+      valor.textContent = fila.valor;
+      grupo.append(etiqueta, valor);
+      lista.appendChild(grupo);
+    }
+    raiz.append(titulo, insignia, lista);
+    return raiz;
   }
 
   /** «Aplicar filtros»: un único estado para mapa, tabla y gráficas; la consulta se repite ya, con los filtros nuevos y la ventana desde `generated` de la API. */
@@ -183,7 +322,7 @@ export class AppComponent implements OnDestroy {
     this.sinEjecuciones.set(false); this.errorPanel.set(null); this.recuperadoEn.set(null); this.lecturaPerf.set(null); this.ultimoAcceso.set(null);
     this.seleccionado.set(null); this.avisoSeleccion.set(''); this.nombrePaisActual.set(undefined);
     this.filtros.set(estadoInicial()); this.ultimosFiltros = estadoInicial();
-    this.paramsVigentes = null; this.huboError = false; this.versionLectura++;
+    this.paramsVigentes = null; this.huboError = false; this.falloRefresco.set(false); this.filtrosRechazados.set(false); this.versionLectura++;
     this.map?.closePopup();
     this.dibujar([]);
     this.status.set(this.esReplay() ? 'Cargando la reproducción…' : 'Cargando datos en vivo…');
@@ -209,13 +348,13 @@ export class AppComponent implements OnDestroy {
     }
     this.ejecucion.set(ejec); // antes de dibujar: las fichas llevan la identidad de la ejecución
     this.sinEjecuciones.set(ejec === null);
-    this.dibujar(eventos);
-    this.eventos.set(eventos); this.estadisticas.set(est); this.total.set(total); this.siguienteOffset.set(siguiente); this.ventana.set(ventana); this.periodo.set(periodo);
+    this.aplicarEventos(eventos);
+    this.estadisticas.set(est); this.total.set(total); this.siguienteOffset.set(siguiente); this.ventana.set(ventana); this.periodo.set(periodo);
     this.ultimosFiltros = filtros; this.resumenFiltros.set(resumenReplay(filtros, resumen(filtros, this.nombresPais)));
     this.nombrePaisActual.set(this.nombresPais[filtros.pais.trim().toUpperCase()]);
     this.paramsVigentes = params; this.versionLectura++;
     this.salud.set(salud); this.ultimoAcceso.set(new Date().toISOString()); this.lecturaPerf.set(performance.now());
-    this.recuperadoEn.set(this.huboError ? new Date().toISOString().slice(11, 19) : null); this.huboError = false; this.errorPanel.set(null);
+    this.recuperadoEn.set(this.huboError ? new Date().toISOString().slice(11, 19) : null); this.huboError = false; this.errorPanel.set(null); this.falloRefresco.set(false); this.filtrosRechazados.set(false);
     this.generated.set(generado);
     this.status.set(ejec === null ? 'Todavía no hay ninguna reproducción guardada.' : `${etiquetaReplay(ejec)} · consulta completada. Datos históricos reproducidos, no actividad actual.`);
   }
@@ -223,10 +362,14 @@ export class AppComponent implements OnDestroy {
   /** Siguiente consulta automática. Con la pestaña oculta y `pausarSiOculta`, no se consulta: queda en pausa hasta que vuelva a ser visible. */
   private programar(config: Config, correcto: boolean): void {
     clearTimeout(this.timer);
+    const espera = retardoSiguiente(correcto, config.refreshMs);
+    this.ahoraPerf.set(performance.now()); // sincroniza el reloj de lectura para que la cuenta atrás parta del valor real
+    this.proximoPerf.set(this.ahoraPerf() + espera); // F7: solo lectura para el indicador (cuenta atrás real)
     this.timer = setTimeout(() => {
+      this.proximoPerf.set(null);
       if (pausada(document.hidden, config)) { this.enPausa.set(true); return; }
       void this.refresh(config);
-    }, retardoSiguiente(correcto, config.refreshMs));
+    }, espera);
   }
 
   /** Recibe la clave escrita en el panel: la entrega al servicio (solo memoria) y consulta de nuevo. */
@@ -257,13 +400,14 @@ export class AppComponent implements OnDestroy {
   private async refresh(config: Config): Promise<void> {
     const { id, señal } = this.ultima.nueva(); // cancela la petición anterior: una respuesta tardía no pisa a la más reciente
     this.cargando.set(true);
+    this.proximoPerf.set(null); // F7: durante la consulta no hay intento programado (se fija de nuevo en `programar`)
     let correcto = false;
     try {
       if (config.mode === 'demo' || !this.api) {
         const data = await this.readJson<DatosDemo>('datos/terremotos-demo.geojson');
         if (this.destroyed || !this.ultima.vigente(id)) return;
         if (data.type !== 'FeatureCollection' || !Array.isArray(data.features)) throw new Error('Se esperaba FeatureCollection');
-        this.dibujar(data.features as unknown as Evento[]);
+        this.aplicarEventos(data.features as unknown as Evento[]); // F7: el globo 3D lee `eventos()` también en demostración (la tabla y las estadísticas no existen sin API)
         this.generated.set(fechaUtc(data.metadata?.generated));
         this.status.set('Ejemplo estático: no representa actividad real');
         return;
@@ -285,8 +429,7 @@ export class AppComponent implements OnDestroy {
       const panel = await this.api.panel(parametrosPanel, externa, 1);
       const datos = panel.eventos;
       if (this.destroyed || !this.ultima.vigente(id)) return;
-      this.dibujar(datos.features);
-      this.eventos.set(datos.features);
+      this.aplicarEventos(datos.features);
       this.estadisticas.set(panel.estadisticas);
       this.nombrePaisActual.set(this.nombresPais[filtros.pais.trim().toUpperCase()]);
       this.ultimosFiltros = filtros;
@@ -303,6 +446,7 @@ export class AppComponent implements OnDestroy {
       this.recuperadoEn.set(this.huboError ? new Date().toISOString().slice(11, 19) : null); // «conexión recuperada» solo tras un fallo
       this.huboError = false;
       this.errorPanel.set(null);
+      this.falloRefresco.set(false); this.filtrosRechazados.set(false);
       correcto = true;
       this.generated.set(fechaUtc(datos.metadata.generated));
       this.status.set(datos.incompleta ? `Resultados truncados: se muestran ${datos.features.length} de ${datos.metadata.total} eventos.` : 'API accesible · consulta completada');
@@ -310,16 +454,19 @@ export class AppComponent implements OnDestroy {
       if (this.destroyed || !this.ultima.vigente(id) || (e instanceof ErrorApi && e.tipo === 'cancelado')) return;
       const error: ErrorPanel = e instanceof ErrorApi ? { tipo: e.tipo, mensaje: e.message, detalle: e.detalle } : { tipo: 'red', mensaje: 'Error inesperado al actualizar.' };
       this.errorPanel.set(error); // los últimos datos válidos se conservan en pantalla; el panel de estado indica su antigüedad
+      this.falloRefresco.set(false); this.filtrosRechazados.set(false);
       if (error.tipo === 'autorizacion') {
         this.claveRechazada.set(this.api?.tieneClave() ?? false); // con clave enviada = incorrecta; sin ella = falta
         this.api?.establecerClave(null); // la clave rechazada se olvida
         this.pideClave.set(true);
         this.status.set('Acceso restringido: la API exige una clave de acceso.');
       } else if (error.tipo === 'validacion') {
+        this.filtrosRechazados.set(true); // aviso propio del indicador: la API respondió, no es un fallo de refresco
         this.status.set('Filtros rechazados por la API: se conserva la última lectura válida.');
         this.filtros.set(this.ultimosFiltros); // la actualización automática sigue con los últimos filtros válidos, no reintenta los rechazados
       } else {
         this.huboError = true;
+        this.falloRefresco.set(true); // fallo real de la consulta de refresco (red, tiempo, servidor o formato)
         this.status.set(`No se pudo actualizar: ${error.mensaje} Se conserva la última lectura. Revisa API, túnel y CORS.`);
       }
     } finally {
@@ -340,8 +487,7 @@ export class AppComponent implements OnDestroy {
       const resto = await this.api.todasLasPaginas(this.paramsVigentes, this.controller.signal, undefined, desde);
       if (this.destroyed || version !== this.versionLectura) return; // una actualización posterior ya sustituyó la lectura: se descarta
       const todos = [...this.eventos(), ...resto.features];
-      this.eventos.set(todos);
-      this.dibujar(todos);
+      this.aplicarEventos(todos);
       this.siguienteOffset.set(resto.siguiente);
     } catch (e) {
       if (this.destroyed || (e instanceof ErrorApi && e.tipo === 'cancelado')) return;
@@ -350,6 +496,15 @@ export class AppComponent implements OnDestroy {
     } finally {
       this.cargandoResto.set(false);
     }
+  }
+
+  /**
+   * ÚNICO camino por el que una lectura llega a la vista: el mapa 2D (dibujar) y el globo 3D (señal `eventos`, que lee la tabla y el globo) reciben SIEMPRE la misma lista
+   * (misma referencia), así que nunca pueden diferir. (descartarLectura vacía ambos con listas vacías: `dibujar([])` y `lecturaVacia().eventos`.)
+   */
+  private aplicarEventos(features: Evento[]): void {
+    this.dibujar(features);
+    this.eventos.set(features);
   }
 
   /** Dibujo de eventos del frontend proporcionado (sin cambios de comportamiento): círculos por magnitud, color por profundidad, ficha como texto. */
@@ -363,11 +518,10 @@ export class AppComponent implements OnDestroy {
       const [lon, lat, depth] = c;
       if (!p || typeof lon !== 'number' || typeof lat !== 'number' || !Number.isFinite(lon) || !Number.isFinite(lat) || Math.abs(lon) > 180 || Math.abs(lat) > 90) { omitted++; continue; }
       const color = colorProfundidad(depth);
-      const popup = document.createElement('div');
-      popup.textContent = fichaReplay(p, this.ejecucion(), this.esReplay()) + textoFicha(p, depth, feature.id);
+      const popup = this.construirFicha(p, depth, feature.id);
       const id = idDe(feature, indice); // el mismo identificador que usa la tabla
-      const estilo: L.PathOptions & { radius: number } = estiloCirculo(color, radioMagnitud(numeroFinito(p.mag)));
-      const marcador = L.circleMarker([lat, lon], estilo).bindPopup(popup).on('click', () => this.elegir(id, 'mapa')).addTo(next);
+      const estilo: L.PathOptions & { radius: number } = estiloCirculo(color, radioMagnitud(numeroFinito(p.mag)), bordeMapa(this.estiloMapa()));
+      const marcador = L.circleMarker([lat, lon], estilo).bindPopup(popup, { className: 'popup-sismico', maxWidth: 320, minWidth: 240, autoPanPaddingTopLeft: L.point(10, 96) }).on('click', () => this.elegir(id, 'mapa')).addTo(next);
       marcadores.set(id, marcador); estilos.set(id, estilo);
       count++;
     }
@@ -387,19 +541,23 @@ export class AppComponent implements OnDestroy {
   elegir(id: string | null, origen: 'mapa' | 'tabla'): void {
     const actual = this.seleccionado();
     const destino = origen === 'tabla' && id === actual ? null : id;
+    // Con la vista 3D activa Leaflet está oculto: no se centra ni se abre ninguna ventana emergente (el globo tiene su propia tarjeta). Solo se cierra la que pudiera
+    // quedar abierta de antes, para que al volver al 2D no aparezca un popup que no corresponde a la selección. La selección compartida y el resalte del marcador 2D se conservan.
+    const en3d = this.vista() === '3d';
     this.quitarResalte(actual);
     this.seleccionado.set(destino);
     this.avisoSeleccion.set('');
+    if (en3d) this.map?.closePopup();
     if (destino === null) { this.map?.closePopup(); return; }
     const marcador = this.marcadores.get(destino);
     if (!marcador) { this.avisoSeleccion.set('Este evento no tiene coordenadas válidas y no se dibuja en el mapa; se conserva en la tabla.'); return; }
     this.resaltar(destino);
-    if (origen === 'tabla') { this.map?.panTo(marcador.getLatLng()); marcador.openPopup(); }
+    if (origen === 'tabla' && !en3d) { this.map?.panTo(marcador.getLatLng()); marcador.openPopup(); }
   }
 
   private resaltar(id: string): void {
     const marcador = this.marcadores.get(id);
-    marcador?.setStyle({ weight: 4, color: '#111827', fillOpacity: .95 });
+    marcador?.setStyle({ weight: 4, color: SELECCION_MAPA[this.estiloMapa()], fillOpacity: .95 });
     marcador?.bringToFront();
   }
 
@@ -408,5 +566,5 @@ export class AppComponent implements OnDestroy {
     if (id !== null && estilo) this.marcadores.get(id)?.setStyle(estilo);
   }
 
-  ngOnDestroy(): void { this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); document.removeEventListener('visibilitychange', this.alCambiarVisibilidad); this.ultima.cancelar(); this.controller.abort(); }
+  ngOnDestroy(): void { this.controlEstilo?.remove(); this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); document.removeEventListener('visibilitychange', this.alCambiarVisibilidad); this.ultima.cancelar(); this.controller.abort(); }
 }

@@ -8,6 +8,8 @@
 
 **Entrada**: «Dedicar la F7 a mejorar progresivamente la aplicación ya construida: visual y rediseño del frontend Angular, experiencia de usuario y accesibilidad, filtros, navegación, mapas, estadísticas y gráficas, optimización y pequeños ajustes técnicos, nuevas funcionalidades propuestas y aprobadas por la persona estudiante y comodidad del entorno de desarrollo local. Fase flexible: las mejoras se descubren mientras se usa y estudia el proyecto.»
 
+**F7 es una fase ABIERTA (decisión de la persona estudiante, 2026-11-09)**: no hay secuencia obligatoria de pasos, ni número previsto de ellos, ni paso de cierre definido. Se trabaja **experimentando, implementando y viendo resultados en `localhost:4200`**, con la mínima documentación necesaria. Las candidatas (`C-nn`) son un **cajón de ideas** que se puede ampliar, modificar, posponer o descartar libremente; **ninguna es una subfase** ni se aprueba automáticamente. Un número `F7.n` se asigna **solo cuando la persona estudiante decide empezar un trabajo concreto**, y ese `F7.n` puede **agrupar varias mejoras relacionadas** y tener un alcance amplio.
+
 **Qué es esta especificación**: un **marco** (no una funcionalidad concreta). Define alcance, reglas, ciclo de trabajo y criterios comunes. Cada mejora aprobada tendrá su propia mini-especificación en `mejoras/F7.n-<nombre>/` (plantilla en `plantilla-mejora.md`), de modo que la fase se puede ampliar **sin reescribir esta planificación**.
 
 **Relación con las fases anteriores**: F0–F6 son historial completado y **no se reabren** (F6 cerrada técnicamente, commit `fd9e1a7`). Lo que F6 y las fases anteriores llamaban «F7 — memoria y defensa» pasa a ser la **F8** (`specs/007-documentacion-entrega-video/`); ver `specs/INDICE.md`. Las reservas de F6 (SC-010 de F3, T063, recuperación de un hueco real de USGS, etc.) **no pertenecen a F7**: están asignadas a F8 o siguen como reservas documentadas.
@@ -17,22 +19,22 @@
 ### Sesión 2026-11-09
 
 - Q: ¿Se implementa ya alguna mejora? → A: **no**. Solo se reorganiza la planificación. Las dos candidatas iniciales (C-01, C-02 en `backlog.md`) están **sin aprobar**.
-- Q: ¿Cómo se numeran las mejoras? → A: como pasos `7.1`, `7.2`… **en el momento de aprobarlas**, no antes. Mientras no estén aprobadas se llaman `C-nn` (candidata).
+- Q: ¿Cómo se numeran los trabajos? → A: `F7.n` se asigna **cuando la persona estudiante decide empezar un trabajo concreto**, que puede agrupar varias candidatas relacionadas y tener un alcance amplio. No existe una secuencia `7.1…7.7` predefinida. Mientras no se decide empezar, las ideas son `C-nn` (candidata) o `I-nn` (idea).
 - Q: ¿Una mejora puede cambiar la arquitectura obligatoria o el contrato del profesor? → A: **no**. Cinco servicios, tecnologías cerradas y contrato de la API prevalecen (constitución I y II). Una mejora que parezca necesitar un cambio así se detiene y se consulta.
 - Q: ¿Se publica en Netlify o se abre ngrok durante F7? → A: **no** por defecto: Netlify sigue con la versión de F6, sin despliegues automáticos ni publicación de las mejoras; ngrok y cualquier despliegue público solo con autorización expresa por separado.
+- Q: ¿Cuál es el foco inicial de F7? → A (2026-11-09): **rediseño visual completo del dashboard** con estilo oscuro, moderno y tecnológico, manteniendo la funcionalidad actual y mejorando jerarquía y claridad, y **estudio** de un segundo modo de mapa (globo 3D). Auditoría, visión y hoja de ruta en [`propuesta-rediseno-dashboard.md`](propuesta-rediseno-dashboard.md); sigue sin implementarse nada ni aprobarse ninguna candidata.
 - Q: ¿Las notas de clase del profesor son requisitos? → A: **no necesariamente**. Notas de clase del 2026-11-09 recogidas por la persona estudiante: **orientaciones comentadas por el profesor, no requisitos obligatorios** ni parte de los materiales oficiales. Se anotan como candidatas o ideas en el backlog, sin aprobar.
 
-## Ciclo de una mejora (SDD proporcional)
+## Ciclo de un trabajo F7.n (SDD ligero: más experimentar, menos papel)
 
-1. **Propuesta** → entra en `backlog.md` como `C-nn` con motivo, valor y riesgos. Sin código.
-2. **Aprobación** de la persona estudiante (explícita, por mejora) → recibe número `7.n`.
-3. **Mini-especificación** (`plantilla-mejora.md`): problema, alcance y fuera de alcance, requisitos (FR), criterios de aceptación medibles (SC), riesgos de seguridad/arquitectura, y **pruebas proporcionales** (qué batería y por qué).
-4. **Plan y tareas** breves (`plan.md` y `tasks.md` de la mejora); las pruebas nuevas se escriben antes y deben fallar.
-5. **Implementación** en un paso pequeño, con presentación previa del plan si el cambio es importante (CLAUDE.md, regla 10).
-6. **Verificación**: pruebas nuevas + regresión proporcional + comprobación visual/manual si es de interfaz; evidencias en `docs/evidencias/f7/`.
-7. **Revisión humana** y **commit manual** `[F7.n]` (la persona estudiante lo hace; Claude no hace commit ni push).
+1. **Idea o candidata** en `backlog.md` (una línea basta; se puede añadir, cambiar, posponer o descartar cuando se quiera). Sin código.
+2. **Decisión de empezar** (la persona estudiante) → se asigna `F7.n` y se acota **qué agrupa** y qué queda fuera.
+3. **Encargo breve** (media página, `plantilla-mejora.md`): objetivo, alcance, qué NO se toca, criterios de aceptación observables y qué pruebas se ejecutan. Solo se profundiza (riesgos, alternativas) cuando el cambio toca seguridad, arquitectura o datos.
+4. **Implementación iterativa en `localhost:4200`**: se prueba y se ve el resultado; el encargo se ajusta sobre la marcha (se anotan los cambios de alcance en una línea). Pruebas nuevas antes cuando haya lógica; para cambios visuales basta la comprobación visual y `node --test`/build.
+5. **Verificación proporcional** y, si procede, evidencia breve en `docs/evidencias/f7/` (capturas «antes/después» valen: sirven también a F8).
+6. **Revisión humana** y **commit manual** `[F7.n]` (la persona estudiante; Claude no hace commit ni push).
 
-Una mejora **no** se da por cerrada sin evidencia real; lo no verificado consta como reserva.
+Un trabajo **no** se da por cerrado sin evidencia real; lo no verificado consta como reserva. No se exige documentación más allá de lo anterior.
 
 ## Política de trabajo durante F7 (decidida por la persona estudiante, 2026-11-09)
 
@@ -53,7 +55,7 @@ Consecuencia: durante F7 el sitio público y la aplicación local pueden **difer
 
 ## Requisitos del marco
 
-- **FR-001**: Toda mejora MUST tener aprobación explícita antes de implementarse y su propia mini-especificación con alcance, FR y SC.
+- **FR-001**: Todo trabajo MUST empezar por decisión expresa de la persona estudiante y tener un encargo breve con alcance y criterios de aceptación observables (no se exige una especificación extensa salvo que toque seguridad, arquitectura o datos).
 - **FR-002**: Toda mejora MUST declarar su **riesgo de regresión** y qué pruebas ejecuta (nuevas + regresión proporcional: backend con `scripts/f6/ejecutar.sh`, frontend con `node --test` y `npm run build`, aislamiento con `scripts/f6/aislamiento_final.sh`, según lo que toque).
 - **FR-003**: Ninguna mejora MUST modificar los documentos originales del profesor, `specs/001`–`005` ni las evidencias de F3–F6 (se citan, no se reescriben; correcciones posteriores se documentan en `docs/evidencias/f7/`).
 - **FR-004**: Las mejoras MUST respetar la seguridad vigente: clave de acceso de la API, CORS con orígenes exactos, `API_DOCS=false` publicado, sin secretos en Git y Kafka/PostgreSQL sin puertos publicados.
@@ -67,10 +69,10 @@ Consecuencia: durante F7 el sitio público y la aplicación local pueden **difer
 
 - **SC-001**: Cada mejora implementada tiene mini-especificación aprobada, pruebas y evidencia en `docs/evidencias/f7/`; 0 mejoras implementadas sin aprobación.
 - **SC-002**: Tras cada mejora, las suites proporcionales pasan y `git status` solo muestra los archivos previstos.
-- **SC-003**: Al cerrar F7, F8 puede reutilizar el estado real de la aplicación sin contradecir la documentación (README, capturas, evidencias).
+- **SC-003**: Cuando F7 se dé por terminada (sin fecha fijada), F8 puede reutilizar el estado real de la aplicación sin contradecir la documentación (README, capturas, evidencias).
 
 ## Supuestos
 
 - La persona estudiante usa y estudia el proyecto durante F7 y propone las mejoras; Claude puede **sugerirlas** pero no implementarlas sin aprobación.
-- F7 no tiene un número fijo de pasos ni una fecha de cierre propia: se cierra cuando la persona estudiante lo decide, de modo que F8 (documentación y vídeo) pueda empezar con una aplicación estable. **Requiere confirmar la fecha límite de entrega** (ver F8, aclaración CA-02) para fijar cuándo congelar F7.
+- F7 no tiene número previsto de pasos ni **paso de cierre definido**: se decidirá más adelante, cuando la persona estudiante quiera. F8 (documentación y vídeo) necesitará una versión estable de la aplicación; la fecha límite de entrega (F8, aclaración CA-02, pendiente) será lo que condicione cuándo.
 - Las observaciones heredadas de F6 que son de interfaz (p. ej. `6.9-revision-humana.md`, punto f) se registran como candidatas, no como tareas.

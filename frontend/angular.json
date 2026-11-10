@@ -35,6 +35,14 @@
             "development": {
               "optimization": false,
               "sourceMap": true
+            },
+            "local": {
+              "optimization": false,
+              "sourceMap": true,
+              "assets": [
+                { "glob": "**/*", "input": "public", "ignore": ["config.json"] },
+                { "glob": "config.json", "input": "config-local" }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -44,6 +52,11 @@
           "configurations": {
             "development": {
               "buildTarget": "observatorio:build:development"
+            },
+            "local": {
+              "buildTarget": "observatorio:build:local",
+              "host": "127.0.0.1",
+              "proxyConfig": "proxy.conf.mjs"
             }
           },
           "defaultConfiguration": "development"

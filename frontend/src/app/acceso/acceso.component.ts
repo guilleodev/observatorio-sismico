@@ -18,14 +18,13 @@ import { Component, input, output } from '@angular/core';
     </section>
   `,
   styles: `
-    .acceso { background: white; border-left: 4px solid #b45309; padding: 14px 16px; margin: 0 0 20px; }
-    h2 { margin: 0 0 8px; font-size: 1.1rem; } p { margin: 0 0 10px; font-size: .9rem; }
-    .error { color: #9b1c1c; font-weight: 700; }
+    .acceso { background: var(--superficie-2); border: 1px solid var(--borde); border-left: 4px solid var(--aviso); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 16px; margin: 0; }
+    h2 { margin: 0 0 8px; font-size: 1.1rem; } p { margin: 0 0 10px; font-size: .9rem; color: var(--texto-2); }
+    .error { color: var(--error-texto); background: var(--error-fondo); border-left: 3px solid var(--error); padding: 6px 10px; font-weight: 700; }
     form { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; }
     label { font-weight: 600; font-size: .85rem; width: 100%; }
-    input { font: inherit; padding: 6px 8px; border: 1px solid #9fb3c0; border-radius: 4px; min-height: 36px; min-width: min(320px, 100%); }
-    button { font: inherit; padding: 6px 16px; min-height: 36px; border: 1px solid #176b70; border-radius: 4px; background: #176b70; color: white; cursor: pointer; }
-    :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    input { font: inherit; padding: 6px 8px; border: 1px solid var(--borde-control); border-radius: var(--radio-s); background-color: var(--fondo); color: var(--texto); min-height: 36px; min-width: min(320px, 100%); }
+    button { font: inherit; font-weight: 600; padding: 6px 16px; min-height: 36px; border: 1px solid var(--acento); border-radius: var(--radio-s); background: var(--acento); color: var(--sobre-acento); cursor: pointer; }
   `,
 })
 export class AccesoComponent {

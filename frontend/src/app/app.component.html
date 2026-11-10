@@ -1,21 +1,52 @@
 <main>
-  <header><p class="eyebrow">BIG DATA · PROYECTO DE AULA</p><h1>Observatorio de actividad sísmica</h1><p>Mapa base, fronteras y eventos en capas independientes.</p></header>
-  <section class="info" aria-live="polite">@if (etiquetaVista(); as e) { <p class="etiqueta-replay-info"><strong>{{ e }}</strong></p> }<strong>{{ mode() }}</strong><p>{{ status() }}</p><p>{{ countriesStatus() }} · {{ count() }} eventos dibujados · {{ omitted() }} omitidos por coordenadas inválidas</p><small>Última lectura UTC: {{ lastRead() }}<br>Generación de la respuesta UTC: {{ generated() }}</small>
-    @if (esApi()) {
-      <p>Filtros activos: {{ resumenFiltros() }} · Periodo consultado (UTC): {{ periodo() }} · {{ count() }} de {{ total() ?? 'ND' }} eventos dibujados</p>
-      @if (cargando()) { <p>Actualizando…</p> }
-      <p>{{ textoAct() }} <button type="button" class="actualizar" (click)="actualizarAhora()" [disabled]="cargando()">Actualizar ahora</button>@if (enPausa()) { <strong> · En pausa: la pestaña no está visible.</strong> }</p>
-    }
-  </section>
-  @if (esApi()) { <app-selector-modo [modo]="modoVista()" [ejecucion]="ejecucion()" (cambio)="cambiarModo($event)" /> }
+  <header class="cabecera"><div><p class="eyebrow">BIG DATA · PROYECTO DE AULA</p><h1>Observatorio de actividad sísmica</h1></div><p class="subtitulo">Mapa base, fronteras y eventos en capas independientes.</p></header>
+  <!-- F7: fila de control (refresco del panel + modo de datos). Orden DOM = orden visual y de lectura. El indicador NO tiene aria-live salvo su región oculta de cambios relevantes (la cuenta atrás cambia cada segundo) -->
+  <div class="control">
+    @if (esApi()) { <app-indicador-refresco [estado]="estadoRef()" [ultimo]="ultimoRef()" [siguiente]="siguienteRef()" [marca]="marcaRefresco()" [intervalo]="intervaloRef()" [avisoPausa]="avisoPausaRef()" [cargando]="cargando()" (actualizar)="actualizarAhora()" /> }
+    @if (esApi()) { <app-selector-modo [modo]="modoVista()" [ejecucion]="ejecucion()" (cambio)="cambiarModo($event)" /> }
+  </div>
+  <!-- F7: información y estado de los datos (KPI); la región viva y los <details> están dentro del componente -->
+  <app-estado-datos [esApi]="esApi()" [entrada]="entradaEstado()" [modo]="mode()" [estado]="status()" [paises]="countriesStatus()" [conteo]="count()" [omitidos]="omitted()" [total]="total()" [ultimaLectura]="lastRead()" [generada]="generated()" [filtros]="resumenFiltros()" [periodo]="periodo()" [etiquetaVista]="etiquetaVista()" [lecturaFrontend]="ultimoRef()" [ingesta]="ingestaRef()" [enReplay]="esReplay()" />
   <p class="oculto" role="status" aria-live="polite">{{ anuncioModo() }}</p>
   @if (esApi() && pideClave()) { <app-acceso [rechazada]="claveRechazada()" (enviar)="enviarClave($event)" /> }
-  @if (esApi()) { <app-estado [entrada]="entradaEstado()" [ultimoAcceso]="ultimoAcceso()" [periodo]="periodo()" [filtros]="resumenFiltros()" [cargandoResto]="cargandoResto()" [ejecucion]="ejecucion()" (cargarResto)="cargarResto()" /> }
+  <!-- F7: filtros ENCIMA del mapa (el cambio es solo de posición: mismos bindings y eventos) -->
   @if (esApi()) { @if (esReplay()) { <app-filtros [replay]="true" [paises]="paises()" [referencia]="ventana()" (aplicado)="aplicarFiltros($event)" /> } @else { <app-filtros [paises]="paises()" [referencia]="ventana()" (aplicado)="aplicarFiltros($event)" /> } }
+  <!-- F7 (globo 3D): selector de vista justo encima del mapa. Botones con aria-pressed y texto visible; «Globo 3D» se desactiva, con su motivo visible, si el navegador no puede dibujarlo -->
+  <div class="vista-selector" role="group" aria-labelledby="vista-titulo">
+    <strong id="vista-titulo" class="vista-titulo">Vista:</strong>
+    <button type="button" [attr.aria-pressed]="vista() === '2d'" (click)="cambiarVista('2d')">@if (vista() === '2d') { <span aria-hidden="true">✓ </span> }Mapa 2D</button>
+    <button type="button" [attr.aria-pressed]="vista() === '3d'" [disabled]="globoNoDisponible() !== null" (click)="cambiarVista('3d')">@if (vista() === '3d') { <span aria-hidden="true">✓ </span> }Globo 3D</button>
+    @if (globoNoDisponible(); as motivo) { <p class="vista-aviso" role="status">Globo 3D no disponible. {{ motivo }}</p> }
+  </div>
   <div class="mapa-envoltorio">
     @if (etiquetaVista(); as e) { <p class="etiqueta-mapa" role="note">{{ e }}</p> }
-    <div class="map" leaflet [leafletOptions]="options" (leafletMapReady)="onMapReady($event)" aria-label="Mapa interactivo de terremotos"></div>
+    <!-- Leaflet sigue montado: en la vista 3D solo se oculta (hidden) y al volver se llama a invalidateSize() -->
+    <div class="map" leaflet [leafletOptions]="options" (leafletMapReady)="onMapReady($event)" [hidden]="vista() === '3d'" aria-label="Mapa interactivo de terremotos"></div>
+    <app-globo [visible]="vista() === '3d'" [eventos]="eventos()" [seleccionado]="seleccionado()" [replay]="esReplay()" [ejecucion]="ejecucion()" [etiqueta]="etiquetaVista()" [filtros]="resumenFiltros()" [hayTabla]="esApi() && !!estadisticas()" [rangoLeyenda]="rangoLeyenda()"
+      (seleccionar)="elegir($event, 'mapa')" (cerrar)="elegir(null, 'mapa')" (noDisponible)="globoSinSoporte($event)" (conteosRangos)="conteosRangos.set($event)" />
+    <!-- F7: leyenda de profundidad junto al mapa (HTML normal, no control de Leaflet). Mismos rangos y colores que colorProfundidad; cada punto lleva su texto (no solo color). -->
+    <div class="leyenda" role="group" aria-labelledby="leyenda-profundidad">
+      <strong id="leyenda-profundidad" class="leyenda-titulo">Profundidad</strong>
+      @if (vista() === '3d') {
+        <!-- Solo con el globo: cada rango es un botón (aria-pressed) que resalta ese rango y atenúa el resto EN EL GLOBO. No cambia filtros, tabla, estadísticas ni el mapa 2D. -->
+        <ul class="leyenda-lista leyenda-interactiva">
+          @for (r of rangosLeyenda; track r.id) {
+            <li><button type="button" class="leyenda-boton" [id]="'leyenda-rango-' + r.id" [attr.aria-pressed]="rangoLeyenda() === r.id" [attr.aria-label]="nombreBoton(r)" (click)="alternarRango(r.id)"><span [class]="'punto ' + r.clase" aria-hidden="true"></span>{{ r.texto }} ({{ cuentaRango(r.id) }})</button></li>
+          }
+        </ul>
+        @if (rangoLeyenda() !== null) { <button type="button" class="leyenda-boton leyenda-todos" (click)="mostrarTodosRangos()">Mostrar todos</button> }
+      } @else {
+      <ul class="leyenda-lista">
+        <li><span class="punto punto-somera" aria-hidden="true"></span>Menos de 70 km</li>
+        <li><span class="punto punto-media" aria-hidden="true"></span>70–299,99 km</li>
+        <li><span class="punto punto-profunda" aria-hidden="true"></span>300 km o más</li>
+        <li><span class="punto punto-nd" aria-hidden="true"></span>No disponible</li>
+      </ul>
+      }
+      <p class="oculto" role="status" aria-live="polite">{{ anuncioLeyenda() }}</p>
+    </div>
   </div>
+  @if (esApi()) { <app-estado [entrada]="entradaEstado()" [ultimoAcceso]="ultimoAcceso()" [periodo]="periodo()" [filtros]="resumenFiltros()" [cargandoResto]="cargandoResto()" [ejecucion]="ejecucion()" (cargarResto)="cargarResto()" /> }
   @if (esApi() && estadisticas(); as est) {
     <section class="panel" aria-label="Análisis del periodo consultado">
       <p class="contador" role="status">Contador cruzado del periodo consultado — mapa: {{ count() }} dibujados · tabla: {{ eventos().length }} · estadísticas: {{ est.total }} · total de la API: {{ total() ?? 'ND' }}.
@@ -37,5 +68,5 @@
       <app-tabla [etiqueta]="etiquetaVista()" [eventos]="eventos()" [seleccionado]="seleccionado()" (seleccionar)="elegir($event, 'tabla')" />
     </section>
   }
-  <footer><strong>Profundidad</strong><span>🟡 Menos de 70 km</span><span>🟠 70–299,99 km</span><span>🟣 300 km o más</span><span>⚪ No disponible</span><p>Tamaño: escala visual creciente con la magnitud; no representa energía ni área afectada. Sin magnitud: radio mínimo. El mapa base puede desactivarse en el selector de capas.</p><p>Base proporcionada: añade filtros, gráficos, tabla accesible y conclusiones para completar el proyecto.</p></footer>
+  <footer><p>Tamaño: escala visual creciente con la magnitud; no representa energía ni área afectada. Sin magnitud: radio mínimo. El mapa base puede desactivarse en el selector de capas y su estilo (oscuro o claro) elegirse en «Estilo del mapa base»; el oscuro es el mismo mapa de OpenStreetMap con un filtro de color.</p><p>Base proporcionada: añade filtros, gráficos, tabla accesible y conclusiones para completar el proyecto.</p></footer>
 </main>

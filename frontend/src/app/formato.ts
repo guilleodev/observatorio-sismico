@@ -22,9 +22,29 @@ export function colorProfundidad(profundidad: unknown): string {
 /** Borde oscuro de los círculos (F6, 6.7): el relleno amarillo/naranja por profundidad tenía 1,3:1 frente al mar y al continente de OpenStreetMap; con este borde la forma se distingue a >= 3:1 (WCAG 1.4.11). */
 export const BORDE_MAPA = '#1f2937';
 
-/** Estilo de un círculo del mapa: relleno por profundidad (sin cambios), mismo tamaño y borde oscuro de 1,5 px. */
-export function estiloCirculo(color: string, radio: number) {
-  return { radius: radio, color: BORDE_MAPA, fillColor: color, fillOpacity: 0.75, weight: 1.5 };
+/**
+ * F7 (mapa): estilo del mapa base. «oscuro» es el predeterminado; «claro» es el aspecto original de OpenStreetMap. La elección vive solo en memoria.
+ * IMPORTANTE: cambiar de estilo modifica ÚNICAMENTE el color del borde de los círculos (y el de las fronteras); relleno por profundidad, tamaño y opacidad no cambian.
+ */
+export type EstiloMapa = 'oscuro' | 'claro';
+export const ESTILO_MAPA_INICIAL: EstiloMapa = 'oscuro';
+/** Fondo del contenedor del mapa (visible si se apaga la base). Deben coincidir con --mapa-fondo-oscuro / --mapa-fondo-claro de styles.css (lo comprueba tests/mapa.test.ts). */
+export const FONDO_MAPA: Record<EstiloMapa, string> = { oscuro: '#0b1626', claro: '#dceaf1' };
+/** Borde claro de los círculos sobre base oscura: el borde #1f2937 se perdería (contraste < 3:1). */
+export const BORDE_MAPA_OSCURO = '#e2e8f0';
+/** Color de la selección (el grosor pasa de 1,5 a 4 px en ambos estilos); en oscuro, cian del sistema de diseño. */
+export const SELECCION_MAPA: Record<EstiloMapa, string> = { claro: '#111827', oscuro: '#67e8f9' };
+/** Color de las fronteras (mismo grosor y geometría): en oscuro se aclara para que no se pierda. */
+export const BORDE_FRONTERA: Record<EstiloMapa, string> = { claro: '#334155', oscuro: '#8fa3bf' };
+
+/** Borde normal de los círculos según el estilo del mapa. */
+export function bordeMapa(estilo: EstiloMapa): string {
+  return estilo === 'oscuro' ? BORDE_MAPA_OSCURO : BORDE_MAPA;
+}
+
+/** Estilo de un círculo del mapa: relleno por profundidad (sin cambios), mismo tamaño y borde de 1,5 px (oscuro por defecto; claro sobre base oscura). */
+export function estiloCirculo(color: string, radio: number, borde: string = BORDE_MAPA) {
+  return { radius: radio, color: borde, fillColor: color, fillOpacity: 0.75, weight: 1.5 };
 }
 
 /** Razón de contraste WCAG entre dos colores `#rrggbb` (NaN si alguno no es válido). */
@@ -58,6 +78,40 @@ Profundidad: ${prof !== null ? prof + ' km' : 'ND'}
 Actualizado UTC: ${fechaUtc(propiedades.updated)}
 País: ${propiedades.country_name ?? 'Sin país asignado'}
 ID: ${id ?? 'ND'}`;
+}
+
+export interface FilaFicha { etiqueta: string; valor: string }
+/** `insignia` = «Magnitud 4.8» (texto completo: popup del mapa 2D y lectores de pantalla); `magnitud` = «M 4.8» (forma corta y grande de la ficha del globo 3D). */
+export interface FichaEvento { lugar: string; insignia: string; magnitud: string; filas: FilaFicha[] }
+
+/**
+ * Magnitud en forma corta, «M 4.8» (el valor tal cual llega, sin redondear: igual que la insignia y la etiqueta del globo, que dice «lugar · M 4.8»); «M ND» si falta o no es un número
+ * finito. Un cero real se conserva («M 0»); nunca se confunde con la profundidad (esa lleva «km»).
+ */
+export function textoMagnitud(mag: unknown): string {
+  return `M ${numeroFinito(mag) ?? 'ND'}`;
+}
+
+/**
+ * F7 (mapa): la misma información que `textoFicha`, estructurada para la ventana emergente (título, insignia de magnitud y filas etiqueta/valor).
+ * Los textos son equivalentes a los de `textoFicha`; el componente los inserta con textContent (nunca HTML).
+ */
+export function filasFicha(propiedades: { place?: string | null; mag?: unknown; magType?: string | null; time?: unknown; updated?: unknown; country_name?: string | null }, profundidad: unknown, id: unknown): FichaEvento {
+  const mag = numeroFinito(propiedades.mag);
+  const prof = numeroFinito(profundidad);
+  return {
+    lugar: propiedades.place ?? 'Sin descripción',
+    insignia: `Magnitud ${mag ?? 'ND'}`,
+    magnitud: textoMagnitud(propiedades.mag),
+    filas: [
+      { etiqueta: 'Tipo de magnitud', valor: propiedades.magType ?? 'ND' },
+      { etiqueta: 'Profundidad', valor: prof !== null ? prof + ' km' : 'ND' },
+      { etiqueta: 'Fecha UTC', valor: fechaUtc(propiedades.time) },
+      { etiqueta: 'Actualizado UTC', valor: fechaUtc(propiedades.updated) },
+      { etiqueta: 'País', valor: propiedades.country_name ?? 'Sin país asignado' },
+      { etiqueta: 'ID', valor: String(id ?? 'ND') },
+    ],
+  };
 }
 
 /** «sin valor» para un dato nulo; nunca se muestra 0 en su lugar. Con `decimales` redondea solo la PRESENTACIÓN (6.15000009536743 → 6.15); el valor ordenado y buscado no cambia. */

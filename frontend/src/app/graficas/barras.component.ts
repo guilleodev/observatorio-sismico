@@ -71,25 +71,25 @@ const ANCHO = 640;
   `,
   styles: `
     :host { display: block; min-width: 0; } /* un elemento de rejilla con contenido ancho no debe ensanchar la página */
-    .grafica { margin: 0; background: white; padding: 12px 14px; border-left: 4px solid #176b70; }
+    .grafica { margin: 0; background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: 12px 14px; }
     figcaption { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
-    .desc { font-size: .8rem; color: #42596b; }
+    .desc { font-size: .8rem; color: var(--texto-2); }
     /* en pantallas estrechas el gráfico conserva un tamaño legible y se desplaza dentro de su región (la tabla de texto equivalente siempre está debajo) */
     .lienzo { overflow-x: auto; }
     svg { width: 100%; min-width: 500px; height: auto; display: block; }
-    .barra { fill: #176b70; }
-    .rejilla { stroke: #d5dee5; stroke-width: 1; }
-    .eje, .etiqueta, .valor { font-size: 12px; fill: #334155; }
+    .barra { fill: var(--acento); }
+    .rejilla { stroke: var(--borde); stroke-width: 1; }
+    .eje, .etiqueta, .valor { font-size: 12px; fill: var(--texto); }
+    .eje { fill: var(--texto-2); }
     .valor { font-weight: 700; }
-    .vacio { margin: 8px 0; padding: 10px; background: #eef3f6; font-size: .9rem; }
-    .sinvalor { font-size: .8rem; margin: 6px 0 0; }
+    .vacio { margin: 8px 0; padding: 10px; background: var(--superficie-2); border-radius: var(--radio-s); font-size: .9rem; }
+    .sinvalor { font-size: .8rem; margin: 6px 0 0; color: var(--texto-2); }
     details { margin-top: 8px; font-size: .85rem; }
-    summary { min-height: 24px; padding: 4px 0; cursor: pointer; } /* objetivo táctil >= 24 px */
+    summary { min-height: 24px; padding: 4px 0; cursor: pointer; color: var(--acento-texto); } /* objetivo táctil >= 24 px */
     table { border-collapse: collapse; margin-top: 6px; font-size: .85rem; }
     caption { text-align: left; font-weight: 600; padding-bottom: 4px; }
-    th, td { border: 1px solid #c3d0da; padding: 3px 8px; text-align: left; }
-    td { text-align: right; }
-    :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    th, td { border: 1px solid var(--borde); padding: 3px 8px; text-align: left; }
+    td { text-align: right; font-variant-numeric: tabular-nums; }
   `,
 })
 export class BarrasComponent {

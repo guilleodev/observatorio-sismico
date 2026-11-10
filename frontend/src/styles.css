@@ -1,1 +1,139 @@
-body { margin: 0; background: #eef3f6; color: #132b40; font-family: system-ui, sans-serif; } * { box-sizing: border-box; } .leaflet-popup-content { white-space: pre-line; }
+/* F7: sistema de diseño OSCURO. Las variables viven en :root y las usan los estilos de cada componente (los estilos encapsulados heredan las variables CSS). */
+:root {
+  /* superficies (azul marino en tres niveles) */
+  --fondo: #0a1120;
+  --superficie-1: #0f1a2e;
+  --superficie-2: #15233b;
+  --superficie-3: #1c2e4d;
+  /* bordes: decorativo (tarjetas) y de control (inputs, botones; >= 3:1 sobre la superficie) */
+  --borde: #2a3c5c;
+  --borde-control: #6b82a6;
+  /* texto */
+  --texto: #e6edf7;
+  --texto-2: #a9b8d0;
+  /* acento cian/turquesa */
+  --acento: #22d3ee;
+  --acento-texto: #67e8f9;
+  --sobre-acento: #04121f;
+  /* estados */
+  --ok: #34d399;
+  --aviso: #fbbf24;
+  --aviso-fondo: #2b2410;
+  --aviso-texto: #fde8a8;
+  --error: #f87171;
+  --error-fondo: #3a1518;
+  --error-texto: #fecaca;
+  --info: #60a5fa;
+  --info-fondo: #12284a;
+  --info-texto: #cfe2ff;
+  /* REPRODUCCIÓN: violeta propio, distinto del cian de «en vivo» (invariante 8) */
+  --replay: #a78bfa;
+  --replay-fuerte: #7c3aed;
+  --replay-fondo: #241a4d;
+  --replay-texto: #ddd6fe;
+  /* forma, sombras, espaciado, foco */
+  --radio: 10px;
+  --radio-s: 6px;
+  --sombra: 0 4px 16px rgba(0, 0, 0, .4);
+  --sombra-s: 0 1px 4px rgba(0, 0, 0, .5);
+  --esp-1: 4px; --esp-2: 8px; --esp-3: 12px; --esp-4: 16px; --esp-5: 24px;
+  --foco: #67e8f9;
+  --fuente: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* F7 (bloques superiores): fondo del modo «En vivo» seleccionado y escala tipográfica (aditivos) */
+  --acento-fondo: #0c2a3b;
+  --t-xs: .72rem; --t-s: .8rem; --t-m: .9rem; --t-l: 1.15rem; --t-xl: 1.75rem;
+  /* F7 (mapa): fondos del contenedor del mapa (iguales a FONDO_MAPA de formato.ts), borde claro de marcadores/puntos de la leyenda y filtro de las teselas OSM en el estilo oscuro */
+  --mapa-fondo-oscuro: #0b1626;
+  --mapa-fondo-claro: #dceaf1;
+  --punto-borde: #e2e8f0;
+  /* F7 (globo 3D): tierra firme de la textura del planeta (el océano usa --superficie-2); el borde claro --punto-borde se mide sobre ambos en tests/globo.test.ts */
+  --globo-continente: #264264;
+  --filtro-teselas-oscuro: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6);
+}
+
+html { color-scheme: dark; background: var(--fondo); }
+body { margin: 0; background: var(--fondo); color: var(--texto); font-family: var(--fuente); line-height: 1.45; }
+* { box-sizing: border-box; }
+button { touch-action: manipulation; }
+h1, h2 { text-wrap: balance; }
+h3 { text-wrap: balance; }
+a { color: var(--acento-texto); }
+
+/* foco visible global: anillo cian (sobre los fondos oscuros y sobre el mapa claro) */
+:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+/* controles nativos: color y fondo explícitos (también las opciones desplegables de <select>) */
+select, input { background-color: var(--superficie-1); color: var(--texto); }
+option { background-color: var(--superficie-1); color: var(--texto); }
+::placeholder { color: var(--texto-2); opacity: 1; }
+
+/* ---------- Leaflet: fondo, teselas, popups y controles (F7) ---------- */
+/* Estilo del mapa base: la clase mapa-oscuro / mapa-claro la pone el componente en el contenedor. El fondo sigue al estilo aunque se apague la base desde el control de capas.
+   La capa oscura es la MISMA capa de OpenStreetMap con un filtro CSS sobre sus teselas (clase teselas-mapa); los marcadores y las fronteras NO pasan por el filtro. */
+.leaflet-container.mapa-oscuro { background: var(--mapa-fondo-oscuro); }
+.leaflet-container.mapa-claro { background: var(--mapa-fondo-claro); }
+.leaflet-container.mapa-oscuro .teselas-mapa { filter: var(--filtro-teselas-oscuro); }
+
+/* ventana emergente de un terremoto (contenido creado con textContent en app.component.ts) */
+.leaflet-container .popup-sismico .leaflet-popup-content-wrapper { background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio); box-shadow: var(--sombra); }
+.leaflet-container .popup-sismico .leaflet-popup-tip { background: var(--superficie-2); box-shadow: var(--sombra-s); }
+.leaflet-container .popup-sismico .leaflet-popup-content { margin: 12px 16px 14px; font-size: var(--t-m); line-height: 1.4; max-width: calc(100vw - 96px); }
+.leaflet-container .popup-sismico a.leaflet-popup-close-button { top: 2px; right: 2px; width: 32px; height: 32px; padding: 0; font: 22px/32px var(--fuente); text-align: center; color: var(--texto-2); border-radius: var(--radio-s); }
+.leaflet-container .popup-sismico a.leaflet-popup-close-button:hover { color: var(--acento-texto); background: var(--superficie-3); }
+.leaflet-container .popup-sismico a.leaflet-popup-close-button:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
+.ficha { min-width: 0; overflow-wrap: break-word; }
+.ficha p { margin: 0; }
+.ficha-replay { margin-bottom: 8px !important; padding: 6px 10px; white-space: pre-line; background: var(--replay-fondo); color: var(--replay-texto); border: 1px solid var(--replay); border-left-width: 4px; border-radius: var(--radio-s); font-weight: 700; font-size: var(--t-s); }
+.ficha-titulo { padding-right: 24px; font-weight: 700; font-size: 1rem; color: var(--texto); text-wrap: balance; }
+.ficha-magnitud { display: inline-block; margin: 6px 0 8px !important; padding: 2px 10px; background: var(--acento-fondo); color: var(--acento-texto); border: 1px solid var(--acento); border-radius: 999px; font-weight: 700; font-size: var(--t-m); font-variant-numeric: tabular-nums; }
+.ficha-filas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px var(--esp-2); margin: 0; }
+/* compacto: Tipo · Profundidad · País en pares; las dos fechas ISO y el ID ocupan el ancho completo (orden fijado por filasFicha) */
+.ficha-filas > div:nth-child(n+3):nth-child(-n+4), .ficha-filas > div:nth-child(6) { grid-column: 1 / -1; }
+.ficha-filas > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }   /* etiqueta encima del valor: las fechas ISO (24 caracteres) caben enteras */
+.ficha-filas dt { color: var(--texto-2); font-size: var(--t-s); }
+.ficha-filas dd { margin: 0; color: var(--texto); font-variant-numeric: tabular-nums; }
+
+/* controles: el selector de estilo del mapa base (propio) se distingue del de capas por ser un grupo de dos botones con texto */
+.leaflet-container .selector-estilo { display: flex; gap: 4px; padding: 4px; background: var(--superficie-2); border: 1px solid var(--borde-control); border-radius: var(--radio-s); box-shadow: var(--sombra-s); }
+.leaflet-container .selector-estilo button { min-width: 64px; min-height: 36px; padding: 0 10px; background: var(--superficie-1); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); font: 600 var(--t-m) var(--fuente); cursor: pointer; }
+.leaflet-container .selector-estilo button:hover { border-color: var(--acento); color: var(--acento-texto); }
+.leaflet-container .selector-estilo button[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border-color: var(--acento); font-weight: 700; box-shadow: inset 0 -3px 0 var(--acento); }
+.leaflet-container .selector-estilo button:focus-visible { outline: 3px solid var(--foco); outline-offset: 1px; }
+.leaflet-container .leaflet-tooltip { background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); box-shadow: var(--sombra-s); }
+.leaflet-container .leaflet-tooltip-top:before { border-top-color: var(--borde-control); }
+.leaflet-container .leaflet-tooltip-bottom:before { border-bottom-color: var(--borde-control); }
+.leaflet-container .leaflet-tooltip-left:before { border-left-color: var(--borde-control); }
+.leaflet-container .leaflet-tooltip-right:before { border-right-color: var(--borde-control); }
+/* zoom */
+.leaflet-container .leaflet-bar { border: 1px solid var(--borde-control); box-shadow: var(--sombra-s); }
+.leaflet-container .leaflet-bar a, .leaflet-container .leaflet-bar a:hover { background-color: var(--superficie-2); color: var(--texto); border-bottom: 1px solid var(--borde-control); }
+.leaflet-container .leaflet-bar a:hover { background-color: var(--superficie-3); }
+.leaflet-container .leaflet-bar a.leaflet-disabled { background-color: var(--superficie-1); color: var(--texto-2); }
+.leaflet-container .leaflet-bar a.leaflet-control-zoom-in, .leaflet-container .leaflet-bar a.leaflet-control-zoom-out { width: 36px; height: 36px; line-height: 36px; font-size: 22px; }
+.leaflet-container .leaflet-bar a:hover { color: var(--acento-texto); }
+.leaflet-container .leaflet-bar a:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
+/* selector de capas (el icono de Leaflet es oscuro: se invierte para verlo sobre el fondo oscuro) */
+.leaflet-container .leaflet-control-layers { background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); box-shadow: var(--sombra-s); }
+.leaflet-container .leaflet-control-layers-toggle { filter: invert(1); }
+.leaflet-container .leaflet-control-layers-separator { border-top-color: var(--borde); }
+.leaflet-container .leaflet-control-layers label { color: var(--texto); }
+/* el icono del selector de capas está invertido con filter: su propio anillo de foco saldría invertido; el anillo cian se dibuja en el control completo */
+.leaflet-container .leaflet-control-layers-toggle:focus-visible { outline: none; }
+.leaflet-container .leaflet-control-layers:has(.leaflet-control-layers-toggle:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
+.leaflet-container .leaflet-control-layers input { accent-color: var(--acento); }
+.leaflet-container .leaflet-control-layers-expanded { padding: 8px 12px; }
+/* atribución */
+.leaflet-container .leaflet-control-attribution { background: rgba(10, 17, 32, .88); color: var(--texto-2); }
+.leaflet-container .leaflet-control-attribution a { color: var(--acento-texto); }
+.leaflet-container:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
+
+/* globo 3D · indicador de carga: anillo indeterminado (sin porcentajes). Solo gira con movimiento permitido; con movimiento reducido queda estático (el texto de fase basta). */
+.carga-spinner { flex: none; width: 14px; height: 14px; border: 2px solid var(--borde-control); border-top-color: var(--acento-texto); border-radius: 50%; }
+@keyframes globo-giro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: no-preference) { .carga-spinner { animation: globo-giro 1s linear infinite; } }
+
+/* movimiento reducido: se anulan transiciones y animaciones (no hay bucles decorativos; el resto de reglas usa solo transform/opacity) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .leaflet-fade-anim .leaflet-popup, .leaflet-zoom-anim .leaflet-zoom-animated { transition: none !important; }
+}

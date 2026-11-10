@@ -208,19 +208,20 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §9, §10, §11): replay por Kafka con topic y tablas separados, tiempo original y de reproducción, etiqueta «REPRODUCCIÓN» y casos controlados de duplicado y revisión; las pruebas de aceptación del enunciado §11 (incluido cerrar y reabrir el túnel); mediciones también de la integración geográfica y de la agregación por ventanas, con datos sintéticos marcados y fuera del análisis real, y razonamiento para 100 millones de registros; CORS con el origen exacto de Netlify; authtoken de ngrok fuera de Git y de Angular; solo la API expuesta.
 
-### F7 — Mejoras y evolución · 🟡 marco creado el 2026-11-09 (`specs/006-mejoras-evolucion/`); ninguna mejora aprobada
+### F7 — Mejoras y evolución · 🟡 fase ABIERTA (marco creado el 2026-11-09, `specs/006-mejoras-evolucion/`); ningún trabajo `F7.n` iniciado
 
-Fase **flexible**: las mejoras se descubren mientras se usa y estudia el proyecto y se implementan **solo cuando la persona estudiante las aprueba**, en pasos pequeños `7.1`, `7.2`… con su propia mini-especificación (requisitos, alcance, criterios de aceptación y pruebas proporcionales) y commit manual `[F7.n]`. Reglas: no se cambia la arquitectura obligatoria ni el contrato del profesor, no se debilita la seguridad (clave, CORS), no se tocan F0–F6 ni sus evidencias, y publicar en Netlify o abrir ngrok requiere autorización expresa.
+Fase **abierta**: no hay secuencia de pasos, ni número previsto de ellos, ni paso de cierre definido. Las mejoras se descubren mientras se usa y estudia el proyecto y se **experimentan en `localhost:4200`**. Las candidatas (`C-nn`) son un cajón de ideas que se puede ampliar, modificar, posponer o descartar libremente. Un `F7.n` se asigna **solo cuando la persona estudiante decide empezar un trabajo concreto**, que puede agrupar varias mejoras y tener un alcance amplio; lleva un encargo breve, verificación proporcional y commit manual `[F7.n]`. Reglas: no se cambia la arquitectura obligatoria ni el contrato del profesor, no se debilita la seguridad (clave, CORS), no se tocan F0–F6 ni sus evidencias, y publicar en Netlify o abrir ngrok requiere autorización expresa.
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 7.0 | Marco SDD: spec, plan, tareas, backlog y plantilla de mejora | ✅ creado (pendiente de la revisión humana y del commit de la reorganización) |
+| — | Marco SDD abierto: spec, plan, tareas, backlog y plantilla ligera | ✅ creado (pendiente del commit de la reorganización) |
 | C-01 | *(candidata)* Entrar en `localhost:4200` sin teclear la clave de la API cada vez, sin debilitar FastAPI ni Netlify | ⬜ candidata, **sin aprobar** |
 | C-02 | *(candidata)* Mostrar de forma más perceptible cuándo el dashboard se ha actualizado correctamente (observación f de `docs/evidencias/f6/6.9-revision-humana.md`) | ⬜ candidata, **sin aprobar** |
-| C-03 | *(candidata)* Crear un subagente **Frontend Engineer** (Angular, TypeScript, diseño, accesibilidad y responsive) | ⬜ candidata, **sin aprobar** |
-| C-04 | *(candidata)* Explorar skills con `npx skills find`, revisando procedencia y contenido **antes** de instalar; estudiar su aplicación al frontend | ⬜ candidata, **sin aprobar** (no se instala nada) |
+| C-03 | Subagente **Frontend Engineer** (Angular, TypeScript, diseño, accesibilidad y responsive) | ✅ creado el 2026-11-09 (`.claude/agents/frontend-engineer.md`); uso solo con autorización expresa |
+| C-04 | Skills de diseño: se creó una skill propia `observatorio-design` (`.claude/skills/observatorio-design/`) a partir de reglas revisadas; nada externo instalado | ✅ creada el 2026-11-09 |
 | I-01…I-04 | *(ideas)* Data Engineer y MCP como posibilidades futuras solo si aportan valor concreto; investigar APIs sísmicas regionales y valorar Streamlit (opcionales, solo si aportan algo distinto al dashboard Angular) | 💡 anotadas, sin plan |
-| 7.n | Nuevas mejoras: se añaden al backlog (`specs/006-mejoras-evolucion/backlog.md`) y reciben número al aprobarse | — |
+| C-05…C-11 | *(candidatas de la propuesta de rediseño, 2026-11-09)* Fundación visual y tokens oscuros (C-05), layout y jerarquía (C-06), componentes (C-07), mapa 2D mejorado (C-08), cierre de accesibilidad y responsive (C-09), estudio del globo 3D (C-10) y globo como segundo modo (C-11, condicionada). Material de referencia (no un plan): `specs/006-mejoras-evolucion/propuesta-rediseno-dashboard.md` | ⬜ candidatas, **sin aprobar ni ordenar** |
+| F7.n | Se asigna al decidir empezar un trabajo concreto (puede agrupar varias candidatas) | — |
 
 **Política de trabajo de F7:** se desarrolla y prueba en `localhost:4200`; commits y push manuales al repositorio privado; **Netlify se mantiene con la versión de F6** (sin despliegues automáticos ni publicación de las mejoras); sin ngrok ni despliegues públicos sin autorización expresa; sin secretos en Git ni en bundles; **no se instalan skills, agentes, MCP ni dependencias** sin aprobación (las skills se revisan antes: procedencia y contenido). Las notas de clase del 2026-11-09 son orientaciones del profesor, **no requisitos obligatorios**.
 

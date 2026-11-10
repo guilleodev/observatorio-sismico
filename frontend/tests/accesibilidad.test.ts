@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { BORDE_MAPA, estiloCirculo, razonContraste } from '../src/app/formato.ts';
+import { BORDE_MAPA, SELECCION_MAPA, estiloCirculo, razonContraste } from '../src/app/formato.ts';
 
 const leer = (ruta: string) => readFileSync(new URL(`../src/app/${ruta}`, import.meta.url), 'utf8');
 
@@ -30,13 +30,15 @@ test('estiloCirculo conserva el color de relleno por profundidad y el tamaño, y
 
 test('la aplicación dibuja los marcadores con estiloCirculo y la selección sigue siendo más gruesa y oscura que el borde normal', () => {
   const ts = leer('app.component.ts');
-  assert.match(ts, /estiloCirculo\(color, radioMagnitud\(numeroFinito\(p\.mag\)\)\)/);
-  assert.match(ts, /setStyle\(\{ weight: 4, color: '#111827'/);
+  // F7 (mapa): estiloCirculo recibe además el borde según el estilo del mapa (oscuro/claro) y la selección toma su color de SELECCION_MAPA (en claro sigue siendo #111827; ver tests/mapa.test.ts)
+  assert.match(ts, /estiloCirculo\(color, radioMagnitud\(numeroFinito\(p\.mag\)\), bordeMapa\(this\.estiloMapa\(\)\)\)/);
+  assert.match(ts, /setStyle\(\{ weight: 4, color: SELECCION_MAPA\[this\.estiloMapa\(\)\]/);
+  assert.equal(SELECCION_MAPA.claro, '#111827');
   assert.ok(4 > 1.5);
 });
 
 test('hallazgo T050: el botón «Actualizar ahora» y las opciones de modo miden al menos 24 px (WCAG 2.5.8)', () => {
-  const css = leer('app.component.css');
+  const css = leer('indicador-refresco/indicador-refresco.component.ts');   // F7: el botón único vive en el indicador (su CSS está en el componente)
   assert.match(css, /\.actualizar\s*\{[^}]*min-height:\s*24px/);
   const selector = leer('selector-modo/selector-modo.component.ts');
   assert.match(selector, /label\s*\{[^}]*min-height:\s*24px/);

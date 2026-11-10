@@ -25,10 +25,24 @@ export function formatoIntervalo(ms: number): string {
   return m < 90 ? `${m} min` : `${Math.round(m / 60)} h`;
 }
 
+/** Frase única (compartida) sobre la suspensión con la pestaña oculta. */
+const FRASE_PAUSA_OCULTA = 'La actualización automática se suspende mientras la pestaña no está visible.';
+
 /** Texto visible sobre la actualización: intervalo, si se pausa con la pestaña oculta y que existe la actualización manual. */
 export function textoActualizacion(config: Pick<Config, 'refreshMs' | 'pausarSiOculta'>): string {
-  const pausa = config.pausarSiOculta === true ? ' La actualización automática se suspende mientras la pestaña no está visible.' : '';
+  const pausa = config.pausarSiOculta === true ? ` ${FRASE_PAUSA_OCULTA}` : '';
   return `Actualización automática cada ${formatoIntervalo(config.refreshMs)}.${pausa} Puedes actualizar a mano con «Actualizar ahora».`;
+}
+
+/** F7: intervalo para el indicador compacto («cada 60 s»); con un intervalo no válido, no se inventa nada. */
+export function textoIntervalo(config: Pick<Config, 'refreshMs'>): string {
+  const f = formatoIntervalo(config.refreshMs);
+  return f === 'intervalo no válido' ? f : `cada ${f}`;
+}
+
+/** F7: aviso de suspensión con la pestaña oculta para el indicador; null si la configuración no la activa (p. ej. en local). */
+export function avisoPausaOculta(config: Pick<Config, 'pausarSiOculta'>): string | null {
+  return config.pausarSiOculta === true ? FRASE_PAUSA_OCULTA : null;
 }
 
 /** Errores de un `config.json` (vacío = válido). No acepta claves que parezcan secretos ni un intervalo por debajo del mínimo que usa la aplicación. */

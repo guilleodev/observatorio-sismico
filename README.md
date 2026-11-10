@@ -79,6 +79,20 @@ proyecto. Requisitos originales en [`docs/referencias/`](docs/referencias/).
 
    Abrir `http://localhost:4200`.
 
+### Modo local con acceso automático (F7, solo desarrollo)
+
+Si la API exige clave (`API_CLAVE_ACCESO` en el `.env` privado), `npm run start:local` evita escribirla en el formulario: el servidor de desarrollo de Angular
+reenvía `/api` a `http://127.0.0.1:8000` y añade la cabecera de clave **en el servidor** (`frontend/proxy.conf.mjs`). La clave no llega al navegador, a `config.json` ni a los bundles.
+
+```bash
+cd frontend
+npm run start:local      # abrir http://localhost:4200 (solo escucha en 127.0.0.1); parar con Ctrl+C
+```
+
+- Solo reenvía `GET`/`HEAD` de `/api/eventos`, `/api/estadisticas` y `/api/salud`; cualquier otra ruta da 404 y las peticiones con rastro de túnel o cruzadas dan 403.
+- La API sigue exigiendo la clave: sin ella, `curl http://127.0.0.1:8000/api/salud` devuelve 401. Sin `API_CLAVE_ACCESO` en `.env`, el formulario de clave funciona como siempre.
+- `npm start` y `npm run build` (Netlify) no usan el proxy ni `frontend/config-local/config.json`. **Nunca** expongas el puerto 4200 con ngrok: ngrok solo debe publicar la API (8000).
+
 ## Datos y modos
 
 - La API y el consumidor solo admiten los modos del contrato del profesor: `live` y `replay`. El consumidor procesa solo
