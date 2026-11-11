@@ -1,40 +1,52 @@
 # Plan de implementación: Documentación, entrega académica y vídeo (F8)
 
-**Especificación**: [spec.md](spec.md) · **Fecha**: 2026-11-09 · Commits previstos: `[F8]` (y `[F8-WIP]` intermedios si hace falta, como en F6), siempre manuales.
+**Especificación**: [spec.md](spec.md) · **Tareas**: [tasks.md](tasks.md) · **Planificación original**: 2026-11-09 (10 pasos) · **Actualizada**: 2026-11-11 (5 pasos **aprobados**; 8.1 pendiente de autorización explícita) · Commit previsto: `[F8]` (y `[F8-WIP]` intermedios solo si hacen falta), siempre **manuales**, mensajes en español.
 
 ## Resumen
-Pasar de «sistema construido y verificado» a «entrega comprobable por el profesor»: fijar qué se exige (literal), reunir la memoria y el README, observar SC-010 de F3, trazar la rúbrica hasta el vídeo, preparar y verificar el entorno de grabación, y gestionar acceso y entrega. Reutiliza evidencias de F3–F6; no repite baterías.
+Pasar de «sistema construido y verificado (F0–F7)» a «entrega comprobable por el profesor» con el **nuevo formato: vídeo explicativo grabado con OBS por la persona estudiante + README muy completo** (sin defensa oral ni preguntas; fuente literal pendiente de archivar, CA-01). Se **conservan todos los requisitos originales**; solo cambia cómo se explican y demuestran. Se reutilizan la planificación del 2026-11-09, las tareas T001–T026 (más T027–T031 y, desde T032, publicación de F7, credenciales y disponibilidad) y las evidencias de F3–F7; no se repiten baterías.
+
+**Evaluación por tres vías** (CA-01 confirmada en clase): (A) **vídeo** grabado por la persona estudiante con OBS, (B) **revisión autónoma de la web publicada** durante una **ventana de evaluación de ~2 días** (PC y servicios operativos; fechas pendientes, CA-06) y (C) **revisión autónoma del repositorio privado de GitHub** (CA-05). Tres entregables principales: **`docs/entrega/memoria.md`** (CA-07 resuelta), **README definitivo** y vídeo. La arquitectura no cambia (API, Kafka y PostgreSQL en el PC + túnel ngrok + Netlify).
+
+**Asunto pendiente de F8 — publicación de F7**: local = F7 (`9008772`), Netlify = F6. Se resuelve en cuatro tiempos, sin saltarse ninguno: **definir → aprobar por escrito → ejecutar con autorización expresa → verificar** desde otro dispositivo con la API real y con vuelta atrás a F6 (FR-021). Credenciales del profesor: canal privado, nunca en el repositorio, README, memoria, vídeo ni capturas (FR-022).
 
 ## Comprobación de la constitución (v1.0.5)
-I (el profesor prevalece): cada requisito con fuente literal; lo no confirmado queda como aclaración (FR-001/FR-002). ✔ · II/III: no cambia arquitectura ni mezcla fuentes; el vídeo etiqueta Live/REPRODUCCIÓN. ✔ · V: nada se declara cumplido sin evidencia (SC-010 de F3 incluido). ✔ · VI: el vídeo y la memoria no muestran claves ni `.env`; ngrok/Netlify solo con autorización. ✔ · VII: pasos pequeños y commit manual. ✔ · VIII (aprendizaje y defensa): se conserva la preparación de la explicación individual hasta resolver CA-01. ✔ (ver discrepancia anotada en la hoja de ruta).
+I (el profesor prevalece): cada requisito con fuente literal; lo comunicado solo en clase se marca «pendiente de confirmar» (FR-001/FR-002). ✔ · II/III: no cambia arquitectura ni mezcla fuentes; el vídeo etiqueta EN VIVO/REPRODUCCIÓN. ✔ · V: nada se declara cumplido sin evidencia (SC-010 de F3 incluido). ✔ · VI: ni README, memoria ni vídeo muestran claves ni `.env`; ngrok/Netlify solo con autorización expresa. ✔ · VII: pasos pequeños, sin avance automático y commit manual. ✔ · VIII (aprendizaje y defensa): se conserva la **comprensión del código por la persona estudiante**; la explicación del flujo y de una decisión técnica se traslada al vídeo (CA-08), no a una defensa oral.
 
-## Pasos de F8 (en orden de dependencia; se pueden solapar los marcados ∥)
-| Paso | Contenido | Quién | Autorización |
-|---|---|---|---|
-| **8.1** | Revisión literal de rúbrica, guía, FAQ, enunciado y contrato → `docs/entrega/requisitos-fuente.md` (requisito ↔ fuente literal; CA-01…CA-07). Obtener del profesor el texto sobre el vídeo y las fechas. | Claude + persona estudiante | — |
-| **8.2** | Matriz de trazabilidad (rúbrica y 13 puntos → implementación → evidencia → minuto de vídeo) → `docs/entrega/matriz-trazabilidad.md` (esqueleto desde 8.1; se completa al terminar 8.3 y 8.6) | Claude | — |
-| **8.3** | Memoria o notebook **obligatoria** (el README no la sustituye) con evidencias visuales (capturas reales del frontend, fragmentos de código, resultados de pruebas) (Guía 2.1–2.9): arquitectura y diagramas, modelo conceptual/lógico/físico, diccionario, procedencia, calidad, pruebas, resultados, complejidad/costes, conclusiones, evidencias. Formato según CA-07 | Claude redacta; persona estudiante revisa y aporta datos de costes | — |
-| **8.4** | README final profesional **con capturas reales y enlaces internos a evidencias** (sobre el de F6) y verificación en un entorno limpio paralelo | Claude | PA-11 para eliminar volúmenes temporales |
-| **8.5 ∥** | **Observación de >24 h (SC-010 de F3)**: consultas de solo lectura (T075–T077 de `specs/005-…`), resultado real en `docs/evidencias/f3/sc-010-observacion-24h.txt` y anexos | Claude | **PA-10** expresa |
-| **8.6** | Guion y recorrido de grabación **por criterios de la rúbrica** (requisito → funcionalidad → evidencia → demostración): Live, Replay, Kafka, PostgreSQL, FastAPI, Angular, pruebas, reproducibilidad; duración y formato según CA-03 (pendientes de confirmación formal) | Claude + persona estudiante | — |
-| **8.7** | Entorno de grabación: ensayo en seco, checklist previa, estado de datos y panel, Docker sano, sin secretos visibles; **toma de capturas reales del frontend**. Netlify sigue con la versión de F6 salvo autorización expresa para publicar la versión final | Claude + persona estudiante | ngrok/Netlify solo con autorización expresa |
-| **8.8** | Grabación y revisión del vídeo frente a la matriz | **Persona estudiante** (Claude revisa guion/matriz) | — |
-| **8.9** | Revisión final de entregables (lista de 13 + matriz + CA-03); Architect/QA acotados **solo si se piden** | Claude | — |
-| **8.10** | Acceso del profesor al repositorio privado y entrega | **Persona estudiante** | commit/push manuales |
+## Los cinco pasos
+| Paso | Contenido | Entregables | Quién | Autorización |
+|---|---|---|---|---|
+| **8.1 — Auditoría de requisitos y rúbrica** | Revisión literal de `ENUNCIADO.md` (§9–§13), Guía (1–3 y lista final), FAQ y `CONTRATO-API.md`; contraste con la implementación real (F7 congelada, commit `9008772`); **matriz de trazabilidad** (FR-025: fuente y requisito exacto, implementación, archivos/servicios, pruebas y evidencias, estado, apartado de memoria, de README y escena de vídeo, pendientes), con filas para la **revisión de la web publicada y del repositorio**; evidencias disponibles y pendientes (incluida la diferencia F7 local ↔ F6 publicada); aclaraciones CA-01…CA-08. Un requisito no se da por verificado solo por existir código | `docs/entrega/requisitos-fuente.md`, `docs/entrega/matriz-trazabilidad.md` | Claude + persona estudiante | — |
+| **8.2 — Memoria técnica y README definitivo** | Memoria completa (Guía 2.1–2.9) con tabla de cobertura exacta contra enunciado y Guía; README profesional (puerta de entrada al repositorio) con sección de cumplimiento de la rúbrica y enlaces a la memoria sin duplicarla; capturas reales del diseño final de F7 (Panel · Análisis · Eventos, globo 3D y 2D, EN VIVO, REPRODUCCIÓN); comprobación estática de enlaces, comandos e instrucciones; **documentar el procedimiento** (no la clave) de acceso del profesor | `docs/entrega/memoria.md`, `README.md` definitivo, capturas en `docs/evidencias/f8/capturas/` | Claude redacta; persona estudiante revisa y aporta datos de costes | — |
+| **8.3 — Evidencias y validación técnica final** | Pruebas automatizadas y criterios de aceptación; Docker, Kafka, PostgreSQL, API y dashboard sanos; EN VIVO y REPRODUCCIÓN verificados; consolidación de calidad, índices, mediciones y costes; reutilización de la recuperación real del hueco #475; **verificación del README en un entorno limpio paralelo**; revisión de secretos y seguridad (incluido el historial de Git); **revisión del acceso autónomo del profesor a la web publicada** e identificación de toda diferencia funcional respecto al local; **estrategia segura de publicación de F7** (definir → aprobar → ejecutar con autorización → verificar); **funcionamiento continuado, conectividad externa, recuperación ante fallos y ausencia de suspensión automática del PC** (se comprueba y documenta); **preparación** de SC-010 y ejecución solo con PA-10, como prueba **independiente** de la ventana de evaluación | `docs/evidencias/f8/*` (resumen en `resultados.md`), matriz actualizada, `docs/evidencias/f3/sc-010-observacion-24h.txt` (solo con PA-10) | Claude | **PA-10** (SC-010), **PA-11** (volúmenes temporales), autorización expresa para **Netlify** y **ngrok** |
+| **8.4 — Guion, preparación y grabación del vídeo** | Guion por bloques siguiendo la rúbrica, con **«Qué decir» y «Qué mostrar»** en cada escena; recorrido por arquitectura, Kafka, PostgreSQL, API, Panel · Análisis · Eventos, EN VIVO y REPRODUCCIÓN, calidad, análisis, pruebas y recuperación de huecos, y explicación del flujo y de una decisión técnica (CA-08); configuración de OBS; checklist de privacidad y entorno; ensayo en seco; orden de pruebas y escenas técnicas; grabación; revisión del vídeo contra la rúbrica; «minuto de vídeo» en la matriz | `docs/entrega/guion-video.md`, `docs/entrega/checklist-grabacion.md`, vídeo | Claude prepara; **la persona estudiante graba con OBS** | ngrok/Netlify solo con autorización expresa |
+| **8.5 — Auditoría final y entrega** | Verificación de todos los requisitos originales, matriz, memoria, README, evidencias y vídeo; ningún criterio sin justificar; enlaces, instalación, ejecución y ausencia de secretos; **comprobación del acceso al repositorio privado** (permisos, sin cambiarlos ni hacerlo público sin decisión expresa) y de la **web publicada**; **checklist de activación previa a la ventana de evaluación** y de comprobación del acceso del profesor (arranque ordenado, servicios sanos, túnel y panel, datos y REPRODUCCIÓN visibles, PC sin suspensión, credencial entregada por canal privado, regla de no tocar nada durante la ventana); condiciones vigentes de entrega (CA-02, CA-03, CA-05); `git status`/`git diff --check`/escaneo de secretos; preparación del commit `[F8]` | `docs/evidencias/f8/auditoria-final.md`; matriz cerrada; `docs/entrega/checklist-ventana-evaluacion.md` | Claude audita; **la persona estudiante hace commit, push, entrega de credenciales y envío** | commit/push manuales |
+
+## Dependencias y orden
+**8.1 → 8.2**: la memoria y el README parten de la matriz y de las fuentes. **8.3** necesita la matriz (qué evidencias faltan) y puede **solaparse con 8.2** en lo que no depende de la redacción; **SC-010 puede prepararse desde 8.1** y ejecutarse en cuanto haya PA-10, sin bloquear nada (si no se cumple, se documenta como no cumplido). **8.4 requiere 8.2 (capturas, README) y 8.3 (entorno y evidencias verificados, y publicación de F7 resuelta o decidida, porque el vídeo y la web deben mostrar la misma versión)**. **8.5 es lo último** y su checklist se ejecuta justo antes de que empiece la ventana de evaluación. La aplicación ya está congelada en `9008772`: cualquier cambio de código a partir de ahora requiere decisión expresa (reabriría 8.2–8.4). **No se pasa de un paso al siguiente sin aprobación expresa.**
+
+## Reutilización (no se parte de cero)
+- Esta planificación y las tareas T001–T026 (correspondencia en `tasks.md`).
+- Evidencias de F3–F6 (`docs/evidencias/`), `f6/lista-final.md` (13 puntos, base de la matriz), `f6/procedimiento-defensa.md` y `6.9-defensa-seco.txt` (base del guion, **sin** el apartado de preguntas), `f6/guion-accesibilidad.md`, `f6/complejidad-costes.md`, `f5/conclusiones.md`, `f4/recuperacion-hueco-475.md`, `scripts/f6/` y `escaneo_secretos.sh`.
+- Documentación de F7: `specs/006-mejoras-evolucion/estado-tecnico-f7.md` (descripción del panel actual) y `comprobaciones-manuales-f7.md` (solo lo confirmado por la persona estudiante).
+
+## Riesgos
+- **Requisitos del vídeo sin confirmar** (CA-01/CA-03): guion modular, sin asumir duración ni formato; todo lo desconocido consta como pendiente.
+- **Memoria vs README** (CA-07): se mantiene la memoria independiente; si el profesor confirmara otra cosa, se ajusta, no se elimina por adelantado.
+- **Cambiar la aplicación después de capturar/grabar**: versión congelada en `9008772`; cualquier cambio reabre capturas y vídeo.
+- **Web publicada ≠ versión local** (F6 en Netlify, F7 en local): el profesor vería una versión distinta del vídeo. Se resuelve con la publicación segura de F7 (FR-021) o, si no se aprueba, se documenta y el vídeo se adapta. Riesgos al publicar: CORS, pantalla de clave, Three.js, mapa 2D, URL cambiante del túnel; vuelta atrás a F6.
+- **Disponibilidad durante la ventana de ~2 días** (CA-06): reinicios de Windows por actualizaciones, suspensión del PC, Docker que no vuelve, caída del túnel o cambio de su URL, huecos de ingesta. Mitigación: checklist de activación y de recuperación (`recuperar --listar/--simular`), no tocar código ni servicios durante la ventana. Mantener el PC encendido **no** equivale a SC-010 (FR-024).
+- **Credencial del profesor**: canal privado; nunca en repositorio, README, memoria, vídeo ni capturas; solo se documenta el procedimiento.
+- **Repositorio privado**: permisos por verificar (CA-05) y ausencia de secretos también en el historial de Git antes de dar acceso.
+- **SC-010 no cumplido**: se documenta con honestidad; no bloquea el resto.
+- **Exponer secretos en el vídeo o capturas**: checklist de privacidad y escaneo de secretos antes de entregar.
+- **README demasiado largo o duplicado con la memoria**: el README resume y enlaza; el detalle técnico vive en la memoria.
+- **Consumo de tokens**: trabajo directo sin subagentes; se reutiliza en lugar de regenerar; se ejecutan pruebas solo cuando están justificadas.
 
 ## Estructura prevista (se crea al ejecutar cada paso, no antes)
 ```text
-docs/entrega/                       # requisitos-fuente.md, matriz-trazabilidad.md, guion-video.md, checklist-grabacion.md, memoria.md o notebooks/memoria.ipynb (según CA-07)
-docs/evidencias/f8/                 # ensayos en seco, verificaciones y revisión final
-docs/evidencias/f3/sc-010-observacion-24h.txt   # solo con PA-10 (ruta ya prevista en F6/T076)
+docs/entrega/        # requisitos-fuente.md, matriz-trazabilidad.md, memoria.md (o notebooks/memoria.ipynb), guion-video.md, checklist-grabacion.md
+docs/entrega/checklist-ventana-evaluacion.md   # checklist de disponibilidad y acceso del profesor (8.5; se prepara desde 8.3)
+docs/evidencias/f8/  # resultados.md, capturas/, verificaciones, entorno limpio, auditoria-final.md
+docs/evidencias/f3/sc-010-observacion-24h.txt   # solo con PA-10
+README.md            # definitivo (8.2)
 ```
-
-## Dependencias y orden
-8.1 primero (aclara qué se pide). 8.5 puede empezar en cuanto se autorice, para acumular datos mientras se escribe la memoria. 8.2 → 8.3 y 8.6 la completan. 8.7 requiere la aplicación congelada (fin de las mejoras de F7 que se vayan a entregar). 8.8 requiere 8.6 y 8.7. 8.10 es lo último.
-
-## Riesgos
-- **Requisitos del vídeo sin confirmar** (CA-01/CA-03): se mitiga con 8.1 y manteniendo preparada también la explicación individual.
-- **Grabar sobre una versión distinta a la entregada**: congelar F7 antes de 8.7.
-- **Backend/túnel en la evaluación** (CA-06): si el profesor abre el panel publicado, el túnel debe estar activo; se documenta el procedimiento y se pregunta.
-- **SC-010 no cumplido**: se documenta con honestidad; no bloquea el resto (como acordó F6).
-- **Exponer secretos en el vídeo**: checklist previa (clave, `.env`, terminales, URLs de ngrok).

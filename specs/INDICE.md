@@ -9,8 +9,8 @@ Mapa entre **fases** (`docs/HOJA-DE-RUTA.md`) y **carpetas SDD** (`specs/`). Se 
 | F4 | `003-geografia-historico/` | Cerrada |
 | F5 | `004-api-dashboard/` | Cerrada |
 | F6 | `005-replay-despliegue-final/` | Cerrada técnicamente (commit `fd9e1a7`); F6.10 (SC-010 de F3) pendiente → **F8** |
-| **F7 — Mejoras y evolución** | `006-mejoras-evolucion/` | Marco creado 2026-11-09; **ninguna mejora aprobada** |
-| **F8 — Documentación, entrega y vídeo** | `007-documentacion-entrega-video/` | Planificación inicial; sin ejecutar |
+| **F7 — Mejoras y evolución** | `006-mejoras-evolucion/` | **Cerrada** (commit `9008772`, rediseño Mission Control); estado técnico en `estado-tecnico-f7.md` |
+| **F8 — Documentación, entrega y vídeo** | `007-documentacion-entrega-video/` | Planificación **definitiva en 5 pasos, aprobada** (2026-11-11); sin ejecutar (8.1 pendiente de autorización). Evaluación: vídeo (OBS) + web publicada + repositorio; entregables: `memoria.md` + README + vídeo; pendiente publicar F7 de forma segura |
 
 ## Nota sobre `.specify/feature.json`
 Es el **puntero local de Spec Kit** a la funcionalidad activa (`feature_directory`); los scripts de `.specify/scripts/` lo leen para saber con qué carpeta de `specs/` trabajan. Está **ignorado a propósito** por `.specify/.gitignore` (línea `feature.json`): es estado de cada copia de trabajo, no se versiona ni forma parte de la entrega. Apunta ahora a `specs/006-mejoras-evolucion` (F7); no condiciona el contenido del repositorio.

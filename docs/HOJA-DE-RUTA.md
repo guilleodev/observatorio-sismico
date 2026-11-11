@@ -71,7 +71,7 @@ USGS (feed reciente e histórico) + Natural Earth
 | **F5 — API y dashboard** | Filtros, estadísticas, ventanas, comparaciones y panel completo. | Observatorio analítico funcional, filtros coherentes y estado visible. |
 | **F6 — Replay, pruebas y despliegue** | Replay aislado, pruebas de aceptación, mediciones, ngrok y Netlify. | Demostración reproducible desde otro dispositivo y mediciones completas. |
 | **F7 — Mejoras y evolución** | Mejorar de forma progresiva la aplicación ya construida (diseño, UX, accesibilidad, filtros, mapas, gráficas, ajustes técnicos, comodidad de desarrollo) con mejoras que la persona estudiante propone y aprueba una a una. | Cada mejora aprobada verificada con evidencia; fase ampliable sin reescribir la planificación; se cierra cuando lo decide la persona estudiante. |
-| **F8 — Documentación, entrega académica y vídeo** | Revisar literalmente la rúbrica y la guía, README final, memoria o notebook si es obligatoria, matriz de trazabilidad, observación de >24 h (SC-010 de F3), guion, entorno y vídeo de demostración, y acceso del profesor al repositorio. | Entrega completa y comprobable; vídeo grabado y revisado; acceso concedido. |
+| **F8 — Documentación, entrega académica y vídeo** | En **5 pasos**: auditoría de requisitos y rúbrica con matriz de trazabilidad; memoria técnica y README definitivo; evidencias y validación técnica final (incluida la observación de >24 h, SC-010 de F3, con PA-10); guion y vídeo explicativo grabado con OBS por la persona estudiante; auditoría final y entrega. | Entrega completa y comprobable (README + memoria + vídeo); rúbrica justificada; acceso concedido. |
 
 > **Nota:** la documentación, las pruebas y el estudio del código se hacen **durante todas las fases**; no se posponen hasta F8.
 
@@ -208,7 +208,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §9, §10, §11): replay por Kafka con topic y tablas separados, tiempo original y de reproducción, etiqueta «REPRODUCCIÓN» y casos controlados de duplicado y revisión; las pruebas de aceptación del enunciado §11 (incluido cerrar y reabrir el túnel); mediciones también de la integración geográfica y de la agregación por ventanas, con datos sintéticos marcados y fuera del análisis real, y razonamiento para 100 millones de registros; CORS con el origen exacto de Netlify; authtoken de ngrok fuera de Git y de Angular; solo la API expuesta.
 
-### F7 — Mejoras y evolución · 🟡 fase ABIERTA (marco creado el 2026-11-09, `specs/006-mejoras-evolucion/`); ningún trabajo `F7.n` iniciado
+### F7 — Mejoras y evolución · ✅ cerrada (commit manual `9008772`, 2026-11-11; `specs/006-mejoras-evolucion/`, estado técnico en `estado-tecnico-f7.md`): rediseño Mission Control con Panel · Análisis · Eventos, globo 3D con alternativa 2D, vista previa 3D y acceso local seguro
 
 Fase **abierta**: no hay secuencia de pasos, ni número previsto de ellos, ni paso de cierre definido. Las mejoras se descubren mientras se usa y estudia el proyecto y se **experimentan en `localhost:4200`**. Las candidatas (`C-nn`) son un cajón de ideas que se puede ampliar, modificar, posponer o descartar libremente. Un `F7.n` se asigna **solo cuando la persona estudiante decide empezar un trabajo concreto**, que puede agrupar varias mejoras y tener un alcance amplio; lleva un encargo breve, verificación proporcional y commit manual `[F7.n]`. Reglas: no se cambia la arquitectura obligatoria ni el contrato del profesor, no se debilita la seguridad (clave, CORS), no se tocan F0–F6 ni sus evidencias, y publicar en Netlify o abrir ngrok requiere autorización expresa.
 
@@ -227,22 +227,19 @@ Fase **abierta**: no hay secuencia de pasos, ni número previsto de ellos, ni pa
 
 **Alcance posible** (cada punto, solo mediante una mejora aprobada): mejoras visuales y rediseño de Angular; experiencia de usuario y accesibilidad; filtros, navegación, mapas, estadísticas y gráficas; optimización y ajustes técnicos pequeños; funcionalidades nuevas propuestas por la persona estudiante; comodidad del entorno de desarrollo local.
 
-### F8 — Documentación, entrega académica y vídeo · ⬜ planificada el 2026-11-09 (`specs/007-documentacion-entrega-video/`); sin ejecutar
+### F8 — Documentación, entrega académica y vídeo · ⬜ planificación definitiva en 5 pasos **aprobada** (2026-11-11; `specs/007-documentacion-entrega-video/`); sin ejecutar (8.1 pendiente de autorización explícita)
 
-Sustituye a la antigua «F7 — Memoria y defensa». El profesor ha indicado que la evaluación será mediante un **vídeo grabado** que muestre el funcionamiento y demuestre la rúbrica. **Ese requisito no consta en los materiales del repositorio** (`docs/referencias/`, que hablan de defensa y explicación individual y no mencionan vídeo): hasta tener la fuente literal del profesor, F8 mantiene preparada también la explicación individual y trata fechas, formato, plataforma, acceso al repositorio y formato de la memoria como **aclaraciones pendientes** (CA-01…CA-07 en la especificación). Los materiales oficiales **sí confirman** que se exige una memoria o notebook (el README no la sustituye). El formato exacto del vídeo está **pendiente de confirmación formal** (lo indicó el profesor en clase; no figura en los materiales). Refuerzos acordados el 2026-11-09 (orientaciones, no requisitos): evidencias visuales reales (capturas del frontend, fragmentos de código, resultados de pruebas y demostraciones), grabación como recorrido por la rúbrica (**requisito → funcionalidad → evidencia → demostración**) y README profesional con capturas y enlaces internos a las evidencias, además de la memoria o notebook.
+Sustituye a la antigua «F7 — Memoria y defensa». **Nuevo formato de evaluación (comunicado en clase; fuente escrita pendiente de archivar si existe, CA-01):** sin defensa presencial, presentación oral ni preguntas. El profesor evaluará por **tres vías**: (A) un **vídeo explicativo grabado por la persona estudiante con OBS**, (B) la **aplicación web publicada**, que revisará por su cuenta durante una **ventana de ~2 días** con los ordenadores encendidos (fechas pendientes, CA-06), y (C) el **repositorio privado de GitHub**. Entregables: **`docs/entrega/memoria.md`** (CA-07 resuelta, independiente), **README definitivo** y el vídeo. Los materiales de `docs/referencias/` siguen hablando de defensa y **no se modifican**. **Se conservan todos los requisitos técnicos, académicos y documentales**; solo cambia cómo se explican y demuestran. La **memoria sigue siendo un entregable independiente** (el README no la sustituye). Condiciones desconocidas (duración, formato y plataforma del vídeo, fechas, usuario de GitHub, URL definitiva y estrategia de publicación) constan como **pendientes de confirmar** (CA-01…CA-08 en la especificación). **Asunto pendiente:** la web publicada en Netlify es **F6** y el local es **F7**; hay que definir, aprobar, autorizar, ejecutar y verificar la publicación segura de F7 antes de la entrega, y entregar la credencial al profesor por un canal privado. Reglas: sin avance automático entre pasos, sin subagentes, PA-10 (SC-010) y PA-11 (volúmenes) vigentes, Netlify en la versión de F6 salvo autorización, sin ngrok sin permiso, commits y push manuales (uno por fase, `[F8]`).
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 8.1 | Revisión literal de rúbrica, guía, FAQ, enunciado y contrato; aclarar CA-01…CA-07 | ⬜ |
-| 8.2 | Matriz de trazabilidad: rúbrica → implementación → evidencia → minuto de vídeo | ⬜ |
-| 8.3 | Memoria o notebook: arquitectura y diagramas, modelo, diccionario, procedencia, calidad, pruebas, resultados, complejidad/costes, conclusiones | ⬜ |
-| 8.4 | README final profesional, verificado en un entorno limpio paralelo | ⬜ |
-| 8.5 | Observación de >24 h (SC-010 de F3, antes 6.10), con PA-10 expresa y resultado real | ⬜ |
-| 8.6 | Guion y recorrido de la grabación | ⬜ |
-| 8.7 | Entorno de grabación verificado (ensayo en seco, checklist) | ⬜ |
-| 8.8 | Grabación y revisión del vídeo (la graba la persona estudiante) | ⬜ |
-| 8.9 | Revisión final de los entregables | ⬜ |
-| 8.10 | Acceso del profesor al repositorio privado y entrega (persona estudiante) | ⬜ |
+| 8.1 — Auditoría de requisitos y rúbrica | Revisión literal de enunciado, guía, FAQ y contrato; contraste con la implementación real; matriz de trazabilidad (`docs/entrega/requisitos-fuente.md`, `matriz-trazabilidad.md`); aclaraciones pendientes | ⬜ |
+| 8.2 — Memoria técnica y README definitivo | Memoria (Guía 2.1–2.9, con tabla de cobertura exacta), README profesional con sección de cumplimiento de la rúbrica y capturas reales de F7 | ⬜ |
+| 8.3 — Evidencias y validación técnica final | Pruebas y criterios de aceptación, Docker/Kafka/PostgreSQL/API/dashboard, EN VIVO y REPRODUCCIÓN, README en entorno limpio (PA-11), secretos, **acceso autónomo del profesor a la web y diferencias con el local**, estrategia de publicación de F7, funcionamiento continuado y recuperación, SC-010 como prueba independiente (PA-10) | ⬜ |
+| 8.4 — Guion, preparación y grabación del vídeo | `guion-video.md` (cada escena con «Qué decir» y «Qué mostrar»), `checklist-grabacion.md` (OBS, privacidad), ensayo en seco; **graba la persona estudiante** | ⬜ |
+| 8.5 — Auditoría final y entrega | Requisitos originales, matriz cerrada, enlaces, instalación, secretos, acceso a GitHub y a la web, **checklist de activación de la ventana de evaluación**, condiciones de entrega; commit `[F8]`, push, credenciales y envío manuales | ⬜ |
+
+Correspondencia con las tareas T001–T026 en `specs/007-documentacion-entrega-video/tasks.md` (nuevas T027–T031 y T032–T039).
 
 **Se mantiene además** (`ENUNCIADO.md` §12, `Guia-entregables`): diccionario de datos, procedencia y registro de consultas, apartado de calidad con resultados antes y después, modelo conceptual/lógico/físico con SQL e índices, análisis con al menos tres conclusiones y capturas de los filtros, informe de complejidad y costes (hardware, electricidad, almacenamiento, transferencia, mantenimiento y desarrollo), evidencias de las pruebas y del replay, `README.md` reproducible, URL del panel, procedimiento para activar el sistema y explicación individual del flujo completo y de una decisión técnica propia (pendiente de aclarar su forma con el vídeo).
 
@@ -356,8 +353,8 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 
 ### Estado actual (2026-11-09)
 - **F0–F6 completadas** (commits `[F0.1]`, `[F1]`…`[F6]`; el último, `fd9e1a7`). Detalle por fase en sus `specs/` y `docs/evidencias/`. F6 cerrada técnicamente con reservas documentadas (`docs/evidencias/f6/resultados.md` §5): SC-010 de F3 (>24 h, 6.10), T063 (no autorizada), recuperación de un hueco real de USGS, otros navegadores y lector de pantalla, mediciones de una sola máquina.
-- **F7 — Mejoras y evolución**: marco creado (`specs/006-mejoras-evolucion/`); candidatas C-01 y C-02 **sin aprobar**; nada implementado.
-- **F8 — Documentación, entrega y vídeo**: planificada (`specs/007-documentacion-entrega-video/`); requisitos del vídeo y fechas pendientes de aclarar con el profesor.
+- **F7 — Mejoras y evolución**: **cerrada** con el commit manual `9008772` (rediseño Mission Control, globo 3D, vista previa de Eventos, acceso local seguro).
+- **F8 — Documentación, entrega y vídeo**: planificación definitiva en **5 pasos aprobada** (2026-11-11; `specs/007-documentacion-entrega-video/`); evaluación por vídeo (OBS) + web publicada + repositorio; entregables memoria Markdown + README + vídeo; ventana de evaluación de ~2 días; pendientes: publicación segura de F7 (Netlify sirve F6), credenciales del profesor, condiciones del vídeo y fechas; PA-10 sin conceder.
 - Codex queda aparcado hasta terminar la versión Claude.
 
 ### Decisiones técnicas
@@ -367,8 +364,8 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 
 ### Próximos pasos
 1. Revisión humana y commit manual de la reorganización (documentación únicamente).
-2. **F7**: la persona estudiante decide qué candidata (C-01, C-02) u otra mejora aprobar; se redacta su mini-especificación antes de implementar. Primer paso sugerido: aprobar y especificar C-02 (riesgo bajo).
-3. **F8**: empezar por el paso 8.1 (obtener el texto literal del profesor sobre el vídeo, fecha y canal) y valorar autorizar cuanto antes la observación de >24 h (PA-10), que no depende de las mejoras.
+2. **F7**: cerrada (commit `9008772`).
+3. **F8**: planificación aprobada; **empezar por 8.1 cuando la persona estudiante lo autorice** (auditoría de requisitos y matriz). SC-010 (PA-10) se decide en 8.3; la publicación de F7 y la checklist de la ventana de evaluación requieren aprobación y autorizaciones expresas.
 
 ### Reglas
 - No implementar funcionalidades sin una especificación aprobada.
