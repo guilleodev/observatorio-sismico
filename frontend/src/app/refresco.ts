@@ -38,6 +38,24 @@ export function detalleEstado(estado: EstadoRefresco): string | null {
   return estado === 'filtros-rechazados' ? 'se conserva la última lectura válida' : null;
 }
 
+/**
+ * Micro-etiqueta de aviso para la cabecera (ronda 1 Mission Control): texto corto que acompaña al estado cuando el desplegable está CERRADO y el estado exige atención
+ * (error, pausa, acceso). null = no hay aviso. Es un refuerzo visual: el estado ya se dice con icono + texto y la región viva del indicador lo anuncia aparte.
+ */
+export function microAviso(estado: EstadoRefresco): string | null {
+  switch (estado) {
+    case 'error': return 'Datos sin actualizar';
+    case 'pausa': return 'Auto en pausa';
+    case 'acceso': return 'Falta la clave';
+    default: return null;
+  }
+}
+
+/** ¿El estado merece llamar la atención en la cabecera (tono ámbar/rojo + marca en el botón de detalles)? */
+export function esEstadoDeAviso(estado: EstadoRefresco): boolean {
+  return estado === 'error' || estado === 'pausa' || estado === 'acceso' || estado === 'filtros-rechazados';
+}
+
 /** Prioridad: clave > petición en curso > error real > filtros rechazados > pausa > lectura correcta. «Correcto» solo si hay lectura y la última petición no falló. */
 export function estadoRefresco(e: EntradaRefresco): EstadoRefresco {
   if (e.pideClave) return 'acceso';
@@ -64,6 +82,7 @@ export function anuncioRefresco(anterior: EstadoRefresco | null, actual: EstadoR
       if (anterior === 'error') return 'Conexión recuperada: datos actualizados';
       if (anterior === 'pausa') return 'Actualización automática reanudada.';
       if (anterior === 'acceso') return 'Acceso concedido: datos actualizados.';
+      if (anterior === 'filtros-rechazados') return 'Datos actualizados: los filtros ya no se rechazan.';   // CAMBIO (cierre F7): sin esto el aviso «Filtros rechazados…» quedaba obsoleto en la región viva
       return null;
     default: return null; // «sin-lectura»
   }

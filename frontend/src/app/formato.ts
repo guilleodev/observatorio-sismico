@@ -65,6 +65,21 @@ export function radioMagnitud(magnitud: unknown): number {
   return m === null ? 4 : Math.max(3, Math.min(18, 3 + (m + 1) * 2));
 }
 
+/** Radio máximo de `radioMagnitud` (px del mapa). */
+export const RADIO_MAXIMO_MAPA = 18;
+/** Diámetro máximo (px) del punto de magnitud de la tabla: 16 px, el tope de la vista Eventos. */
+export const DIAMETRO_MAXIMO_PUNTO = 16;
+
+/**
+ * CAMBIO (ronda 4 Mission Control, Eventos): diámetro (px) del punto de refuerzo visual junto a la magnitud en la tabla. NO es una escala nueva: es la de `radioMagnitud` del mapa
+ * (radio 3–18 px) reducida proporcionalmente para que el radio máximo (18) dé el diámetro máximo (16 px): diámetro = radio × 16/18 (= 2 × radio × 16/36). Sin tope aparte: el tope
+ * lo da ya el radio máximo. Sin magnitud (null, NaN, texto…) devuelve `null`: la tabla no dibuja punto (el texto «sin valor» ya lo dice; nunca se inventa un tamaño).
+ */
+export function diametroPuntoMagnitud(magnitud: unknown): number | null {
+  if (numeroFinito(magnitud) === null) return null;
+  return Math.round((radioMagnitud(magnitud) * DIAMETRO_MAXIMO_PUNTO / RADIO_MAXIMO_MAPA) * 10) / 10;
+}
+
 /** Texto de la ficha del evento (se inserta siempre como texto, nunca como HTML). F5 amplía la ficha entregada con el tipo de magnitud y la fecha de actualización. */
 export function textoFicha(propiedades: { place?: string | null; mag?: unknown; magType?: string | null; time?: unknown; updated?: unknown; country_name?: string | null }, profundidad: unknown, id: unknown): string {
   const mag = numeroFinito(propiedades.mag);
@@ -105,7 +120,7 @@ export function filasFicha(propiedades: { place?: string | null; mag?: unknown; 
     magnitud: textoMagnitud(propiedades.mag),
     filas: [
       { etiqueta: 'Tipo de magnitud', valor: propiedades.magType ?? 'ND' },
-      { etiqueta: 'Profundidad', valor: prof !== null ? prof + ' km' : 'ND' },
+      { etiqueta: 'Profundidad', valor: prof !== null ? Math.round(prof * 100) / 100 + ' km' : 'ND' },   // CAMBIO (cierre F7): sin ruido de coma flotante («5.23000001907349 km» → «5.23 km»)
       { etiqueta: 'Fecha UTC', valor: fechaUtc(propiedades.time) },
       { etiqueta: 'Actualizado UTC', valor: fechaUtc(propiedades.updated) },
       { etiqueta: 'País', valor: propiedades.country_name ?? 'Sin país asignado' },

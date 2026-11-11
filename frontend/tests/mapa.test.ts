@@ -141,11 +141,16 @@ test('filasFicha: ND y «Sin país asignado» cuando falta un dato (el nulo no e
 // --- leyenda ---
 test('la leyenda de profundidad está junto al mapa (no en el pie), con los 4 rangos y los mismos colores que colorProfundidad', () => {
   const h = html();
-  const envoltorio = /<div class="mapa-envoltorio">([\s\S]*?)\n  <\/div>/.exec(h)?.[1] ?? '';
-  assert.match(envoltorio, /class="leyenda" role="group" aria-labelledby="leyenda-profundidad"/);
+  // CAMBIO (rediseño dashboard): la leyenda ya no es la franja bajo el mapa (dentro de .mapa-envoltorio) sino un panel de la columna derecha (.col-der), después del visor en el DOM.
+  // CAMBIO (rediseño dashboard, 2.ª ronda): «Estado del sistema» salió de la columna derecha, así que tras .col-der y .principal viene ahora el @if del app-estado (la columna derecha solo lleva modo, detalle y leyenda).
+  // CAMBIO (vistas internas): la zona principal está ahora dentro de <section id="vista-panel">, con 2 espacios más de sangría: .col-der termina en `      </div>`, .principal en `    </div>` y la sección en `  </section>`.
+  // CAMBIO (ronda 2 Mission Control): `.col-der` → `.hud-der` (HUD derecho del escenario); el cierre (pila, escenario y sección) conserva la sangría.
+  const envoltorio = /<div class="hud-der">([\s\S]*?)\n      <\/div>\n    <\/div>\n  <\/section>/.exec(h)?.[1] ?? '';
+  assert.ok(envoltorio.length > 0);
+  assert.match(envoltorio, /class="leyenda panel-ui o-leyenda" role="group" aria-labelledby="leyenda-profundidad"/);
   assert.match(envoltorio, /<strong id="leyenda-profundidad"[^>]*>Profundidad<\/strong>/);
   assert.match(envoltorio, /<ul class="leyenda-lista">/);
-  assert.ok(envoltorio.indexOf('class="map"') < envoltorio.indexOf('class="leyenda"'));          // la franja va debajo del mapa
+  assert.ok(h.indexOf('class="map"') < h.indexOf('class="leyenda panel-ui'));          // la leyenda va después del visor
   const rangos: [string, string, unknown][] = [['punto-somera', 'Menos de 70 km', 0], ['punto-media', '70–299,99 km', 100], ['punto-profunda', '300 km o más', 300], ['punto-nd', 'No disponible', null]];
   for (const [clase, texto, profundidad] of rangos) {
     assert.match(envoltorio, new RegExp(`<li><span class="punto ${clase}" aria-hidden="true"></span>${texto}</li>`), texto);
@@ -157,20 +162,35 @@ test('la leyenda de profundidad está junto al mapa (no en el pie), con los 4 ra
   assert.match(css(), /\.leyenda-lista \{[^}]*flex-wrap: wrap/);
 });
 
-test('el pie conserva las notas de tamaño y mapa base y la línea «Base proporcionada», sin la leyenda', () => {
-  const pie = /<footer>([\s\S]*?)<\/footer>/.exec(html())?.[1] ?? '';
-  assert.match(pie, /Tamaño: escala visual creciente con la magnitud; no representa energía ni área afectada\. Sin magnitud: radio mínimo\./);
-  assert.match(pie, /selector de capas/);
-  assert.match(pie, /Estilo del mapa base/);
-  assert.match(pie, /Base proporcionada: añade filtros, gráficos, tabla accesible y conclusiones para completar el proyecto\./);
+// CAMBIO (rediseño 3 vistas, ronda 2): las notas de tamaño y de mapa base ya no son texto permanente del pie: están en el desplegable «Notas del mapa», bajo la leyenda (mismo texto, sin perder nada).
+// El pie sigue sin llevar la leyenda (CAMBIO análisis B: ya no lleva «Base proporcionada…»).
+test('las notas de tamaño y mapa base están en «Notas del mapa» (bajo la leyenda) y el pie ya no lleva «Base proporcionada», sin la leyenda', () => {
+  const notas = /<details class="notas-mapa o-notas">([\s\S]*?)<\/details>/.exec(html())?.[1] ?? '';
+  assert.match(notas, /<summary>Notas del mapa<\/summary>/);
+  assert.match(notas, /Tamaño: escala visual creciente con la magnitud; no representa energía ni área afectada\. Sin magnitud: radio mínimo\./);
+  assert.match(notas, /selector de capas/);
+  assert.match(notas, /Estilo del mapa base/);
+  assert.ok(html().indexOf('class="leyenda panel-ui') < html().indexOf('class="notas-mapa'));   // después de la leyenda
+  const pie = /<footer[^>]*>([\s\S]*?)<\/footer>/.exec(html())?.[1] ?? '';
+  assert.doesNotMatch(pie, /Tamaño: escala|selector de capas/);
+  // CAMBIO (análisis B): el texto de plantilla «Base proporcionada: …» desaparece del pie; el pie lleva ahora el proyecto y las atribuciones (la prueba equivalente nueva está en tests/analisis-b.test.ts).
+  assert.doesNotMatch(pie, /Base proporcionada/);
+  assert.match(pie, /Observatorio Sísmico · Proyecto académico de Big Data/);
   assert.doesNotMatch(pie, /Menos de 70 km|<strong>Profundidad/);
 });
 
 // --- mapa protagonista, movimiento y almacenamiento ---
 test('mapa protagonista: 70vh con mínimo de 420 px, y en pantallas estrechas no queda aplastado y la etiqueta REPRODUCCIÓN no tapa los controles', () => {
   const c = css();
-  assert.match(c, /\.map \{ height: 70vh; min-height: 420px; \}/);
-  assert.match(c, /@media \(max-width: 700px\) \{[^}]*\.etiqueta-mapa \{ position: static;[^}]*\}[^}]*\.map \{ height: 65vh; height: 65svh; min-height: 380px; \}/);
+  // CAMBIO (rediseño dashboard): antes `.map { height: 70vh; min-height: 420px; }` y, en ≤ 700 px, `.map { height: 65vh; height: 65svh; min-height: 380px; }`. Ahora el mapa usa la variable de altura
+  // compartida con el globo (--alto-visor): móvil max(380px, 65svh) (mismo valor que antes), tablet clamp(480px, 62vh, 760px) y escritorio clamp(560px, calc(100vh - 230px), 880px). La etiqueta sigue pasando a franja.
+  assert.match(c, /\.map \{ height: var\(--alto-visor\); \}/);
+  assert.match(c, /@media \(max-width: 700px\) \{\s*\.etiqueta-mapa \{ position: static;/);
+  assert.match(c, /--alto-visor: max\(380px, 65vh\)/); assert.match(c, /--alto-visor: max\(380px, 65svh\)/);
+  // CAMBIO (2.ª ronda): escritorio calc(100vh - 230px) → calc(100vh - 250px): cabecera y KPI más finas, el visor cabe casi entero en 900 px de alto
+  // CAMBIO (ronda 2 del rediseño en 3 vistas): el globo/mapa es el protagonista del Panel: calc(100vh - 250px) con mínimo 560 y máximo 880 → clamp(620px, calc(100vh - 190px), 960px)
+  // CAMBIO (ronda 2 Mission Control): escenario inmersivo desde 1100 px (antes 1280): clamp(620px, calc(100vh - 190px), 960px) → clamp(560px, calc(100vh - var(--alto-cabecera) - 124px), 980px), con `dvh` si existe (ver tests/ronda2-panel.test.ts).
+  assert.match(c, /--alto-visor: clamp\(560px, calc\(100vh - var\(--alto-cabecera\) - 124px\), 980px\)/);
   assert.match(html(), /class="etiqueta-mapa" role="note">\{\{ e \}\}/);
 });
 

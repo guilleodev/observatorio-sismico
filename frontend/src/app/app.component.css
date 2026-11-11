@@ -1,41 +1,155 @@
-/* F7: tema oscuro. Disposición en rejilla de una columna: cabecera → fila de control (refresco + modo) → información y estado → [acceso] → filtros → mapa → estado → análisis → leyenda. */
-main { max-width: 1480px; margin: auto; padding: var(--esp-4) var(--esp-4) var(--esp-5); display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); }
-/* cabecera compacta: título a la izquierda y subtítulo a la derecha en pantallas anchas */
-.cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 2px var(--esp-4); padding: var(--esp-1) 0 var(--esp-2); border-bottom: 1px solid var(--borde); }
-.cabecera > div { min-width: 0; }
-h1 { margin: 2px 0 0; font-size: clamp(1.35rem, 3vw, 1.8rem); line-height: 1.15; }
-.eyebrow { margin: 0; letter-spacing: .15em; font-size: var(--t-xs); font-weight: 700; color: var(--acento-texto); }
-.subtitulo { margin: 0; color: var(--texto-2); font-size: var(--t-m); text-wrap: balance; }
+/* Rediseño del dashboard (centro de control oscuro). Tres anchuras:
+   · escritorio  >= 1100 px: ESCENARIO inmersivo (ronda 2 Mission Control): el visor llena el escenario y los paneles (HUD izquierdo: filtros; derecho: modo · evento · leyenda) flotan encima;
+   · tablet      768–1099 px: sin HUD: filtros arriba a todo el ancho, visor a todo el ancho y, debajo, rejilla de 2 columnas con modo | evento y la leyenda;
+   · móvil       < 768 px: una columna reordenada con `order` (filtros y visor arriba). El DOM mantiene el orden de lectura de escritorio.
+   Constantes ajustables: --alto-visor (por tramo), --hud-izq / --hud-der (reserva lateral de los HUD) y los puntos de corte 768 / 1100 / 1440 (este último, en hud.ts). */
+main { --alto-visor: clamp(480px, 62vh, 760px); max-width: 1760px; margin: auto; padding: var(--esp-2) var(--esp-4) var(--esp-4); display: grid; gap: var(--esp-3); grid-template-columns: minmax(0, 1fr); }
 
-/* fila de control: dos columnas desde 1000 px (refresco 5/12 · modo 7/12), apiladas en móvil; sin contenido (modo demostración) no ocupa espacio */
-.control { display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); align-items: stretch; }
-.control:empty { display: none; }
-@media (min-width: 1000px) { .control { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
-
-/* mapa: protagonista. El fondo del contenedor (oscuro o claro) lo fija styles.css según la clase mapa-oscuro / mapa-claro; el borde de los círculos se ajusta a cada fondo (formato.ts). */
-.mapa-envoltorio { position: relative; border: 1px solid var(--borde-control); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
-.map { height: 70vh; min-height: 420px; }
-.etiqueta-mapa { position: absolute; top: 10px; left: 50px; z-index: 1001; margin: 0; padding: 6px 10px; background: var(--replay-fuerte); color: #fff; font-weight: 700; font-size: .85rem; border-radius: var(--radio-s); border: 1px solid var(--replay-texto); box-shadow: var(--sombra-s); max-width: calc(100% - 70px); }
-/* pantallas estrechas: la etiqueta REPRODUCCIÓN pasa a franja sobre el mapa (no tapa los controles de la esquina superior derecha) y el mapa no queda aplastado ni desborda */
-@media (max-width: 700px) {
-  .etiqueta-mapa { position: static; max-width: none; border-width: 0 0 1px; border-radius: 0; box-shadow: none; }
-  .map { height: 65vh; height: 65svh; min-height: 380px; }
+/* ---------- CABECERA STICKY (ronda 1 Mission Control) ----------
+   Rejilla de 3 zonas `1fr auto 1fr`: identidad (izquierda) · nav de vistas (centro, centrada respecto a la CABECERA y no al espacio sobrante) · modo + estado/refresco (derecha).
+   Altura fija --alto-cabecera (56 px escritorio · 48 px móvil, definida en styles.css): así scroll-padding/scroll-margin saben cuánto reservar y «condensar» no mueve el contenido (solo cambia sombra y subtítulo).
+   z-index 1200 > Leaflet (controles hasta 1000) y la etiqueta REPRODUCCIÓN del mapa (1001): nunca queda tapada, y el desplegable del refresco (dentro de ella) queda por encima de todo.
+   Los márgenes negativos anulan el relleno lateral de <main> para que la cabecera ocupe todo el ancho de la página. */
+.centinela { position: absolute; top: 0; left: 0; width: 1px; height: 24px; opacity: 0; pointer-events: none; }
+.cabecera { position: sticky; top: 0; z-index: 1200; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--esp-3); height: var(--alto-cabecera); margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-4)) 0; padding: 0 var(--esp-4); background: var(--cab-fondo); border-bottom: 1px solid var(--linea); border-radius: 0 0 var(--radio-panel) var(--radio-panel); box-shadow: var(--elev-1); }
+.cabecera::before { content: ''; position: absolute; top: 0; left: var(--esp-4); right: var(--esp-4); height: 1px; background: var(--filo); pointer-events: none; }   /* filo de luz */
+.cabecera.replay::before { background: var(--filo-replay); }
+.cabecera.condensada { box-shadow: var(--elev-3); }
+.cabecera.condensada .cab-sub { display: none; }
+/* izquierda: marca SVG + título (+ subtítulo) */
+.cab-id { display: flex; align-items: center; gap: var(--esp-2); min-width: 0; justify-self: start; }
+.cab-marca { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--acento-texto); background: var(--acento-fondo); border: 1px solid var(--linea); border-radius: var(--radio-control); --ico: 22px; }
+.identidad { min-width: 0; }
+h1 { margin: 0; font-size: clamp(.95rem, 1.2vw, 1.1rem); font-weight: 750; letter-spacing: -.01em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.h1-largo { display: none; }   /* título completo solo >= 1280 px; antes, la variante corta */
+.cab-sub { display: none; margin: 1px 0 0; color: var(--texto-2); font-size: var(--t-2xs); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; line-height: 1.1; white-space: nowrap; }
+.eyebrow { margin: 0; letter-spacing: .12em; font-size: .7rem; font-weight: 700; color: var(--acento-texto); }   /* ahora en el pie */
+/* derecha: distintivo de modo + indicador de refresco */
+.cab-estado { display: flex; align-items: center; justify-content: flex-end; gap: var(--esp-2); min-width: 0; justify-self: end; }
+.cab-refresco { flex: none; height: auto; }
+/* distintivo de modo: glifo + texto, nunca solo color. En vivo = cian (●); REPRODUCCIÓN = violeta (▶, otra forma). < 1280 px solo se ve el glifo (el texto lo leen los lectores y la banda de REPRODUCCIÓN va bajo la cabecera) */
+.distintivo { display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 0; min-width: 24px; min-height: 24px; padding: 0 5px; background: var(--acento-fondo); color: var(--acento-texto); border: 1px solid var(--acento); border-radius: 999px; font-size: var(--t-s); font-weight: 700; letter-spacing: .04em; white-space: nowrap; }
+.distintivo.replay { background: var(--replay-fondo); color: var(--replay-texto); border-color: var(--replay); }
+.distintivo-texto { display: none; }
+/* banda REPRODUCCIÓN (< 1280 px): 20 px de violeta bajo la cabecera, con el texto visible (invariante 8); no es sticky para no comer espacio */
+.banda-replay { display: flex; align-items: center; justify-content: center; height: 20px; margin: calc(-1 * var(--esp-3)) calc(-1 * var(--esp-4)) 0; padding: 0 var(--esp-2); background: var(--replay-fondo); color: var(--replay-texto); border-bottom: 1px solid var(--replay); font-size: var(--t-2xs); font-weight: 700; letter-spacing: .08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 1280px) {
+  .h1-largo { display: inline; } .h1-corto { display: none; }
+  .cab-sub { display: block; }
+  .distintivo { min-height: 28px; padding: 0 12px; }
+  .distintivo-texto { display: inline; }
+  .banda-replay { display: none; }
 }
 
-/* F7 (globo 3D): selector de vista (mismo patrón visual que el selector de modo: tarjetas con borde, la activa con fondo cian, marca ✓ y negrita; no solo color) */
-.vista-selector { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-2); }
-.vista-titulo { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); margin-right: var(--esp-1); }
-.vista-selector button { min-height: 36px; min-width: 36px; padding: 0 var(--esp-4); font: 600 var(--t-m) var(--fuente); background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde); border-radius: var(--radio-s); cursor: pointer; }
+/* ---------- navegación entre vistas: carril segmentado (ronda 1; antes, tres botones sueltos con borde) ----------
+   Tres enlaces (>= 36 px de alto) con icono SVG + etiqueta dentro de una píldora oscura. La vista activa lleva aria-current="page" y se distingue por fondo cian tenue, filo de luz y negrita (no solo color).
+   La transición de fondo/sombra (<= 150 ms, solo con movimiento permitido) está en styles.css. */
+.nav-vistas { display: flex; gap: 2px; padding: 3px; justify-self: center; background: var(--nav-fondo); border: 1px solid var(--linea); border-radius: 999px; }
+.nav-vistas a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; min-width: 36px; padding: 0 14px; color: var(--texto-2); border-radius: 999px; font: 600 var(--t-m) var(--fuente); text-decoration: none; white-space: nowrap; touch-action: manipulation; --ico: 16px; }
+.nav-vistas a:hover { color: var(--texto); background: rgba(147, 180, 235, .1); }
+.nav-vistas a[aria-current="page"] { background: var(--nav-activa-fondo); color: var(--texto); font-weight: 700; box-shadow: inset 0 1px 0 rgba(103, 232, 249, .55), 0 0 0 1px rgba(34, 211, 238, .35); }
+.nav-vistas a[aria-current="page"] app-icono { color: var(--acento-texto); }
+.nav-vistas a:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+/* ---------- vistas internas: tres secciones siempre montadas; `hidden` las saca del árbol de accesibilidad y del tabulador ---------- */
+.vista-seccion { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--esp-4); min-width: 0; }
+.vista-seccion[hidden] { display: none; }   /* el display: grid de arriba vencería al `hidden` del navegador: se restablece aquí */
+.encabezado-vista { margin: 0; font-size: var(--t-l); }
+.encabezado-vista:focus-visible { outline: 3px solid var(--foco); outline-offset: 4px; }   /* el foco llega aquí al cambiar de vista */
+/* CAMBIO (ronda 4 Mission Control): la franja del seleccionado es una BARRA DE CONTEXTO (línea fina + marca de acento de 3 px a la izquierda, violeta en REPRODUCCIÓN), no una tarjeta */
+.franja-seleccion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-2) var(--esp-4); margin: 0; padding: 6px 14px; background: var(--acento-fondo); border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); border-left: 3px solid var(--acento); }
+.franja-seleccion.replay { background: var(--replay-fondo); border-left-color: var(--replay); }
+.franja-texto { min-width: 0; overflow-wrap: anywhere; }
+.franja-acciones { display: inline-flex; flex-wrap: wrap; gap: var(--esp-2); }
+button.enlace-accion { cursor: pointer; }
+.enlace-accion:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+/* título del Panel (ronda 2): visualmente OCULTO (sigue en el DOM con tabindex=-1: es el destino de foco al cambiar de vista y el nombre accesible de la sección). Al recibir el foco se muestra sin mover nada (absoluto) para que el anillo de foco sea visible. */
+#vista-panel { position: relative; }
+#vista-panel > .encabezado-vista { position: absolute; top: 0; left: 0; z-index: 1300; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; font-size: var(--t-s); text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
+#vista-panel > .encabezado-vista:focus-visible, #vista-panel > .encabezado-vista:focus { width: auto; height: auto; overflow: visible; clip-path: none; padding: 2px 8px; background: var(--panel-vidrio); border-radius: var(--radio-control); }
+
+/* ---------- banda de incidencias (marco común, solo cuando aplica; CAMBIO ronda 2) ----------
+   Fina, con icono + título + texto (no solo color): error = rojo (sin conexión), aviso = ámbar. Sin región viva (ver app.component.html). Los enlaces/botones miden >= 36 px. */
+/* CAMBIO (ronda 1): restilada como panel fino (línea tenue + marca ámbar a la izquierda, roja si hay error) y bajo la cabecera sticky (no forma parte de ella ni es sticky). El icono + título siguen diciendo la severidad. */
+.incidencias { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-1) var(--esp-3); padding: 4px 12px; background: var(--aviso-fondo); border: 1px solid var(--linea); border-left: 3px solid var(--aviso); border-radius: var(--radio-panel); color: var(--aviso-texto); font-size: var(--t-m); }
+.incidencias-lista { flex: 1 1 320px; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px var(--esp-4); margin: 0; padding: 0; list-style: none; }
+.incidencia { display: flex; align-items: baseline; gap: var(--esp-2); min-width: 0; }
+.incidencia.error { color: var(--error-texto); }
+.inc-ico { flex: none; min-width: 1.2em; font-weight: 800; }
+.inc-texto { min-width: 0; overflow-wrap: anywhere; }
+.incidencias:has(.incidencia.error) { background: var(--error-fondo); border-left-color: var(--error); }
+.enlace-accion { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; color: var(--acento-texto); background: var(--superficie-2); border: 1px solid var(--borde-control); border-radius: var(--radio-s); font: 600 var(--t-m) var(--fuente); text-decoration: none; touch-action: manipulation; }
+.enlace-accion:hover { border-color: var(--acento); }
+.vacio-vista { margin: 0; padding: 12px 16px; background: var(--superficie-1); border: 1px dashed var(--borde-control); border-radius: var(--radio-s); color: var(--texto-2); }
+
+/* ---------- vista Eventos (ronda 4 Mission Control): explorador de datos; encabezado sobrio, contador grande en mono y líneas finas en vez de tarjetas ---------- */
+.eventos-vista { gap: var(--esp-3); }
+.eventos-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--esp-1) var(--esp-4); min-width: 0; }
+.eventos-vista .encabezado-vista { padding-bottom: 0; border-bottom: 0; font-size: var(--t-m); font-weight: 600; color: var(--texto-2); text-transform: uppercase; letter-spacing: .08em; }
+.contador-vista { margin: 0; min-width: 0; font-size: var(--t-m); color: var(--texto-2); }
+.contador-vista .cifra { font-size: var(--t-xl); font-weight: 800; color: var(--texto); line-height: 1.1; }
+.nota-mas { display: block; margin-top: 2px; font-size: var(--t-s); }
+.enlace-discreto { display: inline-flex; align-items: center; min-height: 24px; color: var(--acento-texto); text-decoration: underline; text-underline-offset: 3px; }
+.enlace-discreto:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+.aviso-seleccion { display: flex; align-items: flex-start; gap: var(--esp-2); margin: 0; padding: 8px 12px; background: var(--aviso-fondo); border-left: 3px solid var(--aviso); border-radius: 0 var(--radio-s) var(--radio-s) 0; color: var(--aviso-texto); font-size: var(--t-m); }
+.vacio-eventos { display: flex; align-items: flex-start; gap: var(--esp-2); }
+
+/* ---------- escenario (ronda 2 Mission Control) ----------
+   < 1100 px (tablet y móvil): SIN HUD flotante. El escenario es una rejilla de 2 columnas (tablet) con filtros · visor a todo el ancho y debajo modo | evento y leyenda · notas; en móvil pasa a `display: contents`
+   y las piezas se reordenan con `order` (ver el bloque móvil). Los contenedores de la pila derecha (.hud-der, .hud-pila, .pila-cuerpo) son `display: contents`: sus hijos son directamente los elementos de la rejilla. */
+.escenario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-4); align-items: start; min-width: 0; isolation: isolate; }   /* isolation: los z-index de Leaflet y del selector (≤ 1100) no escapan del escenario y no tapan el desplegable de la telemetría */
+.o-kpi { position: relative; z-index: 20; }   /* el desplegable «Más detalles de la lectura» (dentro de la franja) queda por encima del escenario */
+.hud-izq, .visor { grid-column: 1 / -1; min-width: 0; }
+.hud-der, .hud-pila, .pila-cuerpo { display: contents; }
+.pila-cabecera, .hud-ico { display: none; }
+.o-leyenda, .o-notas { grid-column: 1 / -1; }
+
+/* cabecera del panel de filtros (barra): título + resumen y, en móvil y escritorio, el botón de plegar. En tablet el formulario siempre está visible (sin botón). */
+.hud-panel { display: block; }
+.filtros-barra { display: flex; align-items: center; gap: var(--esp-3); min-width: 0; padding: 0 0 var(--esp-2); }
+.filtros-resumen { flex: 1 1 0; min-width: 0; margin: 0; font-size: var(--t-s); color: var(--texto-2); overflow-wrap: anywhere; }
+.filtros-etiqueta { display: block; }
+.filtros-texto { display: block; }
+.filtros-toggle { display: none; flex: none; min-height: 36px; padding: 0 14px; font: 600 var(--t-m) var(--fuente); background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); cursor: pointer; touch-action: manipulation; }
+.filtros-toggle:hover { border-color: var(--acento); color: var(--acento-texto); }
+.filtros-toggle[aria-expanded="true"] { background: var(--acento-fondo); color: var(--acento-texto); border-color: var(--acento); }
+.filtros-toggle:focus-visible, .pila-toggle:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+/* ---------- visor: mapa y globo comparten la altura (--alto-visor) y llenan el contenedor ---------- */
+/* El fondo del contenedor (oscuro o claro) lo fija styles.css según la clase mapa-oscuro / mapa-claro; el borde de los círculos se ajusta a cada fondo (formato.ts). */
+.visor { position: relative; }
+.mapa-envoltorio { position: relative; border: 1px solid var(--linea); border-radius: var(--radio-stage); box-shadow: var(--elev-2); overflow: hidden; }
+.map { height: var(--alto-visor); }
+/* Etiqueta REPRODUCCIÓN (arriba, centrada, bajo el selector de vista): fila «B» (y = 56 px). Con el mapa 2D baja a la fila «C» (ver el bloque ≥ 1100 px) para no chocar con el selector de estilo de Leaflet (arriba a la derecha). */
+.etiqueta-mapa { position: absolute; top: 56px; left: 0; right: 0; z-index: 1001; width: fit-content; max-width: min(560px, calc(100% - 360px)); margin: 0 auto; padding: 6px 12px; background: var(--replay-fuerte); color: #fff; font-weight: 700; font-size: .85rem; text-align: center; border-radius: var(--radio-s); border: 1px solid var(--replay-texto); box-shadow: var(--elev-1); }
+/* pantallas estrechas: la etiqueta REPRODUCCIÓN pasa a franja sobre el mapa (no tapa los controles de la esquina superior derecha); deja 48 px libres arriba para el selector de vista flotante */
+@media (max-width: 700px) {
+  .etiqueta-mapa { position: static; width: auto; max-width: none; margin: 48px 0 0; text-align: left; border-width: 0 0 1px; border-radius: 0; box-shadow: none; }
+}
+
+/* F7 (globo 3D): selector de vista. CAMBIO (ronda 2): control segmentado compacto FLOTANTE arriba al centro del visor (en todos los anchos). Misma regla de estado: botones con aria-pressed, marca ✓ y negrita (no solo color).
+   Es hijo del visor (antes del mapa en el DOM), no del escenario: así flota sobre el visor también en móvil. «Vista:» queda como nombre accesible del grupo (visible desde 768 px). */
+.vista-selector { position: absolute; top: 10px; left: 0; right: 0; z-index: 1050; width: fit-content; max-width: calc(100% - 120px); margin-inline: auto; display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; padding: 3px; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: 999px; box-shadow: var(--elev-2); }
+.vista-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.vista-selector button { min-height: 36px; min-width: 36px; padding: 0 14px; font: 600 var(--t-m) var(--fuente); background: transparent; color: var(--texto); border: 1px solid transparent; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .vista-selector button:hover:not(:disabled) { border-color: var(--borde-control); }
-.vista-selector button[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border: 2px solid var(--acento); font-weight: 700; }
+.vista-selector button[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border: 1px solid var(--acento); font-weight: 700; }
 .vista-selector button:disabled { opacity: .55; cursor: not-allowed; }
 .vista-selector button:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
-.vista-aviso { flex: 1 1 100%; margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--info-fondo); color: var(--info-texto); border: 1px solid var(--info); border-radius: var(--radio-s); font-size: var(--t-m); }
+/* aviso del fallback: bajo el selector, centrado y flotante (persistente mientras «Globo 3D» esté desactivado) */
+.vista-aviso { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); width: max-content; max-width: min(460px, calc(100vw - 120px)); margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--info-fondo); color: var(--info-texto); border: 1px solid var(--info); border-radius: var(--radio-s); font-size: var(--t-m); text-align: center; }
 .map[hidden] { display: none; }
+@media (min-width: 768px) { .vista-titulo { position: static; width: auto; height: auto; overflow: visible; clip-path: none; padding: 0 8px 0 10px; } }
 
-/* leyenda de profundidad: franja bajo el mapa; los puntos usan los MISMOS colores que colorProfundidad (formato.ts) con borde claro para verse sobre el fondo oscuro */
-.leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-4); padding: var(--esp-2) var(--esp-4); background: var(--superficie-1); border-top: 1px solid var(--borde); }
-.leyenda-titulo { font-size: var(--t-m); color: var(--texto); }
+/* ---------- leyenda de profundidad (panel de la columna derecha): los puntos usan los MISMOS colores que colorProfundidad (formato.ts) con borde claro para verse sobre el fondo oscuro ---------- */
+/* CAMBIO (ronda 2): leyenda COMPACTA: título y rangos en la misma fila cuando caben (antes el título ocupaba una fila propia) y menos relleno */
+.leyenda { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-1) var(--esp-3); padding: var(--esp-2) var(--esp-3); }
+.leyenda .panel-titulo { flex: 0 0 auto; margin: 0; }
+/* notas del mapa (desplegable bajo la leyenda): objetivo de >= 36 px en el resumen */
+.notas-mapa { font-size: var(--t-s); color: var(--texto-2); }
+.notas-mapa summary { display: flex; align-items: center; min-height: 36px; padding: 0 var(--esp-2); cursor: pointer; color: var(--acento-texto); }
+.notas-mapa p { margin: 0 var(--esp-2) var(--esp-2); }
+.leyenda-titulo strong { color: var(--texto); }
 .leyenda-lista { display: flex; flex-wrap: wrap; gap: var(--esp-1) var(--esp-4); margin: 0; padding: 0; list-style: none; min-width: 0; }
 .leyenda-lista li { display: flex; align-items: center; gap: var(--esp-2); min-width: 0; font-size: var(--t-m); color: var(--texto-2); }
 /* leyenda interactiva (solo vista 3D): botones >= 28 px, foco visible, estado pulsado con borde y peso (no solo color); sin transiciones */
@@ -49,14 +163,169 @@ h1 { margin: 2px 0 0; font-size: clamp(1.35rem, 3vw, 1.8rem); line-height: 1.15;
 .punto-profunda { background: #7b3fb6; }
 .punto-nd { background: #64748b; }
 
-.panel { display: grid; gap: var(--esp-4); grid-template-columns: minmax(0, 1fr); }
+/* ---------- vista Análisis: estado del sistema, contador, gráficas 2×2 y comparación a ancho completo (la tabla está en la vista Eventos) ---------- */
+.analisis { min-width: 0; container-type: inline-size; }
+.seccion-titulo { margin: 0; padding-bottom: var(--esp-2); font-size: var(--t-l); border-bottom: 1px solid var(--borde); }
 .contador { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio-s); padding: 10px 14px; margin: 0; font-size: .9rem; color: var(--texto-2); font-variant-numeric: tabular-nums; }
-.graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: var(--esp-4); }
-@media (max-width: 520px) { .graficas { grid-template-columns: minmax(0, 1fr); } }
+/* CAMBIO (ronda 3 Mission Control): composición asimétrica de «dossier». El título de la vista queda sobrio (sin línea inferior) y el resumen (chips + línea de alcance) lo sigue. */
+.analisis > .encabezado-vista { padding-bottom: 0; border-bottom: 0; font-size: var(--t-xl); font-weight: 700; letter-spacing: -.01em; }
+.resumen-analisis { display: grid; gap: var(--esp-1); min-width: 0; }
+/* CAMBIO (análisis B, legibilidad): línea de alcance con interlineado 1.45 y longitud acotada a 80ch; el subrayado y el foco de los enlaces los dan los componentes */
+.calculo { margin: 0; font-size: var(--t-s); line-height: 1.45; max-width: 80ch; color: var(--texto-2); }
+.calculo .mono { color: var(--texto); font-weight: 700; }
+/* Gráficas SIN caja (barras.component.ts): separadas por líneas finas. El contenedor consultado es la sección .analisis (un elemento no puede consultarse a sí mismo).
+   <1100 px de contenedor: una columna en orden hora → país → magnitud → profundidad (el SVG conserva un ancho mínimo legible y se desplaza dentro de su región).
+   ≥1100 px: ver el bloque «análisis A» de abajo (10 pistas: hora 6 | país 4, y magnitud 5 | profundidad 5). El orden del DOM es el de lectura y foco. */
+.graficas { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--esp-2) var(--esp-5); }
+/* CAMBIO (análisis A): equilibrio de alturas. Rejilla de 10 pistas (en vez del reparto asimétrico anterior): fila 1 = hora (6 pistas) | país (4); fila 2 = magnitud (5) | profundidad (5). DOM = orden de lectura = orden de foco
+   (hora → país → magnitud → profundidad) y la colocación es automática: sin grid-row/column que lo contradiga. Con hueco de 24 px: a 1100 px → hora ≈ 650 (mín. 640), país ≈ 425 (mín. 400), magnitud/profundidad ≈ 538 (mín. 530). */
+@container (min-width: 1100px) {
+  .graficas { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .g-hero { grid-column: span 6; }
+  .g-pais { grid-column: span 4; }
+  .g-mag, .g-prof { grid-column: span 5; }
+}
+.zona-tabla { min-width: 0; }
+/* Metodología y estado: <details> abierto por defecto; encabezado claro con chevron (decorativo); dos columnas ≥ 1100 px (estado a la izquierda, notas como lista de definiciones a la derecha), sin cajas anidadas. */
+.metodologia { min-width: 0; border-top: 1px solid var(--linea); padding-top: var(--esp-3); }
+.metodo-resumen { display: flex; align-items: center; justify-content: space-between; gap: var(--esp-3); min-height: 36px; cursor: pointer; list-style: none; }
+.metodo-resumen::-webkit-details-marker { display: none; }
+.metodo-resumen:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+.metodo-chevron { --ico: 1.25rem; color: var(--acento-texto); }
+.metodo[open] .metodo-chevron { transform: rotate(180deg); }
+.metodo-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--esp-4) var(--esp-5); margin-top: var(--esp-3); min-width: 0; }
+.metodo-estado { min-width: 0; }
+.metodo-notas { margin: 0; min-width: 0; display: grid; gap: var(--esp-3); align-content: start; }
+.metodo-notas > div { padding-bottom: var(--esp-3); border-bottom: 1px solid var(--linea); min-width: 0; }
+.metodo-notas dt { font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--texto-2); }
+.metodo-notas dd { margin: var(--esp-1) 0 0; font-size: var(--t-m); overflow-wrap: anywhere; }
+.metodo-notas .contador { background: none; border: 0; padding: 0; font-size: var(--t-m); color: var(--texto); }
+@container (min-width: 1100px) { .metodo-cuerpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.subseccion-titulo { margin: 0; font-size: var(--t-l); }
+.subseccion-titulo:focus-visible { outline: 3px solid var(--foco); outline-offset: 4px; }
 
 /* F6 (6.2): modo REPRODUCCIÓN visible en mapa, panel de información y aviso de comparación */
 .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.no-aplica { background: var(--replay-fondo); border: 1px solid var(--replay); border-left: 4px solid var(--replay); border-radius: var(--radio); padding: 12px 16px; margin: 0; color: var(--replay-texto); } .no-aplica h2 { margin: 0 0 6px; font-size: 1.1rem; } .no-aplica p { margin: 0; font-size: .9rem; }
+/* CAMBIO (ronda 3): el aviso «no aplica» de REPRODUCCIÓN es una BANDA del mismo ancho que la comparación en vivo (sin radio, línea violeta arriba y abajo) con el tratamiento violeta existente */
+.no-aplica { position: relative; background: var(--replay-fondo); border-top: 1px solid var(--replay); border-bottom: 1px solid var(--replay); padding: var(--esp-4); margin: 0; color: var(--replay-texto); } .no-aplica h2 { margin: 0 0 6px; font-size: var(--t-l); } .no-aplica p { margin: 0; font-size: var(--t-m); }
+.no-aplica::before { content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 1px; background: var(--filo-replay); pointer-events: none; }
 
-footer { padding: var(--esp-3) var(--esp-4); background: var(--superficie-1); border: 1px solid var(--borde); border-radius: var(--radio); display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2) var(--esp-3); }
-footer p { flex: 1 1 100%; margin: 0; font-size: .85rem; color: var(--texto-2); }
+/* CAMBIO (análisis B): pie discreto y profesional: línea fina superior en vez de caja; primera fila = eyebrow + proyecto (se parte en móvil), segunda fila = atribuciones. Texto ≥ .8rem, --texto-2 sobre --fondo (AA), interlineado 1.5. */
+footer { padding: var(--esp-3) var(--esp-1) var(--esp-2); background: transparent; border: 0; border-top: 1px solid var(--linea); display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--esp-1) var(--esp-4); min-width: 0; }
+footer p { margin: 0; font-size: var(--t-s); line-height: 1.5; color: var(--texto-2); min-width: 0; overflow-wrap: anywhere; }
+footer .eyebrow { flex: none; }
+footer .pie-proyecto { flex: 1 1 18rem; }
+footer .pie-datos { flex: 1 1 100%; }
+
+/* ---------- ESCRITORIO >= 1100 px: ESCENARIO INMERSIVO con HUD flotantes (ronda 2 Mission Control) ----------
+   El escenario ocupa todo el ancho de <main> (hasta 1760 px) y su alto es --alto-visor: clamp(560px, 100dvh − cabecera − ≈ 124 px, 980px) (los ≈ 124 px son telemetría ≈ 60 + huecos + incidencias ≈ 24 + 24 de aire; `vh` de respaldo y `dvh` si existe).
+   El visor (Leaflet + globo, ambos montados) llena el 100 %; encima flotan los HUD. TODO lo que flota es absoluto SIN reordenar el DOM (orden de foco: filtros → selector → visor → HUD derecho).
+   Reserva lateral (--hud-izq / --hud-der): lo leen styles.css (controles de Leaflet) y globo.component.ts (hints) para no quedar bajo los HUD. Ancho libre central con ambos HUD abiertos:
+   1280 px → escenario ≈ 1248 − 292 − 320 = 636 px (51 %) · 1440 px → 1408 − 612 = 796 px (56,5 %) · 1600 px → 1568 − 612 = 956 px (61 %); la esfera (≈ 0,78 × alto; con 900 px de alto de ventana ≈ 560 px) cabe en los tres. Entre 1100 y 1439 arrancan colapsados. */
+@media (min-width: 1100px) {
+  main { --alto-visor: clamp(560px, calc(100vh - var(--alto-cabecera) - 124px), 980px); gap: var(--esp-2); }
+  @supports (height: 100dvh) { main { --alto-visor: clamp(560px, calc(100dvh - var(--alto-cabecera) - 124px), 980px); } }
+  .vista-seccion { gap: var(--esp-2); }
+  .escenario { position: relative; isolation: isolate; display: block; height: var(--alto-visor); --hud-izq: 276px; --hud-der: 284px; background: var(--escenario); border: 1px solid var(--linea); border-radius: var(--radio-stage); box-shadow: var(--elev-3); overflow: hidden; }
+  .escenario.hud-izq-abierto { --hud-izq: 304px; }                     /* 12 + 280 + 12 */
+  .escenario.hud-der-abierto { --hud-der: 332px; }                     /* 12 + 308 + 12 */
+  .escenario:not(:has(> .hud-izq)) { --hud-izq: 0px; }                 /* modo demostración: no hay filtros */
+  /* viñeteado oscuro en los bordes (solo con el globo: sobre el mapa 2D cambiaría el fondo bajo los marcadores y obligaría a medir de nuevo su contraste); no captura el puntero */
+  .escenario:not(.visor-2d)::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; box-shadow: inset 0 0 90px 10px rgba(4, 8, 18, .55); pointer-events: none; }
+  .visor { position: absolute; inset: 0; }
+  .mapa-envoltorio { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  .map { height: 100%; }
+  .vista-selector { top: 12px; }
+  .etiqueta-mapa { max-width: min(560px, calc(100% - 2 * max(var(--hud-izq), var(--hud-der)) - 24px)); }
+  .escenario.visor-2d .etiqueta-mapa { top: 108px; }                   /* fila C: bajo el selector de estilo y el de capas de Leaflet */
+  /* HUD: contenedores sin puntero; solo los paneles lo capturan */
+  .hud-izq, .hud-der { position: absolute; top: 12px; z-index: 1100; display: flex; flex-direction: column; max-height: calc(100% - 64px); pointer-events: none; }
+  .hud-izq { left: 12px; width: 280px; }
+  .hud-der { right: 12px; width: 308px; }
+  .escenario:not(.hud-der-abierto) .hud-der { width: 260px; }
+  .hud-panel, .hud-pila { display: flex; flex-direction: column; min-height: 0; padding: 0; pointer-events: auto; }
+  .pila-cabecera, .hud-ico { display: flex; }
+  .hud-ico { align-items: center; flex: none; color: var(--acento-texto); font-size: var(--t-m); }
+  .hud-panel.replay .hud-ico, .hud-pila.replay .hud-ico { color: var(--replay-texto); }
+  /* filtros: cabecera + cuerpo; colapsado = píldora */
+  .filtros-barra { padding: 6px 8px 6px 12px; min-height: 44px; }
+  .filtros-resumen { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
+  .filtros-etiqueta, .filtros-texto { display: inline; }
+  .filtros-etiqueta::after { content: ' · '; }
+  .filtros-toggle { display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; font-size: var(--t-s); }
+  .filtros-cuerpo { min-height: 0; padding: 4px 12px 12px; border-top: 1px solid var(--linea); overflow: auto; overscroll-behavior: contain; }
+  .filtros-cuerpo.plegado { display: none; }
+  .hud-panel.colapsado { width: fit-content; max-width: 264px; border-radius: 999px; }
+  .hud-panel.colapsado .filtros-barra { min-height: 40px; padding: 4px 4px 4px 12px; }
+  /* pila derecha: cabecera (con su botón) · modo siempre visible · cuerpo plegable (evento, leyenda, notas), separados por líneas finas */
+  .pila-cabecera { align-items: center; gap: var(--esp-2); min-height: 40px; padding: 4px 8px 4px 12px; }
+  .pila-titulo { flex: 1 1 auto; min-width: 0; }
+  .pila-toggle { flex: none; min-height: 32px; padding: 0 10px; font: 600 var(--t-s) var(--fuente); background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-control); cursor: pointer; touch-action: manipulation; }
+  .pila-toggle:hover { border-color: var(--acento); color: var(--acento-texto); }
+  .pila-toggle[aria-expanded="true"] { background: var(--acento-fondo); color: var(--acento-texto); border-color: var(--acento); }
+  .hud-pila > .o-modo { flex: none; padding: 8px 12px; border-top: 1px solid var(--linea); }
+  .pila-cuerpo { display: flex; flex-direction: column; min-height: 0; overflow: auto; overscroll-behavior: contain; }   /* el scroll interno solo entra en juego como último recurso (poca altura) */
+  .pila-cuerpo.plegado { display: none; }
+  .pila-cuerpo > * { flex: none; padding: 10px 12px; border-top: 1px solid var(--linea); }
+  .hud-pila .leyenda { background: none; border: 0; border-radius: 0; box-shadow: none; padding: 10px 12px; }
+  .hud-pila .leyenda::before { display: none; }
+  .hud-pila .leyenda .panel-titulo { margin: 0; }
+  /* si aun así falta altura, el scroll interno recae en el DETALLE y la leyenda queda fija abajo (siempre visible y operable) */
+  .pila-cuerpo > .o-leyenda { position: sticky; bottom: 0; z-index: 1; background: var(--superficie-1); }
+  /* CAMBIO (cierre F7): los rangos de profundidad en rejilla 2×2 (antes 4 filas apiladas): la leyenda mide ~100 px en vez de ~170 y no queda cortada con un evento seleccionado */
+  .hud-pila .leyenda { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--esp-2); }
+  .hud-pila .leyenda-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-1) var(--esp-2); }
+  .hud-pila .leyenda-boton { width: 100%; padding: 2px 6px; font-size: var(--t-s); }
+  .hud-pila .notas-mapa summary { min-height: 32px; padding: 0; }
+  .hud-pila .notas-mapa p { margin: 0 0 var(--esp-1); }
+  .pila-cuerpo > .notas-mapa { padding: 4px 12px; }
+}
+
+/* ---------- MÓVIL < 768 px: una columna reordenada ---------- */
+/* orden visual: cabecera → nav de vistas → [acceso] → secciones → pie. DENTRO del Panel: título → filtros → visor → evento seleccionado → modo → leyenda → KPI.
+   .principal y .col-der pasan a `display: contents` para que sus hijos se ordenen directamente dentro de la sección del Panel (rejilla de una columna: `order` también vale en grid).
+   El orden DOM (escritorio) no cambia; Análisis y Eventos mantienen su orden DOM. */
+@media (max-width: 767px) {
+  main { --alto-visor: max(380px, 65vh); display: flex; flex-direction: column; padding: var(--esp-2) var(--esp-3) var(--esp-4); gap: var(--esp-3); }
+  @supports (height: 1svh) { main { --alto-visor: max(380px, 65svh); } }
+  .escenario { display: contents; }
+  /* CAMBIO (ronda 1): la cabecera es UNA fila sticky de 48 px: marca (solo icono) · nav centrada en el hueco central · [glifo de modo + icono de estado + refrescar].
+     Cálculo de anchos (texto ≈ .78rem, estimado, NO medido en navegador): zona derecha ≈ glifo 24 + detalles ≈ 52 + refrescar 36 + 2 huecos de 4 = 116 px; marca 28; nav solo texto ≈ 168 px, con iconos ≈ 215 px.
+       320 px → marca oculta: 304 − 116 − 12 = 176 ≥ 168 (solo texto) · 360 px → 344 − 28 − 116 − 12 = 188 ≥ 168 (solo texto) · 375 px → 203 ≥ 168 (solo texto) · ≥ 400 px → 228 ≥ 215 (icono + texto).
+     La nav queda centrada en el hueco CENTRAL (columna 1fr), no exactamente en el centro de la pantalla: la zona derecha es más ancha que la izquierda y la simetría exacta exigiría truncar texto (se prioriza la legibilidad). */
+  .cabecera { grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; padding: 0 var(--esp-2); margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-3)) 0; }
+  .cabecera::before { left: var(--esp-2); right: var(--esp-2); }
+  .cab-marca { width: 28px; height: 28px; --ico: 18px; }
+  /* el título sigue en el árbol de accesibilidad (h1) pero no se ve: solo el icono de marca */
+  .identidad { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .cab-estado { gap: 4px; }
+  .nav-vistas { padding: 2px; gap: 1px; max-width: 100%; }
+  .nav-vistas a { padding: 0 5px; gap: 3px; font-size: .78rem; --ico: 14px; }
+  .nav-vistas app-icono { display: none; }
+  .banda-replay { margin: calc(-1 * var(--esp-3)) calc(-1 * var(--esp-3)) 0; }
+}
+@media (min-width: 400px) and (max-width: 767px) { .nav-vistas app-icono { display: inline-flex; } }
+@media (max-width: 359px) { .cab-marca { display: none; } }   /* a 320 px la marca cede su sitio a la nav (el h1 sigue accesible: está visualmente oculto, no con display: none) */
+@media (max-width: 767px) {
+  .o-acceso { order: 2; }
+  .o-incidencias { order: 2; }   /* banda de incidencias: justo tras el acceso y antes de la vista (mismo `order` que .o-acceso: gana el orden DOM, que ya es acceso → incidencias) */
+  .vista-seccion { order: 3; gap: var(--esp-3); }
+  .o-filtros { order: 3; }
+  .o-visor { order: 4; }
+  .o-detalle { order: 5; }
+  .o-modo { order: 6; }
+  .o-leyenda { order: 7; }
+  .o-notas { order: 7; }   /* «Notas del mapa»: detrás de la leyenda (mismo `order`, gana el orden DOM) */
+  .o-kpi { order: 8; }
+  .o-pie { order: 11; }
+  /* filtros: barra-resumen siempre visible con su botón; el formulario se pliega por CSS (los campos siguen en el DOM y no pierden lo escrito).
+     El contenedor .hud-panel deja de ser una caja (la barra y el cuerpo son las dos cajas: línea fina, sin bordes gruesos). */
+  .hud-panel { background: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+  .hud-panel::before { display: none; }
+  .filtros-barra { padding: var(--esp-2) var(--esp-3); background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: var(--radio-panel); }
+  .filtros-etiqueta { display: block; }
+  .filtros-toggle { display: inline-flex; align-items: center; }
+  .filtros-barra:has(+ .filtros-cuerpo:not(.plegado)) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .filtros-cuerpo { padding: var(--esp-3); background: var(--panel-vidrio); border: 1px solid var(--linea); border-top: 0; border-radius: 0 0 var(--radio-panel) var(--radio-panel); }
+  .filtros-cuerpo.plegado { display: none; }
+}

@@ -23,6 +23,17 @@ export function marcasEje(maximo: number): number[] {
 }
 
 /** Barras verticales: una por valor, dentro del área útil; la altura es proporcional y un 0 mide 0 (sin barra) — nunca se inventa una altura mínima. */
+/**
+ * CAMBIO (cierre F7): recorta con «…» una etiqueta que no cabe en el margen izquierdo de las barras horizontales (nombres de país largos). Solo afecta al texto dibujado:
+ * el tooltip y la etiqueta accesible de cada barra conservan el nombre completo. ~6,4 unidades por carácter a 11-12 px.
+ */
+export function etiquetaRecortada(texto: string, anchoDisponible: number): string {
+  const max = Math.max(4, Math.floor(anchoDisponible / 6.4));
+  return texto.length <= max ? texto : texto.slice(0, max - 1).trimEnd() + '…';
+}
+
+/** Ancho máximo (unidades del lienzo) de una barra vertical. */
+const ANCHO_MAX_BARRA = 96;
 export function disenoBarras(valores: number[], ancho: number, alto: number, margen: Margen): Diseno {
   const anchoUtil = Math.max(0, ancho - margen.izq - margen.der);
   const altoUtil = Math.max(0, alto - margen.arr - margen.aba);
@@ -30,7 +41,9 @@ export function disenoBarras(valores: number[], ancho: number, alto: number, mar
   const paso = valores.length > 0 ? anchoUtil / valores.length : 0;
   const barras = valores.map((v, i) => {
     const h = Math.max(0, v) / maximo * altoUtil;
-    return { x: margen.izq + i * paso + paso * 0.1, y: margen.arr + altoUtil - h, ancho: paso * 0.8, alto: h };
+    // CAMBIO (cierre F7): con pocos intervalos (p. ej. REPRODUCCIÓN: una sola hora) la barra no se ensancha a todo el lienzo: ancho máximo ANCHO_MAX_BARRA, centrada en su hueco (la zona de impacto sigue siendo el hueco completo)
+    const ancho = Math.min(paso * 0.8, ANCHO_MAX_BARRA);
+    return { x: margen.izq + i * paso + (paso - ancho) / 2, y: margen.arr + altoUtil - h, ancho, alto: h };
   });
   return { barras, maximo, marcas: marcasEje(maximo), anchoUtil, altoUtil };
 }

@@ -41,8 +41,9 @@ import type { EjecucionReplay } from '../modelos';
   `,
   styles: `
     :host { display: block; min-width: 0; }
-    .estado { background: var(--superficie-1); border: 1px solid var(--borde); border-left: 4px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 16px; margin: 0; }
-    h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    /* CAMBIO (ronda 3): sin caja (vive dentro de la sección «Metodología y estado del sistema», que ya es una zona con líneas finas); mismos datos y avisos */
+    .estado { margin: 0; padding: 0; }
+    h2 { margin: 0 0 8px; font-size: var(--t-m); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--texto-2); }
     .general { margin: 0 0 10px; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
     .punto { width: 12px; height: 12px; border-radius: 50%; background: var(--texto-2); display: inline-block; flex: none; } /* el texto del estado acompaña siempre al punto: el color no es el único canal */
     .ok .punto { background: var(--ok); } .desact .punto { background: var(--aviso); } .sin .punto { background: var(--error); }

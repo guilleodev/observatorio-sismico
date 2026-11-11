@@ -45,7 +45,7 @@ test('textoCobertura: «de N» solo si se conoce el total, singular/plural de om
 test('la plantilla distingue «Última lectura del frontend», «Última ingesta USGS» y «Conexión», y conserva todos los datos de la lectura', () => {
   const c = leer('estado-datos/estado-datos.component.ts');
   for (const t of ['Última lectura del frontend', 'Última ingesta USGS', 'Última ingesta USGS en vivo', 'medida por la API', 'Conexión', 'Terremotos visualizados', 'Países',
-    'Detalles de la lectura', 'Última lectura UTC', 'Generación de la respuesta UTC', 'Filtros activos', 'Periodo consultado (UTC)', 'eventos dibujados']) assert.ok(c.includes(t), t);
+    'Más detalles de la lectura', 'Última lectura UTC', 'Generación de la respuesta UTC', 'Filtros activos', 'Periodo consultado (UTC)', 'eventos dibujados']) assert.ok(c.includes(t), t);
   assert.match(c, /\{\{ conteo\(\) \}\} de \{\{ total\(\) \?\? 'ND' \}\}/);
   assert.match(c, /class="etiqueta-replay-info"/);                                  // etiqueta REPRODUCCIÓN visible (invariante 8)
   assert.match(c, /estadoGeneral\(this\.entrada\(\)\)/);                            // se usa estadoGeneral tal cual
@@ -54,15 +54,20 @@ test('la plantilla distingue «Última lectura del frontend», «Última ingesta
 test('región viva: UNA sola en el bloque de información y la antigüedad (cambia cada segundo) queda fuera', () => {
   const c = leer('estado-datos/estado-datos.component.ts');
   assert.equal((c.match(/aria-live="polite"/g) ?? []).length, 1);
-  const viva = /<div class="lectura" aria-live="polite">([\s\S]*?)<\/div>\s*<div class="grupos">/.exec(c)?.[1] ?? '';
+  const viva = /<div class="lectura" aria-live="polite">([\s\S]*?)<\/div>\s*(?:<!--[\s\S]*?-->\s*)?<div class="grupos">/.exec(c)?.[1] ?? '';   // CAMBIO (rediseño dashboard): ahora hay un comentario HTML entre la región viva y la rejilla de KPI
   assert.ok(viva.length > 0);
   assert.doesNotMatch(viva, /lecturaFrontend|ingesta|ultimaLectura/);
   assert.match(viva, /estado\(\)/);
 });
 
-test('app.component.html: orden DOM cabecera → refresco → modo → información → acceso → filtros → mapa, y la ingesta ya no está en el indicador', () => {
+// CAMBIO (rediseño dashboard): el orden antes era cabecera → refresco → modo → información → acceso → filtros → mapa. Ahora: cabecera (con el refresco compacto) → nav de anclas → KPI (información) →
+// acceso → filtros → visor → columna derecha (modo, detalle, leyenda) → estado del sistema (a ancho completo, 2.ª ronda: sale de la columna) → análisis. La nav de anclas está DENTRO de la cabecera (misma fila en escritorio). El modo pasa a la columna derecha. Misma comprobación de que la ingesta no está en el indicador.
+test('app.component.html: orden DOM cabecera → nav → KPI → acceso → filtros → visor → derecha → análisis, y la ingesta ya no está en el indicador', () => {
   const html = leer('app.component.html');
-  const orden = ['<header class="cabecera"', '<app-indicador-refresco', '<app-selector-modo', '<app-estado-datos', '<app-acceso', '<app-filtros', 'class="mapa-envoltorio"'].map((s) => html.indexOf(s));
+  // CAMBIO (vistas internas): la nav de anclas pasa a ser la nav de vistas y el aviso de acceso por clave queda en el marco común, ANTES del Panel (que contiene los KPI); «Estado del sistema» está ahora
+  // DENTRO de la vista Análisis, que empieza después del Panel: nav → acceso → KPI → filtros → visor → derecha → [sección análisis] → app-estado.
+  // CAMBIO (ronda 1 Mission Control): en la cabecera sticky el orden DOM (= orden de foco) es identidad → nav de vistas → modo + indicador de refresco; antes el indicador iba delante de la nav.
+  const orden = ['<header class="cabecera"', '<nav class="nav-vistas"', '<app-indicador-refresco', '<app-acceso', '<app-estado-datos', '<app-filtros', 'class="mapa-envoltorio"', '<div class="hud-der"', '<app-selector-modo', '<app-detalle-evento', 'class="leyenda panel-ui', 'id="analisis"', '<app-estado ', 'id="eventos"'].map((s) => html.indexOf(s));
   assert.ok(orden.every((i) => i >= 0), String(orden));
   assert.deepEqual([...orden].sort((a, b) => a - b), orden);
   assert.doesNotMatch(/<app-indicador-refresco[^>]*>/.exec(html)?.[0] ?? '', /ingesta/);
@@ -84,10 +89,11 @@ test('selector de modo: radios reales en un radiogroup, marca ✓ con texto «Ac
 test('filtros: columnas con minmax(min(…px, 100%)) para no desbordar a 320 px; errores con role=alert; botones y campos >= 24 px', () => {
   const f = leer('filtros/filtros.component.ts');
   assert.match(f, /minmax\(min\(150px, 100%\), 1fr\)/);
-  assert.match(f, /minmax\(min\(320px, 100%\), 1fr\)/);
+  // CAMBIO (rediseño 3 vistas, ronda 2): la rejilla `.notas` (minmax(min(320px, 100%), 1fr)) desaparece: las notas van al desplegable «Ayuda de los filtros». Los campos pasan de 38 a 36 px (compactos, sigue siendo >= 24 px).
+  assert.match(f, /<details class="ayuda-filtros">\s*<summary>Ayuda de los filtros<\/summary>/);
   assert.match(f, /<ul class="errores" role="alert">/);
   assert.ok(f.indexOf('class="errores"') < f.indexOf('id="ayuda-magnitud"'), 'errores pegados a los campos, antes de las notas');
-  for (const p of ['input, select', 'button']) assert.match(f, new RegExp(`${p} \\{[^}]*min-height: 38px`));
+  for (const p of ['input, select', 'button']) assert.match(f, new RegExp(`${p} \\{[^}]*min-height: 36px`));
   assert.match(f, /type="submit"[\s\S]*?>Aplicar filtros</);
   assert.match(f, /Restablecer/);
 });

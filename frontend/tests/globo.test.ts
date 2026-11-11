@@ -262,6 +262,7 @@ test('three vive SOLO en escena.ts y se carga con import() dinámico (chunk apar
   for (const f of fuentes(RAIZ)) {
     const t = leer(f);
     if (f.replace(/\\/g, '/') === 'globo/escena.ts') continue;
+    if (f.replace(/\\/g, '/') === 'globo/previa.ts') continue;   // CAMBIO (pulido Eventos): la vista previa 3D de la tabla también importa three, pero solo en este módulo y con import() dinámico desde la tabla (chunk aparte, comparte three con escena.ts)
     assert.doesNotMatch(t, /from 'three|require\('three|import\('three/, f);
   }
   const c = leer('globo/globo.component.ts');
@@ -328,16 +329,12 @@ test('componente: detecta WebGL ANTES del import(), con mensaje claro y aviso al
   assert.match(c, /ngOnDestroy\(\): void \{[\s\S]*this\.escena\?\.destruir\(\)/);
 });
 
-test('tarjeta y accesibilidad del globo: textContent (interpolación), ficha y REPRODUCCIÓN, región viva, teclado y controles', () => {
+test('accesibilidad del globo: textContent (sin HTML dinámico), teclado y controles; la tarjeta de detalle YA NO está en el globo', () => {
   const c = leer('globo/globo.component.ts');
   assert.doesNotMatch(c, /innerHTML|outerHTML|insertAdjacentHTML|bypassSecurityTrust|DomSanitizer/);
-  assert.match(c, /filasFicha\(e\.properties, prof, e\.id\)/); assert.match(c, /fichaReplay\(e\.properties, this\.ejecucion\(\), true\)\.trim\(\)/);
-  for (const parte of ['{{ d.replay }}', '{{ d.ficha.lugar }}', '{{ d.ficha.insignia }}', '{{ fila.etiqueta }}', '{{ fila.valor }}']) assert.ok(c.includes(parte), parte);   // Angular interpola con textContent
-  assert.match(c, /<p class="ficha-replay">/); assert.ok(c.indexOf('class="ficha-replay"') < c.indexOf('class="ficha-titulo"'));
-  // CAMBIO (F7, ajuste 3/4): el botón «Cerrar» ya no emite directamente; llama a cerrarFicha(), que inicia la recuperación de la vista y emite `cerrar` (misma salida de antes)
-  assert.match(c, /\(click\)="cerrarFicha\(\)">Cerrar</); assert.match(c, /Ver este evento en la tabla/);
-  assert.match(c, /cerrarFicha\(\): void \{[\s\S]*?this\.cerrar\.emit\(\);/);
-  assert.match(c, /role="status" aria-live="polite">\{\{ anuncio\(\) \}\}/); assert.match(c, /`Seleccionado: \$\{d\.ficha\.lugar\}/);
+  // CAMBIO (rediseño dashboard): antes se comprobaba aquí la tarjeta interna (filasFicha, fichaReplay, {{ d.ficha.* }}, «Cerrar» → cerrarFicha(), «Ver este evento en la tabla» y la región viva «Seleccionado: …»).
+  // Esa UI se movió al panel app-detalle-evento (columna derecha, común a 2D y 3D): lo mismo se comprueba en tests/dashboard.test.ts sobre el nuevo componente. Aquí se exige que el globo no la duplique.
+  assert.doesNotMatch(c, /<aside|class="tarjeta"|cerrarFicha|verEnTabla|filasFicha|fichaReplay|hayTabla|class="ficha|Ver este evento en la tabla|Seleccionado: /);
   assert.match(c, /<canvas #lienzo role="img" \[attr\.aria-label\]="descripcion\(\)"/);
   // CAMBIO: aria-describedby apunta ahora a la pista corta visible (globo-pista); el texto largo está en el <details> «Ayuda del globo» (ver prueba de controles e instrucciones)
   assert.match(c, /tabindex="0" role="group" aria-label="Globo terráqueo 3D interactivo" aria-describedby="globo-pista"/);
@@ -348,33 +345,38 @@ test('tarjeta y accesibilidad del globo: textContent (interpolación), ficha y R
   assert.match(c, /\{ radio: radioMagnitud, color: colorProfundidad, id: idDe \}/);        // la MISMA codificación que el mapa 2D
   assert.match(c, /button \{[^}]*min-height: 36px/); assert.match(c, /button:focus-visible \{ outline: 3px solid var\(--foco\)/);
   assert.match(c, /:host\(\[hidden\]\) \{ display: none; \}/);
-  // CAMBIOS de maquetación (F7, 2.ª iteración): ya no hay columna fija de 340 px (dejaba un hueco vacío sin selección) ni altura 70vh/420 px; ahora el globo ocupa todo el ancho,
-  // gana altura (clamp con tope por ancho) y el detalle es un panel flotante de 320 px SOLO en escritorio; la tarjeta solo existe con selección (ya no hay clase «vacia»)
-  assert.match(c, /@media \(min-width: 900px\)/); assert.doesNotMatch(c, /grid-template-columns: minmax\(0, 1fr\) 340px/);
-  assert.match(c, /\.vista \{ position: relative; height: clamp\(420px, min\(78vh, 62vw\), 900px\); \}/); assert.match(c, /height: 65vh; height: 65svh; min-height: 380px/);
+  // CAMBIO (rediseño dashboard): antes el escenario fijaba `height: clamp(420px, min(78vh, 62vw), 900px)` y, en móvil, `65vh/65svh/380px`, y el detalle era un panel flotante de 320 px (media 900 px).
+  // Ahora la altura sale de la variable compartida con el mapa 2D (--alto-visor, definida en app.component.css por tramos: móvil max(380px, 65svh), tablet y escritorio con clamp) y no hay panel flotante.
+  assert.doesNotMatch(c, /@media \(min-width: 900px\)/); assert.doesNotMatch(c, /grid-template-columns: minmax\(0, 1fr\) 340px/);
+  assert.match(c, /\.vista \{ position: relative; height: var\(--alto-visor, 560px\); \}/); assert.doesNotMatch(c, /clamp\(420px|min\(78vh, 62vw\)/);
+  assert.match(c, /@media \(max-width: 700px\) \{ \.vista \{ margin-inline: var\(--esp-3\); \} \}/);
   assert.doesNotMatch(c, /transition:\s*all/);
-  assert.doesNotMatch(c, /\.tarjeta\.vacia|class="tarjeta" \[class\.vacia\]/);
 });
 
 test('app: selector de vista con aria-pressed encima del mapa, Leaflet SIEMPRE montado (solo hidden) y invalidateSize al volver al 2D', () => {
   const html = leer('app.component.html'); const ts = leer('app.component.ts'); const css = leer('app.component.css');
-  const selector = /<div class="vista-selector"[^>]*>([\s\S]*?)\n  <\/div>/.exec(html)?.[1] ?? '';
+  // CAMBIO (rediseño dashboard): el selector de vista está ahora dentro de la columna central (#mapa), dos niveles más de sangría (6 espacios) en la plantilla
+  // CAMBIO (vistas internas): el selector está ahora dentro de la sección del Panel: otros 2 espacios de sangría (8)
+  const selector = /<div class="vista-selector"[^>]*>([\s\S]*?)\n        <\/div>/.exec(html)?.[1] ?? '';
   assert.equal((selector.match(/<button type="button" \[attr\.aria-pressed\]=/g) ?? []).length, 2);
   assert.match(selector, /Mapa 2D<\/button>/); assert.match(selector, /Globo 3D<\/button>/); assert.match(selector, /\[disabled\]="globoNoDisponible\(\) !== null"/);
-  assert.match(selector, /role="status">Globo 3D no disponible\. \{\{ motivo \}\}/);
+  // CAMBIO (vistas internas + globo por defecto): la señal del visor es `visor` (antes `vista`, ahora Panel/Análisis/Eventos) y arranca en '3d' (antes '2d'); el aviso del fallback es `avisoFallback(motivo)`
+  // («Globo 3D no disponible: <motivo>. Se muestra el mapa 2D.», ver fallback.ts) en lugar de «Globo 3D no disponible. {{ motivo }}»; el globo solo es visible con el Panel a la vista Y el visor 3D.
+  assert.match(selector, /role="status">\{\{ avisoFallback\(motivo\) \}\}/);
   assert.ok(html.indexOf('class="vista-selector"') < html.indexOf('class="mapa-envoltorio"'));
   assert.ok(html.indexOf('<app-filtros') < html.indexOf('class="vista-selector"'));
-  assert.match(html, /<div class="map" leaflet [^>]*\[hidden\]="vista\(\) === '3d'"/);   // se oculta, no se destruye
-  assert.doesNotMatch(html, /@if \(vista\(\)[^{]*\{[^}]*leaflet/);
-  assert.match(html, /<app-globo \[visible\]="vista\(\) === '3d'" \[eventos\]="eventos\(\)" \[seleccionado\]="seleccionado\(\)"/);
+  assert.match(html, /<div class="map" leaflet [^>]*\[hidden\]="visor\(\) === '3d'"/);   // se oculta, no se destruye
+  assert.doesNotMatch(html, /@if \(visor\(\)[^{]*\{[^}]*leaflet/);
+  assert.match(html, /<app-globo \[visible\]="vista\(\) === 'panel' && visor\(\) === '3d'" \[eventos\]="eventos\(\)" \[seleccionado\]="seleccionado\(\)"/);
   assert.match(html, /\(seleccionar\)="elegir\(\$event, 'mapa'\)" \(cerrar\)="elegir\(null, 'mapa'\)" \(noDisponible\)="globoSinSoporte\(\$event\)"/);
-  assert.match(ts, /readonly vista = signal<'2d' \| '3d'>\('2d'\)/);
+  assert.match(ts, /readonly visor = signal<'2d' \| '3d'>\('3d'\)/);
   assert.match(ts, /afterNextRender\(\(\) => this\.map\?\.invalidateSize\(\), \{ injector: this\.injector \}\)/);
-  assert.match(ts, /if \(vista === '3d' && this\.globoNoDisponible\(\) !== null\) return;/);
+  assert.match(ts, /if \(visor === '3d' && this\.globoNoDisponible\(\) !== null\) return;/);
   assert.match(css, /\.vista-selector button \{[^}]*min-height: 36px/); assert.match(css, /\.vista-selector button\[aria-pressed="true"\] \{[^}]*font-weight: 700/);
   assert.match(css, /\.vista-selector button:focus-visible \{ outline: 3px solid var\(--foco\)/);
   assert.match(css, /\.map\[hidden\] \{ display: none; \}/);
-  assert.match(html, /class="leyenda" role="group"/);                                        // la leyenda sigue en ambas vistas (fuera del globo y del mapa)
+  // CAMBIO (rediseño dashboard): la leyenda sigue en ambas vistas, pero ahora es un panel de la columna derecha (clase panel-ui) y no la franja bajo el mapa
+  assert.match(html, /class="leyenda panel-ui o-leyenda" role="group"/);
   // CAMBIO: antes la rama demo hacía `dibujar(x)` y `eventos.set(x)` por separado; ahora ambas pasan por aplicarEventos (ver prueba «único camino de aplicación de eventos»)
   assert.match(ts, /this\.aplicarEventos\(data\.features as unknown as Evento\[\]\)/);       // en demostración el globo también recibe los eventos
 });
@@ -720,18 +722,16 @@ test('layout: la esfera no queda bajo el panel flotante a 900–1100 px (desplaz
   assert.equal(desplazamientoCentroPx(0, 600, reserva), 0); assert.equal(desplazamientoCentroPx(900, 0, reserva), 0);
 });
 
-test('layout: globo a todo el ancho, panel flotante SOLO en escritorio (>= 900 px), detalle debajo en móvil, sin canvas redimensionado por la selección', () => {
+// CAMBIO (rediseño dashboard): antes este test exigía el panel flotante de 320 px (.tarjeta, media 900 px), su reserva (ANCHO_PANEL_PX + MARGEN_PANEL_PX, matchMedia) y el efecto que avisaba a la escena.
+// Ahora el detalle es el panel externo: la reserva del globo es siempre 0 (`reservaDerecha: () => 0`), no hay tarjeta ni efecto de reserva, y la lógica pura desplazamientoCentroPx
+// (probada arriba) queda en geometria.ts sin uso en la interfaz. Se conserva la cobertura de la escena (setViewOffset/clearViewOffset, un único setSize) y se añade que el globo no la duplica.
+test('layout: globo sin panel flotante (reserva 0), canvas redimensionado solo por el ResizeObserver, sin tarjeta propia', () => {
   const c = leer('globo/globo.component.ts'); const e = leer('globo/escena.ts');
-  const base = /\n    \.tarjeta \{([^}]*)\}/.exec(c)?.[1] ?? '';
-  assert.doesNotMatch(base, /position:\s*absolute/);                                     // base (móvil y tableta): bloque normal DEBAJO del globo
-  const media = /@media \(min-width: 900px\) \{\s*\.tarjeta \{([^}]*)\}/.exec(c)?.[1] ?? '';
-  assert.match(media, /position: absolute/); assert.match(media, /right: var\(--esp-3\)/); assert.match(media, /width: 320px/); assert.match(media, /overscroll-behavior: contain/);
-  assert.match(c, /@if \(detalle\(\); as d\) \{\s*<aside class="tarjeta"/);              // la tarjeta solo existe con selección
-  assert.match(c, /ANCHO_PANEL_PX \+ MARGEN_PANEL_PX/); assert.match(c, /matchMedia\('\(min-width: 900px\)'\)/);
+  assert.match(c, /reservaDerecha: \(\) => 0,/);
+  assert.doesNotMatch(c, /\.tarjeta|ANCHO_PANEL_PX|MARGEN_PANEL_PX|matchMedia|hayDetalle|actualizarReserva|\bdetalle\(\)/);
   assert.match(e, /setViewOffset\(this\.ancho, this\.alto, px, 0, this\.ancho, this\.alto\)/); assert.match(e, /clearViewOffset\(\)/);
-  assert.equal((e.match(/renderer\.setSize\(/g) ?? []).length, 1);                       // el tamaño del canvas solo lo cambia ajustarTamano (ResizeObserver), nunca el panel
-  assert.match(c, /private readonly hayDetalle = computed\(\(\) => this\.detalle\(\) !== null\)/);
-  assert.match(c, /effect\(\(\) => \{ this\.hayDetalle\(\); untracked\(\(\) => this\.fuera\(\(\) => this\.escena\?\.actualizarReserva\(\)\)\); \}\);/);
+  assert.equal((e.match(/renderer\.setSize\(/g) ?? []).length, 1);                       // el tamaño del canvas solo lo cambia ajustarTamano (ResizeObserver)
+  assert.match(e, /ResizeObserver/);
   assert.doesNotMatch(c, /transition|animation|@keyframes/);                             // sin transiciones ni animaciones CSS en el componente (movimiento reducido incluido)
 });
 
@@ -748,7 +748,9 @@ test('controles: UN grupo «Controles del globo» con +, −, Restablecer y Paus
   assert.doesNotMatch(c, /aria-pressed/);
   assert.match(c, /button \{[^}]*min-height: 36px[^}]*min-width: 36px|button \{[^}]*min-width: 36px[^}]*min-height: 36px/);
   assert.match(c, /\.controles \{ position: absolute; left: var\(--esp-3\); right: var\(--esp-3\); bottom: var\(--esp-3\); margin-inline: auto; width: fit-content;/);   // dentro del escenario, abajo al centro. CAMBIO: antes `left: 50%` + translateX limitaba el ancho disponible a la mitad y en móvil los botones se apilaban en 4 filas
-  assert.equal((c.match(/aria-live="polite"/g) ?? []).length, 1);                        // solo la región «Seleccionado: …»: la rotación se anuncia por el texto del botón
+  // CAMBIO (rediseño dashboard): antes había UNA región aria-live en el globo («Seleccionado: …»). Ahora esa región vive en el panel app-detalle-evento (una sola para las dos vistas) y el globo no tiene ninguna;
+  // la rotación se anuncia por el texto del botón. El contador de eventos (role="status") es el recuento, no un anuncio de selección.
+  assert.equal((c.match(/aria-live="polite"/g) ?? []).length, 0);
   assert.match(c, /readonly rotando = signal\(false\)/);
 });
 
@@ -766,7 +768,7 @@ test('instrucciones: UNA línea corta por tipo de puntero y lo extenso (teclado,
   for (const parte of ['flechas para girar', 'Inicio para restablecer', '«Evento anterior» y «Evento siguiente»', 'seleccionar cada terremoto en la tabla', 'gira sola muy despacio', 'Pausar rotación', 'movimiento reducido']) assert.ok(ayuda.includes(parte), parte);
   // los botones Evento anterior / siguiente siguen existiendo (barra secundaria del pie) y la leyenda de profundidad sigue en la página
   assert.match(c, /<div class="navegacion" role="group" aria-label="Recorrer los terremotos por magnitud">/); assert.match(c, /Evento anterior<\/button>/); assert.match(c, /Evento siguiente<\/button>/);
-  assert.match(c, /\{\{ recuento\(\) \}\}/); assert.match(leer('app.component.html'), /class="leyenda" role="group"/);
+  assert.match(c, /\{\{ recuento\(\) \}\}/); assert.match(leer('app.component.html'), /class="leyenda panel-ui o-leyenda" role="group"/);   // CAMBIO (rediseño dashboard): la leyenda es ahora un panel de la columna derecha
   assert.doesNotMatch(c, /id="globo-ayuda"|<p id="globo-ayuda"/);
 });
 
@@ -847,10 +849,11 @@ test('textura y ciclo de vida: la textura se genera UNA vez (con las fronteras),
 test('app: elegir() NO centra el mapa ni abre popups con la vista 3D (Leaflet oculto) y conserva la selección compartida y el resalte', () => {
   const ts = leer('app.component.ts');
   const cuerpo = /elegir\(id: string \| null, origen: 'mapa' \| 'tabla'\): void \{([\s\S]*?)\n  \}\n/.exec(ts)?.[1] ?? '';
-  assert.match(cuerpo, /const en3d = this\.vista\(\) === '3d';/);
+  // CAMBIO (vistas internas): la guarda `en3d` se amplía a `sinMapa` = visor 3D O vista distinta del Panel (Leaflet oculto en ambos casos); las únicas llamadas a panTo/openPopup siguen siendo UNA y solo con el mapa visible
+  assert.match(cuerpo, /const sinMapa = this\.visor\(\) === '3d' \|\| this\.vista\(\) !== 'panel';/);
   assert.equal((cuerpo.match(/panTo\(/g) ?? []).length, 1); assert.equal((cuerpo.match(/openPopup\(/g) ?? []).length, 1);
-  assert.match(cuerpo, /if \(origen === 'tabla' && !en3d\) \{ this\.map\?\.panTo\(marcador\.getLatLng\(\)\); marcador\.openPopup\(\); \}/);   // únicas llamadas, solo en 2D
-  assert.match(cuerpo, /if \(en3d\) this\.map\?\.closePopup\(\);/);                       // solo cierra el que pudiera quedar abierto: al volver al 2D no hay popups colgados
+  assert.match(cuerpo, /if \(origen === 'tabla' && !sinMapa\) \{ this\.map\?\.panTo\(marcador\.getLatLng\(\)\); marcador\.openPopup\(\); \}/);   // únicas llamadas, solo con el mapa 2D visible
+  assert.match(cuerpo, /if \(sinMapa\) this\.map\?\.closePopup\(\);/);                     // solo cierra el que pudiera quedar abierto: al volver al 2D no hay popups colgados
   for (const parte of ['this.quitarResalte(actual)', 'this.seleccionado.set(destino)', 'this.resaltar(destino)', "no se dibuja en el mapa; se conserva en la tabla"]) assert.ok(cuerpo.includes(parte), parte);
   assert.match(cuerpo, /if \(destino === null\) \{ this\.map\?\.closePopup\(\); return; \}/);   // comportamiento 2D sin cambios
 });
@@ -1129,20 +1132,24 @@ test('ajuste 1: formato de la magnitud — «M 4.8», «M 5», «M 0», «M ND»
   assert.deepEqual(f.filas.map((x) => x.etiqueta), ['Tipo de magnitud', 'Profundidad', 'Fecha UTC', 'Actualizado UTC', 'País', 'ID']);
 });
 
-test('ajuste 1: la ficha del globo muestra la magnitud grande junto al lugar (también en móvil), con contraste AA, sin HTML y con el texto completo para lectores', () => {
-  const c = leer('globo/globo.component.ts');
-  const ficha = /<div class="ficha">([\s\S]*?)<\/aside>/.exec(c)?.[1] ?? '';
-  assert.match(ficha, /\{\{ d\.ficha\.magnitud \}\}/); assert.match(ficha, /\{\{ d\.ficha\.insignia \}\}/); assert.match(ficha, /\{\{ d\.ficha\.lugar \}\}/);
-  assert.ok(ficha.indexOf('class="ficha-replay"') < ficha.indexOf('class="ficha-cabecera"'));            // REPRODUCCIÓN sigue primero
-  assert.ok(ficha.indexOf('class="ficha-cabecera"') < ficha.indexOf('class="ficha-filas"'));              // la cabecera (magnitud + lugar) va antes de las filas
-  assert.match(ficha, /<span class="ficha-mag-valor" aria-hidden="true">/); assert.match(ficha, /<span class="solo-lectores">\{\{ d\.ficha\.insignia \}\}<\/span>/);
+// CAMBIO (rediseño dashboard): la ficha con la magnitud grande ya no está en el globo sino en el panel app-detalle-evento (sus clases pasan de .ficha-* a .det-*; el valor sigue siendo textoMagnitud
+// vía filasFicha). Se mantienen TODAS las comprobaciones (orden REPRODUCCIÓN → cabecera → filas, aria-hidden + texto completo para lectores, sin HTML, lugar sin desbordar, nada que recorte, contraste AA),
+// ahora sobre el nuevo componente; la insignia del popup 2D (.ficha-magnitud global) sigue como estaba. Más pruebas del panel en tests/dashboard.test.ts.
+test('ajuste 1: el panel de detalle muestra la magnitud grande junto al lugar, con contraste AA, sin HTML y con el texto completo para lectores', () => {
+  const c = leer('detalle-evento/detalle-evento.component.ts');
+  const ficha = /<div class="ficha-det">([\s\S]*?)<div class="acciones">/.exec(c)?.[1] ?? '';
+  assert.match(ficha, /\{\{ f\.magnitud \}\}/); assert.match(ficha, /\{\{ f\.insignia \}\}/); assert.match(ficha, /\{\{ f\.lugar \}\}/);
+  assert.ok(ficha.indexOf('class="det-replay"') < ficha.indexOf('class="det-cabecera"'));                // REPRODUCCIÓN sigue primero
+  assert.ok(ficha.indexOf('class="det-cabecera"') < ficha.indexOf('class="det-filas"'));                  // la cabecera (magnitud + lugar) va antes de las filas
+  assert.match(ficha, /<span class="det-mag-valor" aria-hidden="true">/); assert.match(ficha, /<span class="solo-lectores">\{\{ f\.insignia \}\}<\/span>/);
   assert.doesNotMatch(c, /innerHTML|\[innerHtml\]/);
-  assert.match(c, /\.ficha-mag-valor \{[^}]*font-size: var\(--t-xl\)[^}]*color: var\(--acento-texto\)[^}]*font-variant-numeric: tabular-nums/);
-  assert.match(c, /\.ficha-cabecera \.ficha-titulo \{[^}]*min-width: 0/);                                    // el lugar largo no desborda
-  assert.doesNotMatch(c.slice(c.indexOf('.ficha-cabecera {'), c.indexOf('/* detalle: debajo')), /position:\s*absolute|overflow:\s*hidden|(?:^|[\s;{])(?:max-)?height:/m);   // nada que la recorte (la tarjeta es la misma en móvil, debajo del globo)
+  assert.match(c, /\.det-mag-valor \{[^}]*font-size: var\(--t-xl\)[^}]*color: var\(--acento-texto\)[^}]*font-variant-numeric: tabular-nums/);
+  assert.match(c, /\.det-lugar \{[^}]*min-width: 0/);                                                    // el lugar largo no desborda
+  assert.doesNotMatch(c.slice(c.indexOf('.det-cabecera {'), c.indexOf('.acciones {')), /overflow:\s*hidden|(?:^|[\s;{])(?:max-)?height:/m);   // nada que lo recorte
   const css = estilos(); const t = (n: string) => new RegExp(`--${n}:\\s*(#[0-9a-fA-F]{6})`).exec(css)?.[1] ?? '';
-  assert.ok(razonContraste(t('acento-texto'), t('superficie-2')) >= 4.5, 'M 4.8 sobre la tarjeta');         // texto grande (≥ 3:1 exigible) pero se mide al 4,5:1
-  assert.ok(razonContraste(t('texto-2'), t('superficie-2')) >= 4.5, 'etiqueta «Magnitud»');
+  assert.ok(razonContraste(t('acento-texto'), t('superficie-1')) >= 4.5, 'M 4.8 sobre el panel (superficie-1)');   // el panel usa --superficie-1 (antes la tarjeta usaba --superficie-2)
+  assert.ok(razonContraste(t('acento-texto'), t('superficie-2')) >= 4.5, 'y sobre superficie-2');
+  assert.ok(razonContraste(t('texto-2'), t('superficie-1')) >= 4.5, 'etiquetas del panel');
   assert.match(css, /\.ficha-magnitud \{ display: inline-block;/);                                       // la insignia pequeña del popup del mapa 2D sigue como estaba
 });
 
@@ -1214,9 +1221,12 @@ test('ajuste 3/4: Restablecer, Cerrar y clic fuera usan LA MISMA función (recup
   const e = leer('globo/escena.ts'); const c = leer('globo/globo.component.ts');
   // puntos de entrada: componente (Cerrar y Restablecer), clic fuera (escena) y cierre por otros caminos (fijarSeleccion(null)); TODOS llaman a recuperarVista
   assert.match(/restablecer\(\): void \{[\s\S]*?\n  \}/.exec(c)?.[0] ?? '', /this\.escena\?\.recuperarVista\(\)/);
-  assert.match(/cerrarFicha\(\): void \{[\s\S]*?\n  \}/.exec(c)?.[0] ?? '', /this\.escena\?\.recuperarVista\(\)/);
+  // CAMBIO (rediseño dashboard): «Cerrar» vive ahora en el panel externo y ya no llama a recuperarVista desde el componente del globo: pone seleccionado = null y la recuperación la hace escena.fijarSeleccion(null)
+  // UNA sola vez (idCentrado !== null). Por eso hay UNA llamada en el componente (restablecer) en lugar de dos, y se comprueba que el globo reacciona al cambio de selección.
+  assert.doesNotMatch(c, /cerrarFicha/);
+  assert.match(c, /effect\(\(\) => \{ const id = this\.seleccionado\(\); untracked\(\(\) => this\.fuera\(\(\) => this\.escena\?\.fijarSeleccion\(id\)\)\); \}\);/);
   assert.match(c, /case 'Home': this\.restablecer\(\)/); assert.match(c, /\(click\)="restablecer\(\)"/);
-  assert.equal((c.match(/\.recuperarVista\(\)/g) ?? []).length, 2);                                                          // solo restablecer() y cerrarFicha()
+  assert.equal((c.match(/\.recuperarVista\(\)/g) ?? []).length, 1);                                                          // solo restablecer()
   assert.equal((e.match(/this\.recuperarVista\(\)/g) ?? []).length, 2);                                                       // seleccionarEn (clic fuera) y fijarSeleccion(null)
   assert.equal((e.match(/planificarRecuperacion\(/g) ?? []).length, 1);                                                       // una única planificación…
   assert.equal((e.match(/iniciarTransicion\(plan\.destino, 'recuperar'\)/g) ?? []).length, 1);                                // …y una única transición de ese tipo

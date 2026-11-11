@@ -231,7 +231,8 @@ test('leyenda: conteos suman el total, máscara, alternancia, subconjunto selecc
 
 test('leyenda en el código: botones con aria-pressed y nombre accesible, «Mostrar todos», estática en 2D; el shader usa máscara + atributo; los atenuados no se eligen; sin almacenamiento', () => {
   const html = leer('app.component.html'); const e = leer('globo/escena.ts'); const c = leer('globo/globo.component.ts'); const ts = leer('app.component.ts');
-  assert.match(html, /@if \(vista\(\) === '3d'\) \{[\s\S]*?\[attr\.aria-pressed\]="rangoLeyenda\(\) === r\.id" \[attr\.aria-label\]="nombreBoton\(r\)"[\s\S]*?Mostrar todos[\s\S]*?\} @else \{[\s\S]*?<li><span class="punto punto-somera"/);
+  // CAMBIO (vistas internas): la señal del visor 2D/3D pasa de `vista` a `visor`
+  assert.match(html, /@if \(visor\(\) === '3d'\) \{[\s\S]*?\[attr\.aria-pressed\]="rangoLeyenda\(\) === r\.id" \[attr\.aria-label\]="nombreBoton\(r\)"[\s\S]*?Mostrar todos[\s\S]*?\} @else \{[\s\S]*?<li><span class="punto punto-somera"/);
   assert.match(html, /<button type="button" class="leyenda-boton" \[id\]="'leyenda-rango-' \+ r\.id"/);
   assert.match(html, /\[rangoLeyenda\]="rangoLeyenda\(\)"/); assert.match(html, /\(conteosRangos\)="conteosRangos\.set\(\$event\)"/); assert.match(html, /\{\{ anuncioLeyenda\(\) \}\}/);
   const css = leer('app.component.css'); assert.match(css, /\.leyenda-boton \{[^}]*min-height: 28px/); assert.match(css, /\.leyenda-boton:focus-visible \{ outline: 3px solid var\(--foco\)/); assert.doesNotMatch(css, /transition/);

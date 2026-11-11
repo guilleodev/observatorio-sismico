@@ -78,7 +78,8 @@ test('la aplicación aplica la política: pausa con la pestaña oculta, reanuda 
   assert.match(html, /\[intervalo\]="intervaloRef\(\)"/);
   assert.match(html, /\[avisoPausa\]="avisoPausaRef\(\)"/);
   const ind = leer('../src/app/indicador-refresco/indicador-refresco.component.ts');
-  assert.match(ind, /<button type="button" class="actualizar" \(click\)="actualizar\.emit\(\)" \[disabled\]="cargando\(\)">Actualizar ahora<\/button>/);
+  // CAMBIO (ronda 1 Mission Control): el botón sigue siendo ÚNICO, con el mismo (click) y [disabled], pero ahora lleva un icono SVG (decorativo) y el texto en un <span> (en cabecera estrecha se oculta visualmente y queda como nombre accesible, con `title`).
+  assert.match(ind, /<button type="button" class="actualizar" \(click\)="actualizar\.emit\(\)" \[disabled\]="cargando\(\)"[^>]*><app-icono nombre="refrescar" \/><span class="actualizar-txt">Actualizar ahora<\/span><\/button>/);
   assert.match(ind, /\{\{ intervalo\(\) \}\}/);
   assert.match(ind, /@if \(avisoPausa\(\); as a\)/);
 });

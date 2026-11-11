@@ -31,14 +31,16 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
   styles: `
     :host { display: block; min-width: 0; }
     :host { height: 100%; }
-    .modo { height: 100%; background: var(--superficie-1); border: 1px solid var(--borde); border-top: 3px solid var(--acento); border-radius: var(--radio); box-shadow: var(--sombra); padding: var(--esp-3) var(--esp-4); margin: 0; }
-    .modo.replay { border-top-color: var(--replay); }
-    h2 { margin: 0 0 var(--esp-3); font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
+    /* CAMBIO (ronda 2 Mission Control): panel con línea fina (sin franja gruesa) y, en REPRODUCCIÓN, línea violeta. En el HUD derecho (≥ 1100 px, dentro de .hud-pila) deja de ser una caja: la pila ya pone el fondo y los separadores. */
+    .modo { height: 100%; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: var(--radio-panel); box-shadow: var(--elev-1); padding: var(--esp-2) var(--esp-3) var(--esp-3); margin: 0; }
+    .modo.replay { border-color: var(--replay); }
+    h2 { margin: 0 0 var(--esp-2); font-size: var(--t-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--texto-2); }
+    @media (min-width: 1100px) { :host-context(.hud-pila) .modo { height: auto; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; } :host-context(.hud-pila) h2 { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
     /* control segmentado: dos tarjetas iguales; en pantallas estrechas se apilan */
     .opciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-2); }
-    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 24px; min-width: 0; padding: 12px 14px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-s); }
+    label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 36px; min-width: 0; padding: 6px 12px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-s); }
     label:hover { border-color: var(--borde-control); }
-    label.activa { border-width: 2px; padding: 11px 13px; }
+    label.activa { border-width: 2px; padding: 5px 11px; }
     label.live.activa { background: var(--acento-fondo); border-color: var(--acento); }
     label.repro.activa { background: var(--replay-fondo); border-color: var(--replay); color: var(--replay-texto); }
     label:has(input:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
@@ -48,7 +50,9 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
     .sel { margin-left: auto; flex: none; font-size: var(--t-s); font-weight: 700; white-space: nowrap; }
     label.live .sel { color: var(--acento-texto); }
     label.repro .sel { color: var(--replay-texto); }
-    @media (max-width: 520px) { .opciones { grid-template-columns: minmax(0, 1fr); } }
+    /* CAMBIO (rediseño dashboard): en la columna derecha (~320 px) las dos tarjetas se apilan; con ancho (tablet, móvil ancho) van en dos columnas. Decide el contenedor, no el viewport. */
+    :host { container-type: inline-size; }
+    @container (max-width: 459px) { .opciones { grid-template-columns: minmax(0, 1fr); } }
     .insignia { margin: 12px 0 6px; padding: 6px 10px; background: var(--replay-fuerte); color: #fff; border: 1px solid var(--replay-texto); display: inline-block; border-radius: var(--radio-s); }
     dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 6px 18px; margin: 6px 0 0; font-size: .85rem; }
     dl div { display: flex; flex-direction: column; }

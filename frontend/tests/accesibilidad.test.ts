@@ -41,7 +41,7 @@ test('hallazgo T050: el botón «Actualizar ahora» y las opciones de modo miden
   const css = leer('indicador-refresco/indicador-refresco.component.ts');   // F7: el botón único vive en el indicador (su CSS está en el componente)
   assert.match(css, /\.actualizar\s*\{[^}]*min-height:\s*24px/);
   const selector = leer('selector-modo/selector-modo.component.ts');
-  assert.match(selector, /label\s*\{[^}]*min-height:\s*24px/);
+  assert.match(selector, /label\s*\{[^}]*min-height:\s*(2[4-9]|[3-9]\d)px/);   // CAMBIO (rediseño 3 vistas): las opciones de modo miden 36 px; la intención (>= 24 px, WCAG 2.5.8) se mantiene
   assert.match(selector, /input\[type="radio"\]\s*\{[^}]*width:\s*24px[^}]*height:\s*24px[^}]*flex:\s*none/);
 });
 

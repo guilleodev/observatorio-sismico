@@ -1,4 +1,4 @@
-import { Component, Injector, OnDestroy, afterNextRender, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, Injector, OnDestroy, afterNextRender, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { LeafletDirective } from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
 import type { FeatureCollection } from 'geojson';
@@ -9,17 +9,28 @@ import { EstadoComponent } from './estado/estado.component';
 import { FiltrosComponent } from './filtros/filtros.component';
 import { TablaComponent } from './tabla/tabla.component';
 import { GloboComponent } from './globo/globo.component';
+import { DetalleEventoComponent } from './detalle-evento/detalle-evento.component';
 import { RANGOS_LEYENDA, alternarRango, nombreBotonRango, textoAnuncioRango } from './globo/leyenda';
 import type { ConteosRangos, DefRango, RangoProfundidad } from './globo/leyenda';
+import { hudPorDefecto } from './hud';
+import { ID_ENCABEZADO, SincronizadorHash, anuncioVista, tituloDocumento, vistaDesdeHash } from './navegacion';
+import type { Vista } from './navegacion';
+import { REINTENTO_INVALIDAR_MS, textoAvisoFallback } from './globo/fallback';
 import { SelectorModoComponent } from './selector-modo/selector-modo.component';
 import { AccesoComponent } from './acceso/acceso.component';
 import { IndicadorRefrescoComponent } from './indicador-refresco/indicador-refresco.component';
+import { IconoComponent } from './icono/icono.component';
 import { EstadoDatosComponent } from './estado-datos/estado-datos.component';
+import { FiltrosActivosComponent } from './filtros-activos/filtros-activos.component';
+import { incidencias } from './estado-datos/estado-datos';
+import { notaHayMasEnPeriodo, textoCargadosDelPeriodo } from './tabla-filtro';
+import { partirContador } from './tabla-vista';
 import { estadoRefresco, restanteMs, textoIngestaCompacto, textoSiguienteIntento, textoUltimoRefresco } from './refresco';
 import type { EntradaRefresco } from './refresco';
 import { itemsHora as itemsDeHora, itemsIntervalos, itemsPais } from './graficas';
+import { colorIntervaloProfundidad } from './graficas-color';
 import { idDe } from './tabla';
-import { edadLecturaMs, retardoSiguiente } from './estado';
+import { avisos, edadLecturaMs, retardoSiguiente } from './estado';
 import { avisoPausaOculta, debeRefrescarAlVolver, pausada, textoIntervalo } from './actualizacion';
 import type { EntradaEstado, ErrorPanel } from './estado';
 import { estadoInicial, paisesDelCatalogo, parametros, resolverVentana, resumen } from './filtros';
@@ -34,7 +45,7 @@ import type { Comparacion, Config, EjecucionReplay, Estadisticas, Evento, Filtro
 type DatosDemo = FeatureCollection & { metadata?: { generated?: number } };
 
 @Component({
-  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, AccesoComponent, IndicadorRefrescoComponent, EstadoDatosComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent, GloboComponent],
+  selector: 'app-root', standalone: true, imports: [LeafletDirective, SelectorModoComponent, AccesoComponent, IndicadorRefrescoComponent, IconoComponent, EstadoDatosComponent, FiltrosActivosComponent, EstadoComponent, FiltrosComponent, BarrasComponent, ComparacionComponent, TablaComponent, GloboComponent, DetalleEventoComponent],
   templateUrl: './app.component.html', styleUrl: './app.component.css'
 })
 export class AppComponent implements OnDestroy {
@@ -80,6 +91,17 @@ export class AppComponent implements OnDestroy {
     cargados: this.eventos().length, total: this.estadisticas() ? this.estadisticas()!.total : null, siguiente: this.siguienteOffset(), recuperadoEn: this.recuperadoEn(),
     modo: this.modoVista(), sinEjecuciones: this.sinEjecuciones(),
   }));
+  /**
+   * CAMBIO (rediseño 3 vistas, ronda 2): incidencias importantes (acceso, conexión/fallo de refresco, filtros rechazados, datos desactualizados, huecos de ingesta). Salen de la MISMA función pura `avisos()` que
+   * usa «Metodología y estado del sistema» (una sola fuente de verdad) filtrada por `incidencias()`. La banda del marco común es visible en las tres vistas y NO es una región viva: los mismos mensajes ya los anuncian
+   * el indicador de refresco de la cabecera y el estado del Panel; así no hay doble anuncio.
+   */
+  readonly incidenciasPanel = computed(() => (this.esApi() ? incidencias(avisos(this.entradaEstado())) : []));
+  /** Contador de la vista Eventos: «N eventos cargados de M del periodo» (M = total de la API) y la nota si hay más en el periodo. */
+  readonly textoCargados = computed(() => textoCargadosDelPeriodo(this.eventos().length, this.total()));
+  /** Ronda 4: el mismo texto partido en cifra (grande, mono) y resto, solo para la presentación del encabezado de Eventos. */
+  readonly cargadosPartes = computed(() => partirContador(this.textoCargados()));
+  readonly notaHayMas = computed(() => notaHayMasEnPeriodo(this.eventos().length, this.total()));
   readonly ventana = signal<Ventana | null>(null);
   // F6 (6.2): modo de vista. En reproducción TODO (mapa, tabla, ficha, gráficas, estado) lleva la etiqueta y la lectura anterior se descarta al cambiar de modo.
   readonly modoVista = signal<ModoVista>(MODO_INICIAL);
@@ -88,6 +110,14 @@ export class AppComponent implements OnDestroy {
   readonly anuncioModo = signal('');
   readonly esReplay = computed(() => this.modoVista() === 'replay');
   readonly etiquetaVista = computed(() => (this.esReplay() ? (this.pideClave() ? 'REPRODUCCIÓN · acceso restringido (falta la clave)' : etiquetaReplay(this.ejecucion())) : null)); // sin clave no se sabe si hay ejecuciones: no se dice «sin ejecuciones»
+  /** Texto del distintivo de la cabecera: modo de datos con palabras (no solo color). Antes de leer la configuración muestra el estado de carga. */
+  readonly distintivoModo = computed(() => (!this.esApi() ? this.mode() : this.esReplay() ? 'REPRODUCCIÓN · histórico acelerado' : 'En vivo · USGS'));
+  /** Texto CORTO del distintivo para la cabecera sticky («En vivo» / «REPRODUCCIÓN»); el largo (`distintivoModo`) lo leen los lectores de pantalla. */
+  readonly distintivoCorto = computed(() => (!this.esApi() ? this.mode() : this.esReplay() ? 'REPRODUCCIÓN' : 'En vivo'));
+  /** Cabecera «condensada» (más sombra, sin subtítulo) cuando el centinela del inicio del documento sale de la vista. Estado de interfaz en memoria. */
+  readonly condensada = signal(false);
+  private readonly centinela = viewChild<ElementRef<HTMLElement>>('centinela');
+  private observadorCabecera?: IntersectionObserver;
   readonly avisoNoAplica = AVISO_COMPARACION_NO_APLICA;
   readonly comparacionVivo = computed<Comparacion | null>(() => { const c = this.estadisticas()?.comparacion; return c && 'reciente' in c ? c : null; });
   readonly rotular = (titulo: string): string => conEtiqueta(titulo, this.esReplay());
@@ -96,11 +126,95 @@ export class AppComponent implements OnDestroy {
   readonly estadisticas = signal<Estadisticas | null>(null);
   readonly seleccionado = signal<string | null>(null);
   readonly avisoSeleccion = signal('');
+  /** Evento seleccionado (objeto) para el panel «Evento seleccionado»: se deriva de `seleccionado()` y `eventos()` con el mismo idDe que usan tabla, mapa y globo. null si no hay selección o ya no está cargado. */
+  readonly eventoSeleccionado = computed<Evento | null>(() => {
+    const id = this.seleccionado();
+    if (id === null) return null;
+    for (const [i, e] of this.eventos().entries()) if (idDe(e, i) === id) return e;
+    return null;
+  });
+  /** Lugar del evento seleccionado para la franja de la vista Eventos (texto; las lecturas pueden traer propiedades incompletas). */
+  readonly lugarSeleccionado = computed(() => (this.eventoSeleccionado()?.properties as Propiedades | undefined)?.place || 'sin descripción');
+  // CAMBIO (ronda 2 Mission Control): los filtros son plegables en móvil (barra-resumen) y en escritorio ≥ 1100 px (HUD flotante: píldora); en tablet el CSS los muestra siempre. Estado de UI en memoria (nada de almacenamiento).
+  // Valor inicial según el ancho de la ventana (hud.ts, pura): abiertos desde 1440 px; colapsados por debajo (y en móvil, plegados como antes). Solo se evalúa al crear la página.
+  private readonly hudInicial = hudPorDefecto(window.innerWidth);
+  readonly filtrosAbiertos = signal(this.hudInicial.filtros);
+  readonly filtrosInvalidos = signal(false);   // lo emite app-filtros: con errores de validación el panel se abre y los errores nunca quedan ocultos
+  readonly filtrosVisibles = computed(() => this.filtrosAbiertos() || this.filtrosInvalidos());
+  alternarFiltros(): void { this.filtrosAbiertos.update((a) => !a); }
+  /** HUD derecho (modo · evento · leyenda): abierto/colapsado, solo en memoria. Colapsado deja la cabecera y el modo de datos; el detalle y la leyenda se ocultan por CSS (no se destruyen). */
+  readonly hudDerAbierto = signal(this.hudInicial.derecha);
+  readonly hudDerVisible = computed(() => this.hudDerAbierto());
+  alternarHudDer(): void { this.hudDerAbierto.update((a) => !a); }
+  // CAMBIO (vistas internas): la barra de anclas (Mapa · Filtros · Análisis · Tabla) y su método `irA` desaparecen. Ahora hay TRES vistas (Panel · Análisis · Eventos) con enlaces <a href="#/…">
+  // reales; la lógica de hash vive en navegacion.ts (pura). Las tres secciones están siempre montadas (solo `hidden`): filtros, modo, selección, cámara del globo y mapa no se reinician al navegar.
+  /** Vista activa. Se lee del hash AL CREAR el componente: un enlace directo (p. ej. #/analisis) abre la vista correcta sin parpadeo. */
+  readonly vista = signal<Vista>(vistaDesdeHash(window.location.hash));
+  private readonly navegacion = new SincronizadorHash(window, (v) => this.mostrarVista(v));
+  private focoDestino: string | null = null;   // destino de foco pedido por la interfaz («Ver en el globo», «Ver este evento en la tabla»); null = el encabezado de la vista
+  private timerMapa?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    this.navegacion.iniciar();                  // registra hashchange + popstate; la carga inicial NO mueve el foco (no se roba al abrir la página)
+    document.title = tituloDocumento(this.vista());
+    // Al elegir un evento (mapa, globo, tabla o anterior/siguiente) la pila derecha se abre sola si estaba colapsada: así el detalle y su anuncio (región viva) no quedan ocultos. No toca `elegir()`: solo LEE la selección.
+    effect(() => { if (this.seleccionado() !== null) untracked(() => this.hudDerAbierto.set(true)); });
+    // Cabecera sticky: un IntersectionObserver sobre el centinela (NO se escucha `scroll`); se desconecta en ngOnDestroy. Sin soporte del navegador, la cabecera simplemente no se condensa.
+    afterNextRender(() => {
+      const el = this.centinela()?.nativeElement;
+      if (!el || typeof IntersectionObserver === 'undefined') return;
+      this.observadorCabecera = new IntersectionObserver(([e]) => this.condensada.set(!e.isIntersecting));
+      this.observadorCabecera.observe(el);
+    }, { injector: this.injector });
+  }
+
+  /** Cambio de vista (clic en la nav, Atrás/Adelante o enlace directo → hash): título, anuncio breve en la región viva existente y foco al encabezado. */
+  private mostrarVista(v: Vista): void {
+    this.vista.set(v);
+    document.title = tituloDocumento(v);
+    this.anuncioModo.set(anuncioVista(v));      // única región viva polite de la cabecera (la misma del cambio de modo): evita duplicar regiones
+    this.enfocarVista(v);
+  }
+
+  /** Cuando el DOM ya muestra la vista: scroll arriba (instantáneo, sin animación: sirve también con prefers-reduced-motion), foco al destino y, en el Panel, recalcular Leaflet. */
+  private enfocarVista(v: Vista): void {
+    const pedido = this.focoDestino; this.focoDestino = null;
+    afterNextRender(() => {
+      const destino = (pedido !== null ? document.getElementById(pedido) : null) ?? document.getElementById(ID_ENCABEZADO[v]);
+      if (pedido !== null && destino && destino.id === pedido) destino.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
+      if (destino) { if (!destino.hasAttribute('tabindex')) destino.tabIndex = -1; destino.focus({ preventScroll: true }); }
+      if (v === 'panel') this.alMostrarPanel();
+    }, { injector: this.injector });
+  }
+
+  /** Cambio de vista pedido por un control de la página (no por un <a> de la nav): fija el hash (historial) y, si ya estaba en esa vista, solo lleva el foco. */
+  irAVista(v: Vista, foco: string | null = null): void {
+    this.focoDestino = foco;
+    if (!this.navegacion.navegar(v)) this.enfocarVista(v);
+  }
+  /** «Ver este evento en la tabla» (panel de detalle): vista Eventos y foco al título de la tabla. */
+  verEnTabla(): void { this.irAVista('eventos', 'tabla-titulo'); }
+  /** «Ver en el globo/mapa» (vista Eventos): vuelve al Panel y enfoca el visor; el evento seleccionado ya está centrado (la selección es compartida). */
+  verEnVisor(): void { this.irAVista('panel', 'mapa'); }
+  /** «Ver detalle» de la banda de incidencias y enlaces de la vista Eventos: vista Análisis y foco al bloque «Metodología y estado del sistema». */
+  verMetodologia(): void { this.metodologiaAbierta.set(true); this.irAVista('analisis', 'metodologia-titulo'); }
+  /** «Cambiar filtros» (franja de filtros activos de Análisis y Eventos): vuelve al Panel, abre el formulario (móvil) y enfoca #filtros. */
+  cambiarFiltros(): void { this.filtrosAbiertos.set(true); this.irAVista('panel', 'filtros'); }
+  /** «Ir al evento seleccionado» (vista Eventos): la tabla salta a la página del evento y enfoca su fila. */
+  private readonly tabla = viewChild(TablaComponent);
+  irAlSeleccionado(): void { this.tabla()?.irAlSeleccionado(); }
+
+  /** El Panel vuelve a verse: si el visor es el mapa 2D, Leaflet recupera su tamaño (estuvo oculto). El globo no necesita nada: `visible` lo reanuda. */
+  alMostrarPanel(): void { if (this.visor() === '2d') this.map?.invalidateSize(); }
   readonly nombrePaisActual = signal<string | undefined>(undefined);
   readonly itemsHora = computed(() => { const e = this.estadisticas(); return e ? itemsDeHora(e.por_hora) : []; });
   readonly itemsPaises = computed(() => { const e = this.estadisticas(); return e ? itemsPais(e.por_pais, 10) : []; });
   readonly itemsMagnitud = computed(() => { const e = this.estadisticas(); return e ? itemsIntervalos(e.magnitud) : []; });
   readonly itemsProfundidad = computed(() => { const e = this.estadisticas(); return e ? itemsIntervalos(e.profundidad) : []; });
+  /** Ronda 3: color de cada barra de profundidad (mismo orden que `itemsProfundidad`). Solo colorea por la leyenda si el intervalo completo cae dentro de un rango; si cruza un corte, neutro. */
+  readonly coloresProfundidad = computed(() => { const e = this.estadisticas(); return e ? e.profundidad.items.map((i) => colorIntervaloProfundidad(i.from, i.to)) : null; });
+  /** Ronda 3: sección «Metodología y estado del sistema» desplegada (abierta por defecto; estado solo en memoria). «Ir a Cargar el resto» la reabre. */
+  readonly metodologiaAbierta = signal(true);
   readonly omitidoHora = computed(() => {
     const h = this.estadisticas()?.por_hora;
     return h && h.items === null
@@ -111,16 +225,28 @@ export class AppComponent implements OnDestroy {
     scrollWheelZoom: false }; // F7: la rueda sobre el mapa desplaza la PÁGINA; el zoom sigue con botones +/−, doble clic, teclado y gestos táctiles
   private map?: L.Map;
   // F7 (globo 3D): vista alternativa al mapa. Leaflet sigue montado y solo se oculta (hidden); todo lo del globo vive en ./globo y se carga bajo demanda.
-  readonly vista = signal<'2d' | '3d'>('2d');
-  readonly globoNoDisponible = signal<string | null>(null); // motivo si el navegador no puede dibujarlo o no se pudo cargar: «Globo 3D» queda desactivado
+  // CAMBIO (vistas internas): la señal del visor 2D/3D se llamaba `vista`; pasa a `visor` (y `cambiarVista` → `cambiarVisor`) porque `vista` es ahora Panel/Análisis/Eventos.
+  // CAMBIO (globo por defecto): arranca en '3d' (solo en memoria: no se recuerda entre visitas). Three.js se descarga cuando el globo se muestra por primera vez (Panel + visor 3D).
+  readonly visor = signal<'2d' | '3d'>('3d');
+  readonly globoNoDisponible = signal<string | null>(null); // motivo si el navegador no puede dibujarlo, no se pudo cargar o tardó demasiado: «Globo 3D» queda desactivado
+  readonly avisoFallback = textoAvisoFallback;               // «Globo 3D no disponible: <motivo>. Se muestra el mapa 2D.»
   private readonly injector = inject(Injector);
-  cambiarVista(vista: '2d' | '3d'): void {
-    if (vista === '3d' && this.globoNoDisponible() !== null) return;
-    this.vista.set(vista);
+  cambiarVisor(visor: '2d' | '3d'): void {
+    if (visor === '3d' && this.globoNoDisponible() !== null) return;
+    this.visor.set(visor);
     // al volver al 2D el contenedor de Leaflet recupera su tamaño: se recalcula cuando el DOM ya lo muestra
-    if (vista === '2d') afterNextRender(() => this.map?.invalidateSize(), { injector: this.injector });
+    if (visor === '2d') afterNextRender(() => this.map?.invalidateSize(), { injector: this.injector });
   }
-  globoSinSoporte(motivo: string): void { this.globoNoDisponible.set(motivo); this.cambiarVista('2d'); }
+  /**
+   * Fallback automático al mapa 2D (sin soporte gráfico, fallo del import()/renderer o temporizador de seguridad): se marca el globo como no disponible (el aviso persistente sale del motivo)
+   * y se pasa al 2D. Leaflet pudo arrancar OCULTO (tamaño 0): invalidateSize en el siguiente fotograma y otra vez a los 250 ms por si el diseño aún se estaba asentando.
+   */
+  globoSinSoporte(motivo: string): void {
+    this.globoNoDisponible.set(motivo);
+    this.cambiarVisor('2d');
+    clearTimeout(this.timerMapa);
+    this.timerMapa = setTimeout(() => this.map?.invalidateSize(), REINTENTO_INVALIDAR_MS);
+  }
   // F7 (leyenda interactiva, solo con la vista 3D): rango de profundidad resaltado en el globo. Solo en memoria; se conserva al volver al 2D pero allí no se aplica (la leyenda vuelve a ser estática).
   readonly rangoLeyenda = signal<RangoProfundidad | null>(null);
   readonly conteosRangos = signal<ConteosRangos | null>(null);   // lo emite el globo con los eventos dibujados
@@ -137,7 +263,7 @@ export class AppComponent implements OnDestroy {
   }
   readonly anuncioLeyenda = computed(() => {
     const r = this.rangoLeyenda(); const c = this.conteosRangos();
-    return this.vista() === '3d' && r !== null && c ? textoAnuncioRango(r, c[r], c.total, (n) => this.nfLeyenda.format(n)) : '';
+    return this.visor() === '3d' && r !== null && c ? textoAnuncioRango(r, c[r], c.total, (n) => this.nfLeyenda.format(n)) : '';
   });
   // F7 (mapa): estilo del mapa base. Solo en memoria (señal): no se guarda en el navegador y vuelve a «oscuro» al recargar.
   readonly estiloMapa = signal<EstiloMapa>(ESTILO_MAPA_INICIAL);
@@ -541,18 +667,19 @@ export class AppComponent implements OnDestroy {
   elegir(id: string | null, origen: 'mapa' | 'tabla'): void {
     const actual = this.seleccionado();
     const destino = origen === 'tabla' && id === actual ? null : id;
-    // Con la vista 3D activa Leaflet está oculto: no se centra ni se abre ninguna ventana emergente (el globo tiene su propia tarjeta). Solo se cierra la que pudiera
-    // quedar abierta de antes, para que al volver al 2D no aparezca un popup que no corresponde a la selección. La selección compartida y el resalte del marcador 2D se conservan.
-    const en3d = this.vista() === '3d';
+    // Con el visor 3D activo, o con otra vista distinta del Panel (p. ej. Eventos), Leaflet está oculto: no se centra ni se abre ninguna ventana emergente (el detalle lo da el panel
+    // «Evento seleccionado»). Solo se cierra la que pudiera quedar abierta de antes, para que al volver al 2D no aparezca un popup que no corresponde a la selección. La selección
+    // compartida y el resalte del marcador 2D se conservan (al volver al Panel en 2D el evento se ve resaltado, sin popup; en 3D el globo ya está centrado en él).
+    const sinMapa = this.visor() === '3d' || this.vista() !== 'panel';
     this.quitarResalte(actual);
     this.seleccionado.set(destino);
     this.avisoSeleccion.set('');
-    if (en3d) this.map?.closePopup();
+    if (sinMapa) this.map?.closePopup();
     if (destino === null) { this.map?.closePopup(); return; }
     const marcador = this.marcadores.get(destino);
     if (!marcador) { this.avisoSeleccion.set('Este evento no tiene coordenadas válidas y no se dibuja en el mapa; se conserva en la tabla.'); return; }
     this.resaltar(destino);
-    if (origen === 'tabla' && !en3d) { this.map?.panTo(marcador.getLatLng()); marcador.openPopup(); }
+    if (origen === 'tabla' && !sinMapa) { this.map?.panTo(marcador.getLatLng()); marcador.openPopup(); }
   }
 
   private resaltar(id: string): void {
@@ -566,5 +693,5 @@ export class AppComponent implements OnDestroy {
     if (id !== null && estilo) this.marcadores.get(id)?.setStyle(estilo);
   }
 
-  ngOnDestroy(): void { this.controlEstilo?.remove(); this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); document.removeEventListener('visibilitychange', this.alCambiarVisibilidad); this.ultima.cancelar(); this.controller.abort(); }
+  ngOnDestroy(): void { this.navegacion.detener(); this.observadorCabecera?.disconnect();clearTimeout(this.timerMapa); this.controlEstilo?.remove(); this.destroyed = true; clearTimeout(this.timer); clearInterval(this.relojEstado); window.removeEventListener('online', this.alVolverRed); document.removeEventListener('visibilitychange', this.alCambiarVisibilidad); this.ultima.cancelar(); this.controller.abort(); }
 }

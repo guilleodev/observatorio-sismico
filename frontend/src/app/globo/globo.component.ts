@@ -2,18 +2,18 @@
 // import() dinámico la primera vez que se muestra, le pasa los eventos y la selección y pinta la tarjeta de detalle, los controles y los avisos en HTML.
 // No tiene estado propio de filtros, modo ni selección: recibe los de AppComponent (la selección se comparte con el mapa y la tabla).
 //
-// Maquetación (decisión): el globo ocupa TODO el ancho útil. Con un terremoto seleccionado, en escritorio (>= 900 px) el detalle es un panel FLOTANTE en el borde derecho
-// del escenario: no redimensiona el canvas (el globo no cambia de tamaño al seleccionar) y, solo si la esfera quedaría bajo el panel (900–1100 px), la cámara desplaza el
-// centro lo imprescindible con setViewOffset. En móvil/tableta el detalle va DEBAJO del globo, sin tapar controles.
+// Maquetación (rediseño del dashboard): el globo llena el visor central (altura compartida con el mapa 2D: variable CSS --alto-visor). El detalle del evento seleccionado YA NO vive aquí:
+// es el panel «Evento seleccionado» de la columna derecha (app-detalle-evento), común a las dos vistas. Con el panel fuera del canvas no hay nada que tape la esfera, así que el
+// desplazamiento de centro es siempre 0 (`reservaDerecha: () => 0`; la lógica pura desplazamientoCentroPx sigue en geometria.ts, probada y sin uso en la UI).
 import { Component, ElementRef, NgZone, OnDestroy, computed, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
-import { colorProfundidad, filasFicha, radioMagnitud } from '../formato';
-import { fichaReplay } from '../modo';
+import { colorProfundidad, radioMagnitud } from '../formato';
 import { idDe } from '../tabla';
-import { ANCHO_PANEL_PX, MARGEN_PANEL_PX, idsPorMagnitud, prepararPuntos, resolverPaleta, vecinoEnLista } from './geometria';
+import { idsPorMagnitud, prepararPuntos, resolverPaleta, vecinoEnLista } from './geometria';
 import type { Codificacion, PaletaGlobo, ResultadoPuntos } from './geometria';
 import { REGIONES } from './camara';
 import { textoTooltip } from './tooltip';
 import { MENSAJE_FALLO_CARGA, MENSAJE_SIN_WEBGL, hayWebgl } from './webgl';
+import { LIMITE_CARGA_MS, MENSAJE_TIEMPO_AGOTADO } from './fallback';
 import { MaquinaCarga, TEXTO_FASE, esFaseTerminal, estaCargando, indicadorVisible, proximoCambioIndicador } from './carga';
 import type { FaseCarga } from './carga';
 import { RANGOS_LEYENDA, contarRangos, idsDeRango, indiceDeRango, textoRecuento } from './leyenda';
@@ -44,7 +44,7 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
             <div #etiqueta class="etiqueta" aria-hidden="true" hidden></div>
           </div>
           <!-- Indicador de carga: texto de la fase REAL (sin porcentajes inventados), visible sin depender del color y con pointer-events: none. Región de estado persistente (role="status" =
-               aria-live polite implícito): el cambio de fase se anuncia una vez. No aparece si la carga dura menos de ≈ 180 ms y, si aparece, permanece ≥ 300 ms (carga.ts). -->
+               anuncio cortés implícito): el cambio de fase se anuncia una vez. No aparece si la carga dura menos de ≈ 180 ms y, si aparece, permanece ≥ 300 ms (carga.ts). -->
           <div class="carga" role="status" [hidden]="!indicadorMostrado() || estado() === 'error'"><span class="carga-spinner" aria-hidden="true"></span><span class="carga-texto">{{ textoCarga() }}</span></div>
           @if (estado() === 'contexto') { <p class="mensaje" role="status">Se perdió el contexto gráfico; el globo se restablecerá cuando el navegador lo recupere.</p> }
           @if (estado() === 'error') {
@@ -56,7 +56,7 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
           @if (estado() === 'listo') {
             <div class="pistas">
               <p id="globo-pista" class="pista"><span class="fino">Arrastra para girar · Ctrl + rueda para acercar</span><span class="tactil">Arrastra para girar · pellizca para acercar</span></p>
-              @if (!detalle()) { <p class="pista"><span class="fino">Pulsa un terremoto para ver su detalle</span><span class="tactil">Toca un terremoto</span></p> }
+              @if (seleccionado() === null) { <p class="pista"><span class="fino">Pulsa un terremoto para ver su detalle</span><span class="tactil">Toca un terremoto</span></p> }
             </div>
             <div class="controles" role="group" aria-label="Controles del globo">
               <button type="button" aria-label="Acercar el globo" (click)="zoom(1)">+</button>
@@ -71,25 +71,6 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
             </div>
           }
         </div>
-        @if (detalle(); as d) {
-          <aside class="tarjeta" aria-label="Detalle del terremoto seleccionado en el globo">
-            <div class="ficha">
-              @if (d.replay) { <p class="ficha-replay">{{ d.replay }}</p> }
-              <!-- Cabecera: magnitud GRANDE («M 4.8») junto al lugar. Lo visible lleva aria-hidden y el texto completo («Magnitud 4.8») va como texto solo para lectores, que no lo oyen duplicado. -->
-              <div class="ficha-cabecera">
-                <p class="ficha-mag"><span class="ficha-mag-etiqueta" aria-hidden="true">Magnitud</span><span class="ficha-mag-valor" aria-hidden="true">{{ d.ficha.magnitud }}</span><span class="solo-lectores">{{ d.ficha.insignia }}</span></p>
-                <p class="ficha-titulo">{{ d.ficha.lugar }}</p>
-              </div>
-              <dl class="ficha-filas">
-                @for (fila of d.ficha.filas; track fila.etiqueta) { <div><dt>{{ fila.etiqueta }}</dt><dd>{{ fila.valor }}</dd></div> }
-              </dl>
-            </div>
-            <div class="acciones">
-              <button type="button" (click)="cerrarFicha()">Cerrar</button>
-              @if (hayTabla()) { <button type="button" (click)="verEnTabla()">Ver este evento en la tabla</button> }
-            </div>
-          </aside>
-        }
       </div>
       <div class="pie">
         <div class="fila">
@@ -115,10 +96,9 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
             <li>Sombra día/noche según la hora UTC actual; no indica la hora de los eventos (tampoco en REPRODUCCIÓN). Es solo ambiental: los terremotos no se oscurecen de noche.</li>
             <li>Anillo breve al llegar un evento nuevo; es solo una señal visual (no es una onda sísmica real). No aparece con el primer lote de datos, al cambiar de modo o de filtros, ni con movimiento reducido.</li>
             <li>Las estrellas del fondo son decorativas y no se pueden seleccionar.</li>
-            <li>Con la vista 3D, la leyenda de profundidad (bajo el mapa) resalta un solo rango y atenúa el resto; los atenuados no se seleccionan con el puntero y «Evento anterior» y «Evento siguiente» recorren solo los visibles. No cambia los filtros, la tabla ni el mapa 2D. Pulsa de nuevo el rango o «Mostrar todos» para quitarlo.</li>
+            <li>Con la vista 3D, la leyenda de profundidad (panel de la derecha) resalta un solo rango y atenúa el resto; los atenuados no se seleccionan con el puntero y «Evento anterior» y «Evento siguiente» recorren solo los visibles. No cambia los filtros, la tabla ni el mapa 2D. Pulsa de nuevo el rango o «Mostrar todos» para quitarlo.</li>
           </ul>
         </details>
-        <p class="solo-lectores" role="status" aria-live="polite">{{ anuncio() }}</p>
       </div>
     </div>
   `,
@@ -128,21 +108,24 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
     .escenario { display: grid; grid-template-columns: minmax(0, 1fr); }
     .lienzo-caja { position: relative; min-width: 0; background: var(--fondo); }
     .stage { position: relative; }
-    /* sin selección el globo ocupa todo el ancho y gana altura; el tope por ancho (62vw) evita que a 900–1100 px la esfera, más ancha que alta, choque con el panel */
-    .vista { position: relative; height: clamp(420px, min(78vh, 62vw), 900px); }
+    /* CAMBIO (rediseño dashboard): la altura es la del visor, compartida con el mapa 2D (variable --alto-visor, la define app.component.css; el respaldo solo se usa si el globo se monta fuera de la página) */
+    .vista { position: relative; height: var(--alto-visor, 560px); }
     .vista:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
     canvas { display: block; width: 100%; height: 100%; }
     canvas[hidden] { display: none; }
-    /* móvil: el globo ocupa 65svh y deja un margen lateral SIN touch-action: none, para poder seguir desplazando la página con el dedo fuera del canvas */
-    @media (max-width: 700px) { .vista { height: 65vh; height: 65svh; min-height: 380px; margin-inline: var(--esp-3); } }
-    .mensaje { position: absolute; top: var(--esp-3); left: var(--esp-3); right: var(--esp-3); margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--info-fondo); color: var(--info-texto); border: 1px solid var(--info); border-radius: var(--radio-s); font-size: var(--t-m); }
+    /* móvil: margen lateral SIN touch-action: none, para poder seguir desplazando la página con el dedo fuera del canvas (la altura ya viene de --alto-visor: 65svh, mínimo 380 px) */
+    @media (max-width: 700px) { .vista { margin-inline: var(--esp-3); } }
+    .mensaje { position: absolute; top: 56px; left: calc(var(--hud-izq, 0px) + var(--esp-3)); right: calc(var(--hud-der, 0px) + var(--esp-3)); margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--info-fondo); color: var(--info-texto); border: 1px solid var(--info); border-radius: var(--radio-s); font-size: var(--t-m); }
     .mensaje.error { background: var(--error-fondo); color: var(--error-texto); border-color: var(--error); }
     .mensaje p { margin: 0; }
     /* indicador de carga: centrado sobre el escenario, no captura el puntero; el giro del spinner vive en styles.css (con movimiento reducido queda estático) */
     .carga { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: var(--esp-2); max-width: calc(100% - 2 * var(--esp-3)); padding: var(--esp-2) var(--esp-4); background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio); font-size: var(--t-m); pointer-events: none; }
     .carga[hidden] { display: none; }
     /* pistas: una línea corta arriba a la izquierda; el texto depende del puntero (ratón fino: Ctrl + rueda; táctil: pellizco; nada de teclado ni Ctrl en móvil) */
-    .pistas { position: absolute; top: var(--esp-3); left: var(--esp-3); max-width: calc(100% - 2 * var(--esp-3)); display: grid; gap: 4px; justify-items: start; pointer-events: none; }
+    /* CAMBIO (ronda 2 Mission Control): las pistas bajan a la fila «B» (56 px, bajo el selector de vista flotante) y, con el escenario inmersivo, se apartan del HUD izquierdo (--hud-izq la define app.component.css; sin ella, 0).
+       Con REPRODUCCIÓN (clase es-replay del escenario, ≥ 701 px) la etiqueta ocupa la fila B y las pistas bajan a la «C» (100 px). */
+    .pistas { position: absolute; top: 56px; left: calc(var(--hud-izq, 0px) + var(--esp-3)); max-width: calc(100% - var(--hud-izq, 0px) - var(--hud-der, 0px) - 2 * var(--esp-3)); display: grid; gap: 4px; justify-items: start; pointer-events: none; }
+    @media (min-width: 701px) { :host-context(.es-replay) .pistas { top: 100px; } }
     .pista { margin: 0; padding: 2px 10px; background: rgba(10, 17, 32, .82); color: var(--texto-2); border: 1px solid var(--borde); border-radius: 999px; font-size: var(--t-s); }
     .pista .fino { display: none; }
     @media (hover: hover) and (pointer: fine) { .pista .fino { display: inline; } .pista .tactil { display: none; } }
@@ -161,18 +144,7 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
     /* etiqueta del hover: no captura eventos (el clic, el arrastre y el táctil llegan al canvas), se mueve solo con transform y cabe en el escenario */
     .etiqueta { position: absolute; left: 0; top: 0; max-width: min(320px, 90%); padding: 3px 8px; background: rgba(10, 17, 32, .94); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); font-size: var(--t-s); line-height: 1.3; overflow-wrap: anywhere; pointer-events: none; }
     .etiqueta[hidden] { display: none; }
-    /* ficha: cabecera con la magnitud grande («M 4.8») junto al lugar. Clases propias (el estilo global .ficha-magnitud es la insignia pequeña del popup del mapa 2D y no se toca).
-       Color --acento-texto sobre --superficie-2: contraste ≈ 11:1 (AA; lo mide tests/globo.test.ts). Cifras tabulares y sin salto de línea; el lugar cede el espacio (min-width: 0). */
-    .ficha-cabecera { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--esp-1) var(--esp-3); margin-bottom: var(--esp-3); }
-    .ficha-mag { position: relative; display: grid; gap: 0; margin: 0; }
-    .ficha-mag-etiqueta { font-size: var(--t-xs); color: var(--texto-2); text-transform: uppercase; letter-spacing: .04em; line-height: 1.2; }
-    .ficha-mag-valor { font-size: var(--t-xl); font-weight: 800; line-height: 1.1; color: var(--acento-texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .ficha-cabecera .ficha-titulo { flex: 1 1 8rem; min-width: 0; padding-right: 0; align-self: center; overflow-wrap: anywhere; }
-    /* detalle: debajo del globo (móvil y tableta); en escritorio, panel flotante a la derecha que no redimensiona el canvas (reserva = 320 px + 12 px en geometria.ts) */
-    .tarjeta { min-width: 0; padding: var(--esp-3) var(--esp-4); background: var(--superficie-2); border-top: 1px solid var(--borde-control); color: var(--texto); }
-    @media (min-width: 900px) {
-      .tarjeta { position: absolute; top: var(--esp-3); right: var(--esp-3); width: 320px; max-height: calc(100% - 84px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--borde-control); border-radius: var(--radio); box-shadow: var(--sombra); }
-    }
+    /* CAMBIO (rediseño dashboard): la tarjeta de detalle y su ficha (antes aquí) pasaron al panel app-detalle-evento de la columna derecha. */
     .pie { min-width: 0; display: grid; gap: var(--esp-2); padding: var(--esp-3) var(--esp-4); background: var(--superficie-1); border-top: 1px solid var(--borde); }
     .fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-2) var(--esp-4); }
     .recuento { margin: 0; min-width: 0; font-size: var(--t-m); font-variant-numeric: tabular-nums; }
@@ -183,7 +155,17 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
     .ayuda summary { cursor: pointer; min-height: 24px; padding: 4px 0; color: var(--texto); font-weight: 600; }
     .ayuda ul { margin: var(--esp-2) 0 0; padding-left: 1.2rem; display: grid; gap: var(--esp-1); }
     .acciones { display: flex; flex-wrap: wrap; gap: var(--esp-2); margin-top: var(--esp-3); }
-    .solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; }
+    /* CAMBIO (ronda 2 Mission Control): con el ESCENARIO inmersivo (≥ 1100 px, el globo vive dentro de .escenario de la página) el globo llena el 100 % del visor; el pie (recuento, anterior/siguiente, ayuda) pasa a una barra
+       fina abajo (≈ 48 px) y el texto de «Ayuda del globo» se abre como panel flotante SOBRE ella (no encoge el lienzo). El pie queda por encima de los HUD (z-index), que terminan 68 px antes del borde inferior. */
+    @media (min-width: 1100px) {
+      :host-context(.escenario) { height: 100%; }
+      :host-context(.escenario) .escenario { height: 100%; grid-template-rows: minmax(0, 1fr) auto; }
+      :host-context(.escenario) .lienzo-caja, :host-context(.escenario) .stage, :host-context(.escenario) .vista { height: 100%; min-height: 0; }
+      :host-context(.escenario) .pie { position: relative; z-index: 1105; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-1) var(--esp-4); padding: 4px 12px; background: var(--panel-vidrio); border-top: 1px solid var(--linea); }
+      :host-context(.escenario) .fila { flex: 1 1 auto; flex-wrap: nowrap; }
+      :host-context(.escenario) .ayuda { position: static; }
+      :host-context(.escenario) .ayuda[open] ul { position: absolute; left: 12px; bottom: calc(100% + 8px); width: min(560px, calc(100% - 24px)); max-height: 55vh; margin: 0; padding: var(--esp-3) var(--esp-3) var(--esp-3) 2rem; overflow: auto; overscroll-behavior: contain; background: var(--panel-vidrio); border: 1px solid var(--borde-control); border-radius: var(--radio-panel); box-shadow: var(--elev-3); }
+    }
   `,
 })
 export class GloboComponent implements OnDestroy {
@@ -198,8 +180,6 @@ export class GloboComponent implements OnDestroy {
   readonly etiqueta = input<string | null>(null);
   /** Resumen de los filtros de la lectura (para la descripción accesible). */
   readonly filtros = input('');
-  /** ¿Existe la tabla en la página? (solo con la API): habilita «Ver este evento en la tabla». */
-  readonly hayTabla = input(false);
   /** Rango de la leyenda de profundidad activo (estado en memoria de AppComponent); null = todos. Solo atenúa marcadores en el globo. */
   readonly rangoLeyenda = input<RangoProfundidad | null>(null);
   /** Conteos por rango de los eventos dibujados (para los botones de la leyenda). */
@@ -223,6 +203,9 @@ export class GloboComponent implements OnDestroy {
   private readonly activado = signal(false);
   private escena: EscenaGlobo | null = null;
   private destruido = false;
+  // Temporizador de seguridad (fallback.ts): si la escena no está creada en LIMITE_CARGA_MS se abandona el globo y se ignora cualquier resultado tardío (`abandonado`).
+  private idLimite = 0;
+  private abandonado = false;
   private readonly aborto = new AbortController();
   // carga (carga.ts): fases reales, indicador con retardo y permanencia mínima (un único temporizador)
   private readonly carga = new MaquinaCarga();
@@ -270,20 +253,7 @@ export class GloboComponent implements OnDestroy {
     return partes.join('. ') + '.';
   });
 
-  /** Datos de la tarjeta: solo si el evento seleccionado se dibuja en el globo. El texto sale de filasFicha()/fichaReplay() y se pinta por interpolación (textContent), nunca como HTML. */
-  readonly detalle = computed(() => {
-    const id = this.seleccionado();
-    if (id === null || !this.resultado().puntos.ids.includes(id)) return null;
-    for (const [i, e] of this.eventos().entries()) {
-      if (idDe(e, i) !== id) continue;
-      const prof = e.geometry?.type === 'Point' ? e.geometry.coordinates[2] : null;
-      return { ficha: filasFicha(e.properties, prof, e.id), replay: this.replay() ? fichaReplay(e.properties, this.ejecucion(), true).trim() : '' };
-    }
-    return null;
-  });
-  readonly anuncio = computed(() => { const d = this.detalle(); return d ? `Seleccionado: ${d.ficha.lugar}. ${d.ficha.insignia}.` : ''; });
-  /** Booleano estable: solo cambia al aparecer o desaparecer el panel (un refresco que reconstruye `detalle` no vuelve a avisar a la escena). */
-  private readonly hayDetalle = computed(() => this.detalle() !== null);
+  // CAMBIO (rediseño dashboard): los calculados del detalle y del anuncio desaparecen: la ficha y el anuncio de la selección los da app-detalle-evento (una única región viva para ambas vistas).
 
   constructor() {
     effect(() => { const v = this.visible(); untracked(() => this.alCambiarVisible(v)); });
@@ -294,7 +264,6 @@ export class GloboComponent implements OnDestroy {
     // Datos y selección solo ACTUALIZAN buffers de la escena existente (fijarEventos / fijarSeleccion): no se recrea nada, ni se toca la orientación ni la rotación.
     effect(() => { const r = this.resultado(); untracked(() => this.fuera(() => this.escena?.fijarEventos(r.puntos))); });
     effect(() => { const id = this.seleccionado(); untracked(() => this.fuera(() => this.escena?.fijarSeleccion(id))); });
-    effect(() => { this.hayDetalle(); untracked(() => this.fuera(() => this.escena?.actualizarReserva())); });
   }
 
   /** La escena trabaja FUERA de la zona de Angular: sus fotogramas y eventos de puntero no disparan detección de cambios. */
@@ -308,7 +277,26 @@ export class GloboComponent implements OnDestroy {
     } else if (this.escena) this.fuera(() => this.escena?.pausar());
   }
 
+  private armarLimite(): void {
+    this.cancelarLimite();
+    this.idLimite = window.setTimeout(() => this.alAgotarseLimite(), LIMITE_CARGA_MS);
+  }
+
+  private cancelarLimite(): void {
+    if (this.idLimite !== 0) clearTimeout(this.idLimite);
+    this.idLimite = 0;
+  }
+
+  /** Pasó el plazo sin escena: se marca como abandonado (el import() o el inicio tardíos no crean nada) y se avisa por la misma salida `noDisponible` que cualquier fallo. */
+  private alAgotarseLimite(): void {
+    this.idLimite = 0;
+    if (this.destruido || this.abandonado || this.estado() !== 'cargando') return;
+    this.abandonado = true;
+    this.fallar(MENSAJE_TIEMPO_AGOTADO);
+  }
+
   private fallar(mensaje: string): void {
+    this.cancelarLimite();
     this.avanzarFase('error');
     this.estado.set('error'); this.mensaje.set(mensaje);
     this.noDisponible.emit(mensaje);
@@ -342,24 +330,22 @@ export class GloboComponent implements OnDestroy {
     });
   }
 
-  /** Espacio que ocupa el panel flotante (ancho + separación), solo en escritorio y con un evento seleccionado: la escena desplaza el centro del globo, no el canvas. */
-  private reserva(): number { return this.hayDetalle() && window.matchMedia('(min-width: 900px)').matches ? ANCHO_PANEL_PX + MARGEN_PANEL_PX : 0; }
-
   private async iniciar(): Promise<void> {
     this.estado.set('cargando');
     this.avanzarFase('descargando');
+    this.armarLimite();
     await Promise.resolve(); // sale de la detección de cambios en curso: emitir `noDisponible` al padre dentro de ella provocaría NG0100
-    if (this.destruido) return;
+    if (this.destruido || this.abandonado) return;
     if (!hayWebgl()) { this.fallar(MENSAJE_SIN_WEBGL); return; }   // sin WebGL ni se descarga three
     let fase: 'carga' | 'inicio' = 'carga';
     let escena: EscenaGlobo | null = null;
     try {
       const modulo = await import('./escena');                    // chunk aparte: three solo se descarga aquí
-      if (this.destruido) return;
+      if (this.destruido || this.abandonado) return;               // llegó tarde: no se crea nada (sin escena no hay bucle de fotogramas)
       fase = 'inicio';
       this.avanzarFase('inicializando');
       if (this.indicadorMostrado()) await this.esperarPintado();   // solo si hay indicador visible que pintar
-      if (this.destruido) return;
+      if (this.destruido || this.abandonado) return;
       const paleta = resolverPaleta((t) => getComputedStyle(document.documentElement).getPropertyValue(t));
       escena = new modulo.EscenaGlobo();
       const nueva = escena;
@@ -369,7 +355,7 @@ export class GloboComponent implements OnDestroy {
         alDeseleccionar: () => this.zona.run(() => this.cerrar.emit()),   // clic en vacío con selección: la misma salida que el botón «Cerrar» → elegir(null, 'mapa')
         alPerderContexto: () => this.zona.run(() => this.estado.set('contexto')),
         alRestaurarContexto: () => this.zona.run(() => this.estado.set('listo')),
-        reservaDerecha: () => this.reserva(),
+        reservaDerecha: () => 0,   // CAMBIO (rediseño dashboard): el detalle ya no flota sobre el canvas: no hay panel que esquivar
         alCambiarRotacion: (activa) => this.zona.run(() => this.rotando.set(activa)),
         tooltip: this.elTooltip().nativeElement,
         textoTooltip: (id) => { const e = this.porId().get(id); return e ? textoTooltip(e.properties?.place, e.properties?.mag) : null; },
@@ -381,11 +367,13 @@ export class GloboComponent implements OnDestroy {
       this.fuera(() => { nueva.fijarReplay(this.replay()); nueva.fijarRangoLeyenda(r === null ? null : indiceDeRango(r)); nueva.fijarEventos(this.resultado().puntos); nueva.fijarSeleccion(this.seleccionado()); });
       this.avanzarFase('textura');                               // lo que sigue es pedir los datos de países y dibujar la textura
       this.estado.set('listo');
+      this.cancelarLimite();                                     // escena creada: el temporizador de seguridad ya no hace falta
       if (!this.visible()) this.fuera(() => nueva.pausar());
       void this.cargarFronteras(nueva, paleta);
     } catch {
       escena?.destruir();
       this.escena = null;
+      if (this.abandonado) return;                               // el temporizador ya avisó del fallo: no se emite otro
       this.fallar(fase === 'carga' ? MENSAJE_FALLO_CARGA : MENSAJE_FALLO_INICIO);
     }
   }
@@ -413,11 +401,8 @@ export class GloboComponent implements OnDestroy {
     if (this.seleccionado() !== null) this.cerrar.emit();
   }
 
-  /** Botón «Cerrar» de la ficha: quita la selección (`cerrar`) con la misma recuperación de la vista que «Restablecer» y que el clic en una zona vacía. */
-  cerrarFicha(): void {
-    this.fuera(() => this.escena?.recuperarVista());
-    this.cerrar.emit();
-  }
+  // CAMBIO (rediseño dashboard): el cierre de la ficha desaparece de este componente. «Cerrar» está ahora en el panel externo y solo pone seleccionado = null; la recuperación de la vista la hace UNA vez
+  // escena.fijarSeleccion(null) (efecto de abajo) porque idCentrado !== null; Restablecer y el clic en vacío siguen llamando a recuperarVista, que pone idCentrado a null y evita la repetición.
 
   /** «Ir a región»: la escena hace la transición suave. Después el <select> vuelve a «Región» (así se puede elegir otra vez la misma). No anuncia nada: el cambio es visual. */
   irARegion(ev: Event): void {
@@ -456,17 +441,9 @@ export class GloboComponent implements OnDestroy {
     if (id !== null) this.seleccionar.emit(id);
   }
 
-  /** Lleva el foco y el scroll al título de la tabla (la fila seleccionada ya se muestra en su página). Sin animación de desplazamiento. */
-  verEnTabla(): void {
-    const titulo = document.getElementById('tabla-titulo');
-    if (!titulo) return;
-    titulo.tabIndex = -1;
-    titulo.scrollIntoView({ block: 'start' });
-    titulo.focus({ preventScroll: true });
-  }
-
   ngOnDestroy(): void {
     this.destruido = true;
+    this.cancelarLimite();
     this.aborto.abort();
     if (this.idTemporizadorCarga !== 0) clearTimeout(this.idTemporizadorCarga);
     this.idTemporizadorCarga = 0;

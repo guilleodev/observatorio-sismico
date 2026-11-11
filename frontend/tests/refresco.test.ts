@@ -56,7 +56,7 @@ test('anuncioRefresco: solo cambios relevantes de conexión; un refresco normal 
   assert.equal(anuncioRefresco('correcto', 'correcto'), null);        // refresco periódico normal
   assert.equal(anuncioRefresco(null, 'correcto'), null);              // primera carga
   assert.equal(anuncioRefresco(null, 'sin-lectura'), null);
-  assert.equal(anuncioRefresco('filtros-rechazados', 'correcto'), null);
+  assert.match(anuncioRefresco('filtros-rechazados', 'correcto') ?? '', /ya no se rechazan/);   // CAMBIO (cierre F7): antes null y la región viva conservaba el aviso obsoleto «Filtros rechazados…»
   assert.match(anuncioRefresco('correcto', 'error') ?? '', /No se pudo actualizar/);
   assert.equal(anuncioRefresco('error', 'error'), null);              // reintento fallido: no se repite
   assert.equal(anuncioRefresco('error', 'correcto'), 'Conexión recuperada: datos actualizados');

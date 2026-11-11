@@ -49,10 +49,55 @@
   /* F7 (globo 3D): tierra firme de la textura del planeta (el océano usa --superficie-2); el borde claro --punto-borde se mide sobre ambos en tests/globo.test.ts */
   --globo-continente: #264264;
   --filtro-teselas-oscuro: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6);
-}
 
-html { color-scheme: dark; background: var(--fondo); }
-body { margin: 0; background: var(--fondo); color: var(--texto); font-family: var(--fuente); line-height: 1.45; }
+  /* ===== «Mission Control» (F7, ronda 1): sistema visual compartido. Todo ADITIVO: nada de lo anterior cambia de valor. =====
+     Semántica de color: cian = activo/primario · violeta = REPRODUCCIÓN (--replay*) · ámbar = avisos (--aviso*) · azul-gris = el resto.
+     Capas: escenario (fondo profundo) → paneles de vidrio ligero (casi opacos, SIN backdrop-filter) → datos en línea. */
+  --escenario: #070e1c;                                  /* fondo profundo bajo los paneles y el carril de la nav */
+  --panel-vidrio: rgba(15, 26, 46, .92);                 /* superficie-1 con alfa >= .86: se lee como panel sin desenfocar nada */
+  --cab-fondo: rgba(10, 17, 32, .94);                    /* fondo de la cabecera sticky (mismo tono que --fondo) */
+  --linea: rgba(147, 180, 235, .12);                     /* línea fina decorativa (8–12 % de azul claro) */
+  --filo: linear-gradient(90deg, transparent, rgba(103, 232, 249, .5) 50%, transparent);          /* «filo de luz» superior, cian tenue */
+  --filo-replay: linear-gradient(90deg, transparent, rgba(167, 139, 250, .6) 50%, transparent);   /* el mismo filo en REPRODUCCIÓN (violeta) */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, .45);
+  --elev-2: 0 4px 16px rgba(0, 0, 0, .4);
+  --elev-3: 0 12px 32px rgba(0, 0, 0, .55);
+  --radio-stage: 16px; --radio-panel: var(--radio); --radio-control: var(--radio-s);
+  /* nav segmentada de la cabecera: carril oscuro y píldora activa cian tenue (contrastes medidos en tests/ronda1-visual.test.ts) */
+  --nav-fondo: #0b1424;
+  --nav-activa-fondo: #0e3a4d;
+  /* tipografía SIN fuentes externas: pila de sistema para el texto y monoespaciada para cifras y fechas UTC */
+  --fuente-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --t-2xs: .68rem; --t-display: 2.25rem;                 /* se suman a --t-xs … --t-xl de arriba (escala: 2xs · xs · s · m · l · xl · display) */
+  /* altura de la cabecera sticky: la usan scroll-padding y scroll-margin para que el foco nunca quede tapado (WCAG 2.4.11) */
+  --alto-cabecera: 56px;
+  /* ronda 3 (vista Análisis): barras con degradado vertical sutil. Hora y país: del acento cian a un cian más oscuro. Magnitud: tono neutro-cian DISTINTO (mera escala visual, sin leyenda).
+     Todos ≥ 3:1 frente a --fondo (lo mide tests/ronda3-analisis.test.ts). Banda de la comparación: azul profundo con tinte cian, distinto de --superficie-1 y de --fondo. */
+  --barra-cian-b: #0e8fa8;
+  --barra-mag-a: #a5c8d6;
+  --barra-mag-b: #5f8da2;
+  --banda-fondo: #0b2036;
+}
+@media (max-width: 767px) { :root { --alto-cabecera: 48px; } }
+
+/* Fondo: un resplandor cian muy tenue arriba sobre el color base. Estático, sin imágenes ni filtros. */
+html { color-scheme: dark; background: radial-gradient(ellipse 90% 55% at 50% 0, rgba(34, 211, 238, .06), transparent 70%) no-repeat, var(--fondo); scroll-padding-top: calc(var(--alto-cabecera) + var(--esp-3)); }
+/* body transparente: así el campo de estrellas (z-index: -1) queda VISIBLE sobre el fondo del html y por detrás de todo el contenido */
+body { margin: 0; background: transparent; color: var(--texto); font-family: var(--fuente); line-height: 1.45; }
+/* campo de «estrellas» ESTÁTICO: puntos de 1 px con alfa <= .4 en degradados radiales; sin animación, sin filtros, sin imágenes; fixed + pointer-events: none → no interfiere con nada */
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 7% 12%, rgba(207, 226, 255, .4), transparent 100%), radial-gradient(1px 1px at 19% 63%, rgba(207, 226, 255, .3), transparent 100%),
+    radial-gradient(1.5px 1.5px at 31% 27%, rgba(207, 226, 255, .35), transparent 100%), radial-gradient(1px 1px at 43% 84%, rgba(207, 226, 255, .3), transparent 100%),
+    radial-gradient(1px 1px at 55% 9%, rgba(207, 226, 255, .4), transparent 100%), radial-gradient(1px 1px at 63% 52%, rgba(207, 226, 255, .28), transparent 100%),
+    radial-gradient(1.5px 1.5px at 72% 78%, rgba(207, 226, 255, .35), transparent 100%), radial-gradient(1px 1px at 81% 21%, rgba(207, 226, 255, .35), transparent 100%),
+    radial-gradient(1px 1px at 89% 58%, rgba(207, 226, 255, .3), transparent 100%), radial-gradient(1px 1px at 95% 91%, rgba(207, 226, 255, .4), transparent 100%),
+    radial-gradient(1px 1px at 13% 92%, rgba(207, 226, 255, .3), transparent 100%), radial-gradient(1px 1px at 48% 41%, rgba(207, 226, 255, .25), transparent 100%); }
+
+/* utilidades tipográficas: cifras y fechas UTC alineadas (tabulares) y etiquetas en versalitas con tracking */
+.num, .mono { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--fuente-mono); }
+.etiqueta-ui { font-size: var(--t-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--texto-2); }
 * { box-sizing: border-box; }
 button { touch-action: manipulation; }
 h1, h2 { text-wrap: balance; }
@@ -66,6 +111,23 @@ a { color: var(--acento-texto); }
 select, input { background-color: var(--superficie-1); color: var(--texto); }
 option { background-color: var(--superficie-1); color: var(--texto); }
 ::placeholder { color: var(--texto-2); opacity: 1; }
+
+/* ---------- Rediseño del dashboard: panel común y destinos de las anclas ---------- */
+/* Panel de control: superficie-1, borde sutil, radio y una línea de acento cian discreta arriba (violeta en REPRODUCCIÓN). Solo reutiliza tokens existentes (contrastes medidos en tests/dashboard.test.ts). */
+/* CAMBIO (ronda 1 Mission Control): «panel de vidrio ligero» = fondo casi opaco + línea fina (--linea) + «filo de luz» superior de 1 px (::before, cian; violeta en REPRODUCCIÓN) en vez del borde completo y la franja de 2 px. */
+.panel-ui { position: relative; min-width: 0; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: var(--radio-panel); box-shadow: var(--elev-2); padding: var(--esp-3) var(--esp-4); }
+.panel-ui::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: var(--filo); pointer-events: none; }
+.panel-ui.replay::before { background: var(--filo-replay); }
+.panel-titulo { display: flex; align-items: center; gap: var(--esp-2); margin: 0 0 var(--esp-3); font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
+.panel-titulo .ico-panel { color: var(--acento-texto); font-size: var(--t-m); }
+/* destinos de foco (visor, filtros, tabla y encabezados de vista): reciben el foco con tabindex="-1" y no quedan bajo la cabecera sticky (--alto-cabecera: 56 px escritorio · 48 px móvil) */
+:target, [data-ancla], #tabla-titulo, .encabezado-vista { scroll-margin-top: calc(var(--alto-cabecera) + var(--esp-3)); }
+
+/* Cabecera y nav: la única transición nueva (≤ 150 ms; solo color, fondo y sombra) y SOLO con movimiento permitido. Vive aquí (no en app.component.css) porque esa hoja no admite `transition`. */
+@media (prefers-reduced-motion: no-preference) {
+  .nav-vistas a { transition: background-color .15s ease, box-shadow .15s ease, color .15s ease; }
+  .cabecera { transition: box-shadow .15s ease; }
+}
 
 /* ---------- Leaflet: fondo, teselas, popups y controles (F7) ---------- */
 /* Estilo del mapa base: la clase mapa-oscuro / mapa-claro la pone el componente en el contenedor. El fondo sigue al estilo aunque se apague la base desde el control de capas.
@@ -126,6 +188,11 @@ option { background-color: var(--superficie-1); color: var(--texto); }
 .leaflet-container .leaflet-control-attribution { background: rgba(10, 17, 32, .88); color: var(--texto-2); }
 .leaflet-container .leaflet-control-attribution a { color: var(--acento-texto); }
 .leaflet-container:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
+/* Ronda 2 «Mission Control»: con el escenario inmersivo (≥ 1100 px) los HUD flotan sobre el mapa. Los controles propios de Leaflet NO deben quedar tapados: se apartan con CSS, sin tocar el código de Leaflet.
+   --hud-izq / --hud-der (px reservados por cada HUD abierto o colapsado) los fija `.escenario` en app.component.css; fuera del escenario inmersivo no existen y el respaldo es 0 (tablet y móvil sin cambios).
+   Izquierda: zoom (arriba) · derecha: selector de capas y «Estilo del mapa base» (arriba), atribución (abajo). La etiqueta REPRODUCCIÓN y el selector de vista ya se colocan en app.component.css. */
+.leaflet-top.leaflet-left, .leaflet-bottom.leaflet-left { margin-left: var(--hud-izq, 0px); }
+.leaflet-top.leaflet-right, .leaflet-bottom.leaflet-right { margin-right: var(--hud-der, 0px); }
 
 /* globo 3D · indicador de carga: anillo indeterminado (sin porcentajes). Solo gira con movimiento permitido; con movimiento reducido queda estático (el texto de fase basta). */
 .carga-spinner { flex: none; width: 14px; height: 14px; border: 2px solid var(--borde-control); border-top-color: var(--acento-texto); border-radius: 50%; }
