@@ -1,0 +1,78 @@
+# Calidad en vivo (F8 · R5) · muestra 2026-11-11T19:32:32Z · SOLO LECTURA (SELECT) · SQL literal: scripts/f8/calidad_live.sql
+# NUEVA MUESTRA: no sustituye a la de 2026-11-06 (docs/evidencias/f3/3.5-calidad-datos-reales.txt, memoria §4.4).
+
+## 0. Instante de la muestra y entrada
+        muestra_utc         | publicadas | versiones_validas | estado_actual | cuarentena 
+----------------------------+------------+-------------------+---------------+------------
+ 2026-11-11 19:32:33.146705 |       1930 |              1904 |          1298 |         26
+(1 row)
+
+## Cuarentena por categoría y motivo
+ categoria |                  motivo                   | n  
+-----------+-------------------------------------------+----
+ excluido  | tipo de evento no sísmico: 'quarry blast' | 14
+ excluido  | tipo de evento no sísmico: 'explosion'    | 11
+ excluido  | tipo de evento no sísmico: 'ice quake'    |  1
+(3 rows)
+
+## 1. Completitud (% con valor, sobre evento_actual no retirado)
+ eventos | pct_mag | pct_magtype | pct_profundidad | pct_place 
+---------+---------+-------------+-----------------+-----------
+    1293 |   100.0 |       100.0 |           100.0 |      99.9
+(1 row)
+
+## 2. Unicidad
+ filas_actual | ids_distintos | versiones_duplicadas | eventos_con_revisiones 
+--------------+---------------+----------------------+------------------------
+         1293 |          1293 |                    0 |                    298
+(1 row)
+
+## 3. Validez (coordenadas en rango, geometría Point, tres valores y tipo earthquake en el original)
+ coordenadas_en_rango | geometria_point | tres_valores | tipo_terremoto | total 
+----------------------+-----------------+--------------+----------------+-------
+                 1293 |            1293 |         1293 |           1293 |  1293
+(1 row)
+
+## 4. Consistencia (updated >= time; rangos físicos)
+ updated_posterior_o_igual_a_time | incoherentes | prof_min_km | prof_max_km | mag_min | mag_max 
+----------------------------------+--------------+-------------+-------------+---------+---------
+                             1293 |            0 |       -2.61 |     607.007 |   -0.29 |     6.4
+(1 row)
+
+## 5. Actualidad (minutos entre la ocurrencia y la ingesta, y entre la actualización de USGS y la ingesta)
+ min_medios_ocurrencia_a_ingesta | max_ocurrencia_a_ingesta | min_medios_actualizacion_a_ingesta 
+---------------------------------+--------------------------+------------------------------------
+                           457.7 |                   1837.7 |                              250.1
+(1 row)
+
+5b. Actualidad por origen (usgs-fdsn-recuperacion = eventos recuperados de un hueco de ingesta: su ingesta es posterior a las 24 h por construcción)
+         source         |  n   | max_min_ocurrencia_a_ingesta 
+------------------------+------+------------------------------
+ usgs-all-day           | 1285 |                       1438.5
+ usgs-fdsn-recuperacion |    8 |                       1837.7
+(2 rows)
+
+## 6. Exactitud y límites (valores que no se rechazan ni se rellenan)
+ mag_cero_conservadas | mag_negativas | profundidad_negativa | mag_nulas 
+----------------------+---------------+----------------------+-----------
+                    0 |             2 |                   14 |         0
+(1 row)
+
+magType (no se mezclan escalas sin avisar):
+ mag_type |  n  
+----------+-----
+ ml       | 793
+ md       | 375
+ mb       | 102
+ mww      |  20
+ mwr      |   2
+ mb_lg    |   1
+(6 rows)
+
+## 7. Integración geográfica (resultado y catálogo)
+ geo_resultado |  n   
+---------------+------
+ interior      | 1066
+ sin_pais      |  227
+(2 rows)
+

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a1120">
+<meta name="robots" content="noindex">
+<title>Observatorio Sísmico · temporalmente fuera de servicio</title>
+<link rel="icon" href="data:,">
+<style>
+  /* Pantalla de mantenimiento (F8 · T041). Autocontenida: sin JavaScript, sin recursos externos, sin llamadas a ninguna API. Paleta de Mission Control. */
+  :root {
+    --fondo: #0a1120;
+    --texto: #e6edf7;
+    --texto-2: #a9b8d0;
+    --acento: #22d3ee;
+    --acento-texto: #67e8f9;
+    --linea: #1b2a44;
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; background: var(--fondo); }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+    color: var(--texto);
+    background: radial-gradient(ellipse 90% 55% at 50% 0, rgba(34, 211, 238, .08), transparent 70%) no-repeat, var(--fondo);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.45;
+  }
+  main {
+    width: 100%;
+    max-width: 44rem;
+    text-align: center;
+    padding: clamp(28px, 6vw, 56px) clamp(20px, 5vw, 48px);
+    border: 1px solid var(--linea);
+    border-top: 3px solid var(--acento);
+    border-radius: 14px;
+    background: rgba(12, 22, 40, .72);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+  }
+  .emblema { display: block; width: clamp(96px, 22vw, 148px); height: auto; margin: 0 auto 22px; }
+  .etiqueta {
+    margin: 0 0 14px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--acento-texto);
+  }
+  h1 {
+    margin: 0 0 16px;
+    font-size: clamp(1.9rem, 6.2vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -.01em;
+  }
+  p.detalle { margin: 0 auto; max-width: 30rem; font-size: clamp(1rem, 2.4vw, 1.15rem); color: var(--texto-2); }
+  .pulso { transform-origin: 60px 60px; animation: pulso 3.2s ease-out infinite; }
+  .pulso.dos { animation-delay: 1.6s; }
+  @keyframes pulso { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(1.05); } }
+  @media (prefers-reduced-motion: reduce) { .pulso { animation: none; opacity: .25; transform: scale(.8); } .pulso.dos { display: none; } }
+  @media (max-width: 380px) { main { padding: 24px 16px; } }
+</style>
+</head>
+<body>
+<main>
+  <svg class="emblema" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+    <circle class="pulso" cx="60" cy="60" r="52" fill="none" stroke="#22d3ee" stroke-width="2"/>
+    <circle class="pulso dos" cx="60" cy="60" r="52" fill="none" stroke="#22d3ee" stroke-width="2"/>
+    <circle cx="60" cy="60" r="34" fill="#0c2a3b" stroke="#22d3ee" stroke-width="2"/>
+    <ellipse cx="60" cy="60" rx="14" ry="34" fill="none" stroke="#22d3ee" stroke-opacity=".55" stroke-width="1.5"/>
+    <path d="M26 60h68M31 45h58M31 75h58" fill="none" stroke="#22d3ee" stroke-opacity=".55" stroke-width="1.5"/>
+    <circle cx="60" cy="60" r="4" fill="#67e8f9"/>
+  </svg>
+  <p class="etiqueta">Observatorio Sísmico</p>
+  <h1>Observatorio temporalmente fuera de servicio</h1>
+  <p class="detalle" role="status">El panel no está disponible temporalmente.</p>
+</main>
+</body>
+</html>
