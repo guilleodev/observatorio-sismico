@@ -194,7 +194,7 @@ No figuran en los materiales; se derivan de lo comunicado en clase y de Guía 1 
 | ID | Tipo | Requisito |
 |---|---|---|
 | WEB-01 | D | El profesor puede abrir la **aplicación publicada** desde el enlace de entrega, navegar por las secciones, usar las funcionalidades, ver datos y resultados y comprobar que funciona **sin depender del ordenador del alumno más allá de la API y el túnel** (arquitectura obligatoria §2/§9). |
-| WEB-02 | D | La web publicada debe corresponder a la **versión que se entrega** (hoy: local F7 + mejoras 8.6 del 2026-11-15; Netlify F7 `6af4b81f…` sin esas mejoras). Publicación de las mejoras pendiente (CA-06). |
+| WEB-02 | D | La web publicada debe corresponder a la **versión que se entrega** (hoy: local = Netlify = F7 + mejoras 8.6 del 2026-11-15, despliegue `6afa2ccf…`, commit `2616aec`). |
 | WEB-03 | D | **Ventana de evaluación** (~2 días): PC encendido y sin suspensión, Docker, Kafka, PostgreSQL, productor, consumidor y API operativos, túnel activo, frontend publicado y **credencial** entregada al profesor por un canal privado (T037–T039). Mantener el PC encendido **no** equivale a SC-010. |
 | WEB-04 | E+D | La API publicada debe tratar el fallo de conexión con claridad (ACE-09/10, FAQ 31/35). |
 | REPO-01 | D | El profesor revisa el **repositorio privado** por su cuenta: código completo y organizado, README definitivo, memoria independiente, arquitectura y decisiones técnicas, pruebas y resultados, evidencias verificables, instrucciones, correspondencia con la rúbrica y limitaciones explicadas. |

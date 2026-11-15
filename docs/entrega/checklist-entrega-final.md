@@ -36,7 +36,7 @@
 - [ ] **Publicar y verificar las mejoras de interfaz (8.6)**: pruebas, `npm run build`, escaneo de secretos, `preparar-netlify-funcion.sh`, despliegue (prueba o producción, con autorización expresa) y comprobación de la web, la función y la ausencia de la clave en el *bundle*; mirar el **móvil real** (Pixel), la vista Eventos y el pie con los dos logos; actualizar las marcas `[ACTUALIZAR EN CIERRE]`.
 - [ ] **Resolver las marcas `[ACTUALIZAR EN CIERRE]`** del README (10) y de la memoria (6): versión publicada, fecha, estado del sistema, capturas.
 - [ ] Sistema real sano: `docker compose ps` (cinco `healthy`), `bash scripts/f6/invariantes.sh <etiqueta>`, ingesta «hace < 60 s», **0 huecos** (`recuperar --listar`).
-- [ ] **ngrok abierto** y la web pública cargando **sin clave** desde **otro dispositivo**; la versión publicada es `6af4b81f…` (no mantenimiento ni la anterior).
+- [ ] **ngrok abierto** y la web pública cargando **sin clave** desde **otro dispositivo**; la versión publicada es `6afa2ccf…` (2026-11-15, mejoras 8.6; no mantenimiento ni la anterior `6af4b81f…`).
 - [ ] **El vídeo coincide con la web publicada** y no muestra nada prohibido (clave, URL de ngrok, notificaciones).
 - [ ] Repetir `bash scripts/f6/escaneo_secretos.sh` y la búsqueda del valor de la clave; `git status` limpio tras el commit; `git diff --check`.
 - [ ] Verificar que el README en GitHub renderiza los diagramas y que los enlaces a la memoria funcionan.
