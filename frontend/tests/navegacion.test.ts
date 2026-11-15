@@ -162,7 +162,8 @@ test('AppComponent: al cambiar de vista actualiza el título, anuncia, mueve el 
   assert.match(t, /verEnVisor\(\): void \{ this\.irAVista\('panel', 'mapa'\); \}/);
   assert.match(t, /if \(!this\.navegacion\.navegar\(v\)\) this\.enfocarVista\(v\)/);
   const h = html();
-  assert.match(h, /<a href="#\/panel" class="enlace-accion" \(click\)="\$event\.preventDefault\(\); verEnVisor\(\)">\{\{ visor\(\) === '3d' \? 'Ver en el globo' : 'Ver en el mapa' \}\}<\/a>/);
+  // Fase 1: la franja «Evento seleccionado» de la vista Eventos se retiró; «Ver en el globo/mapa» sigue en la tabla (mismo handler)
+  assert.match(h, /\(verVisor\)="verEnVisor\(\)"/); assert.doesNotMatch(h, /franja-seleccion|Ir al evento seleccionado/);
   assert.match(h, /\(verTabla\)="verEnTabla\(\)"/);
   assert.match(h, /@if \(avisoSeleccion\(\)\) \{ <p role="alert"/);                             // el aviso vive en Eventos, donde se produce
 });

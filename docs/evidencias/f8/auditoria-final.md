@@ -5,6 +5,8 @@
 Etiquetas: **[MEDIDO]** comprobado ahora; **[ESTIMADO]**; **[NO COMPROBADO]**.
 
 ## 1. Resultado resumido
+> **Nota (2026-11-15)**: esta auditoría describe el estado del 2026-11-11. Desde entonces se aplicaron mejoras de interfaz (`8.6-mejoras-interfaz.md`): el frontend **ya no es idéntico a `9008772`** y las pruebas pasan de 494 a **521**. Las comprobaciones de seguridad y de enlaces deben **repetirse** antes de entregar.
+
 **El repositorio está preparado para el commit manual y no hay secretos.** La aplicación Angular es idéntica a la congelada (`9008772`). Quedan **reservas conocidas y documentadas**, ninguna oculta; las que impiden cerrar del todo son del vídeo, de los contadores y del servicio durante la ventana (secciones 6 y 7).
 
 ## 2. Comprobaciones técnicas

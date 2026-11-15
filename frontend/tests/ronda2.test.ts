@@ -54,7 +54,7 @@ test('KPI en la plantilla: 5 principales en .kpis y todo lo demás en el despleg
   const detalles = /<details class="detalles">([\s\S]*?)<\/details>/.exec(c)?.[1] ?? '';
   assert.ok(kpis.length > 0 && detalles.length > 0);
   for (const t of ['Terremotos en el periodo', 'Magnitud máxima', 'Eventos ≥ M4.5', 'Países con eventos', 'Visualizados', '>Estado<']) assert.ok(kpis.includes(t), t);
-  assert.match(kpis, /\{\{ total\(\) \?\? 'ND' \}\}/);                                           // total de la API; «N cargados» como nota
+  assert.match(kpis, /<app-cifra \[valor\]="total\(\) \?\? 'ND'" \/>/);                          // total de la API (F8: cifra con cuenta animada; el texto final va en el DOM); «N cargados» como nota
   assert.match(kpis, /\{\{ notaPeriodo\(\) \}\}/);
   assert.match(kpis, /\{\{ estadoKpi\(\)\.icono \}\}[\s\S]*\{\{ estadoKpi\(\)\.texto \}\}/);        // icono + texto
   assert.match(kpis, /\{\{ ingestaCorta\(\) \}\}/);
@@ -237,15 +237,16 @@ test('tabla: la búsqueda ya NO borra sola el texto cuando oculta la selección;
   assert.match(t, /s\.estado === 'visible' && s\.pagina !== null\) this\.paginaActual\.set\(s\.pagina\)/);
   assert.match(t, /irAlSeleccionado\(\): void/);
   const h = html();
-  assert.match(h, /<button type="button" class="enlace-accion" \(click\)="irAlSeleccionado\(\)">Ir al evento seleccionado<\/button>/);
-  assert.match(h, /<a href="#\/panel" class="enlace-accion" \(click\)="\$event\.preventDefault\(\); verEnVisor\(\)">/);   // «Ver en el globo/mapa» se conserva
+  // Fase 1: la franja «Evento seleccionado» y su botón «Ir al evento seleccionado» (que no hacía nada visible) se retiraron; «Ver en el globo/mapa» se conserva en la tabla (mismo handler)
+  assert.doesNotMatch(h, /Ir al evento seleccionado|franja-seleccion/);
+  assert.match(h, /\(verVisor\)="verEnVisor\(\)"/);
   // CAMBIO (ronda 4 Mission Control): el contador «N eventos cargados de M del periodo» se pinta con la cifra grande en mono (`cargadosPartes()` = el MISMO textoCargados() partido en cifra y resto);
   // la información y el texto son los mismos, solo cambia la presentación.
   assert.match(h, /<strong class="cifra mono">\{\{ cargadosPartes\(\)\.cifra \}\}<\/strong> \{\{ cargadosPartes\(\)\.resto \}\}\./);
   assert.match(app('app.component.ts'), /cargadosPartes = computed\(\(\) => partirContador\(this\.textoCargados\(\)\)\)/);
   assert.match(h, /@if \(notaHayMas\(\); as nota\)/);
   assert.match(app('app.component.ts'), /textoCargadosDelPeriodo\(this\.eventos\(\)\.length, this\.total\(\)\)/);
-  assert.match(app('app.component.ts'), /irAlSeleccionado\(\): void \{ this\.tabla\(\)\?\.irAlSeleccionado\(\); \}/);
+  assert.doesNotMatch(app('app.component.ts'), /irAlSeleccionado|lugarSeleccionado/);
 });
 
 test('sin almacenamiento del navegador, sin transition: all, sin animaciones nuevas ni innerHTML en los archivos de la ronda 2', () => {

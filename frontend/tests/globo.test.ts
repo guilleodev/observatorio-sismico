@@ -591,7 +591,7 @@ test('contraste de los marcadores (WCAG 1.4.11) medido sobre OCÉANO y CONTINENT
   // sin el borde, ningún relleno basta por sí solo sobre el continente (de ahí el borde claro)
   assert.ok(razonContraste(colorProfundidad(300), p.continente) < 3);
   assert.equal(TOKENS_GLOBO.continente[0], '--globo-continente');
-  assert.match(estilos(), /--globo-continente: #264264;/);
+  assert.match(estilos(), /--globo-continente: #2f3541;/);
 });
 
 // ---------- textura del planeta ----------
@@ -614,7 +614,7 @@ function grabador() {
   };
   return { ctx: ctx as unknown as Parameters<typeof dibujarTierra>[0], llamadas, trazados };
 }
-const COLORES_TEX = { oceano: '#15233b', continente: '#264264', reticula: '#2a3c5c', costas: '#6b82a6' };
+const COLORES_TEX = { oceano: '#1d2128', continente: '#2f3541', reticula: '#343a46', costas: '#7d8696' };
 const W = 4096; const H = 2048;
 
 test('textura: tamaño 4096×2048 (2048×1024 en móvil o si MAX_TEXTURE_SIZE es menor), siempre potencia de 2 y relación 2:1', () => {
@@ -826,7 +826,7 @@ test('refresco de datos: fijarEventos solo actualiza buffers (no recrea escena, 
 
 test('textura y ciclo de vida: la textura se genera UNA vez (con las fronteras), con mipmaps, anisotropía, sRGB y dispose; se libera todo al destruir', () => {
   const e = leer('globo/escena.ts');
-  assert.equal((e.match(/new CanvasTexture\(/g) ?? []).length, 1);
+  assert.equal((e.match(/new CanvasTexture\(/g) ?? []).length, 2);                       // F8: la de la Tierra + la de las etiquetas «M x,x» (etiquetas.ts; se liberan en limpiarEtiquetas y al destruir)
   assert.equal((e.match(/this\.fijarTextura\(/g) ?? []).length, 1);                      // única llamada: dentro de fijarFronteras
   assert.match(/fijarFronteras\(geojson: unknown, paleta: PaletaGlobo\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '', /this\.fijarTextura\(geojson, paleta\)/);
   assert.match(e, /textura\.colorSpace = SRGBColorSpace/); assert.match(e, /textura\.anisotropy = Math\.min\(8, this\.renderer\.capabilities\.getMaxAnisotropy\(\)\)/);
@@ -1231,7 +1231,7 @@ test('ajuste 3/4: Restablecer, Cerrar y clic fuera usan LA MISMA función (recup
   assert.equal((e.match(/planificarRecuperacion\(/g) ?? []).length, 1);                                                       // una única planificación…
   assert.equal((e.match(/iniciarTransicion\(plan\.destino, 'recuperar'\)/g) ?? []).length, 1);                                // …y una única transición de ese tipo
   assert.doesNotMatch(c, /escena\?\.zoom\(0\)|zoom\(0\)/); assert.doesNotMatch(e, /sentido === 0/);                          // Restablecer ya no usa el camino antiguo (colocarCamara a la vista inicial)
-  const colocar = e.match(/this\.colocarCamara\(/g) ?? []; assert.equal(colocar.length, 1);                                   // la única llamada `this.colocarCamara(`, en iniciar() (la definición no lleva `this.`)
+  const colocar = e.match(/this\.colocarCamara\(/g) ?? []; assert.equal(colocar.length, 2);                                   // `this.colocarCamara(` solo en iniciar() y en la PRIMERA medida válida del visor (Fase 1: encuadre según la proporción); la definición no lleva `this.`
   // anti-bucle: recuperarVista pone la bandera ANTES de nada y fijarSeleccion(null) solo recupera si la bandera sigue puesta
   const rec = /recuperarVista\(\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '';
   assert.match(rec, /this\.idCentrado = null; this\.zoomSel = ZOOM_SIN_SESION;/);
@@ -1239,7 +1239,7 @@ test('ajuste 3/4: Restablecer, Cerrar y clic fuera usan LA MISMA función (recup
   assert.match(/fijarSeleccion\(id: string \| null, centrar = true\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '', /if \(this\.idCentrado !== null\) this\.recuperarVista\(\);/);
   assert.match(c, /restablecer\(\): void \{\s*this\.fuera\(\(\) => this\.escena\?\.recuperarVista\(\)\);\s*if \(this\.seleccionado\(\) !== null\) this\.cerrar\.emit\(\);/);   // sin selección: recupera igual y no emite
   // up normalizado, plan único de camara.ts, destino por la transición única, sin competir con OrbitControls
-  assert.match(rec, /this\.camara\.up\.set\(\.\.\.UP_VERTICAL\)/); assert.match(rec, /planificarRecuperacion\(this\.poseActual\(\), DISTANCIA_INICIAL\)/);
+  assert.match(rec, /this\.camara\.up\.set\(\.\.\.UP_VERTICAL\)/); assert.match(rec, /planificarRecuperacion\(this\.poseActual\(\), this\.distanciaPred\)/);   // Fase 1: la distancia predeterminada depende de la proporción del visor (= DISTANCIA_INICIAL en horizontal)
   assert.match(rec, /this\.iniciarTransicion\(plan\.destino, 'recuperar'\)/);
   assert.ok(rec.indexOf('this.drenarInercia()') < rec.indexOf('this.poseActual()'));                                           // la pose «actual» se lee tras drenar la inercia
   const drenar = /private drenarInercia\(\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '';
@@ -1420,10 +1420,10 @@ test('escena (3.ª iteración): un único bucle coordina transición > rotación
   assert.ok(iT >= 0 && iR > iT);                                                         // la transición se resuelve ANTES que la rotación…
   // CAMBIO (F7, ajuste 3/4): al terminar la transición se llama a alTerminarTransicion() (que pone tipoTransicion a null y, si era una recuperación, reanuda la rotación); antes se ponía a null directamente
   assert.match(fot, /if \(paso !== null\) \{ this\.aplicarPose\(paso\.pose\); if \(paso\.fin\) this\.alTerminarTransicion\(\); \}\s*else \{ giro = this\.rotacion\.avanzar\(t\);/);   // …y la excluye en ese fotograma
-  const ramas = ['if (this.transicion.activa)', 'else if (movimiento', 'else if (this.rotacion.girando)', 'else if (pulsa || ondas)', 'else this.programarReanudacion()'].map((s) => fot.indexOf(s));   // CAMBIO (4.ª iteración): la rama de pulsación también mantiene el bucle mientras vivan anillos de eventos nuevos; sigue habiendo 5 encolar()
+  const ramas = ['if (this.transicion.activa)', 'else if (movimiento', 'else if (this.rotacion.girando)', 'else if (pulsa || ondas || entrando)', 'else this.programarReanudacion()'].map((s) => fot.indexOf(s));   // CAMBIO (4.ª iteración): la rama de pulsación también mantiene el bucle mientras vivan anillos de eventos nuevos; sigue habiendo 5 encolar()
   assert.ok(ramas.every((i) => i >= 0) && ramas.every((i, k) => k === 0 || i > ramas[k - 1]), `orden de ramas: ${ramas}`);
   assert.match(fot, /t - this\.tRender < \(this\.rotacion\.girando \? INTERVALO_ROTACION_MS : INTERVALO_PULSO_MS\)/);   // 30 fps girando, 25 fps solo pulsando
-  assert.match(e, /private get pulsoActivo\(\): boolean \{\s*return hayPulso\(\{ movimientoReducido: this\.mqMovimiento\?\.matches \?\? false, nPulsantes: this\.nPulso, enPausa: this\.enPausa, rotacionActiva: this\.rotacion\.estaActiva \}\);/);
+  assert.match(e, /private get pulsoActivo\(\): boolean \{[\s\S]*?return hayPulso\(\{ movimientoReducido: this\.mqMovimiento\?\.matches \?\? false, nPulsantes: Math\.max\(this\.nPulso, this\.malla\?\.count \?\? 0\), enPausa: this\.enPausa, rotacionActiva: this\.rotacion\.estaActiva \}\);/);
   assert.doesNotMatch(fot, /setInterval|setTimeout|requestAnimationFrame|getBoundingClientRect|buscarBajo/);   // el fotograma no abre bucles ni lee layout
   assert.match(e, /this\.aplicarMovimiento\(\);\s*this\.mqMovimiento\.addEventListener/);                        // la preferencia se lee al inicio y al cambiar
   assert.match(/private readonly aplicarMovimiento = [\s\S]*?\n  \};/.exec(e)?.[0] ?? '', /this\.pedirFotograma\(\);/);
@@ -1462,7 +1462,7 @@ test('escena (3.ª iteración): pulsación en el SHADER con UN uniform de tiempo
   assert.doesNotMatch(fot, /for \(|forEach|\.map\(|setMatrixAt|setColorAt|needsUpdate|new /);   // ni bucles por evento, ni buffers, ni asignaciones de objetos por fotograma
   // CAMBIO (4.ª iteración): ya existen DOS InstancedBufferAttribute, pero ajenos a la pulsación: aRango (leyenda, solo al cambiar datos) y aInicio (anillos, solo al nacer uno). La pulsación sigue sin atributos propios.
   assert.doesNotMatch(e, /InstancedBufferGeometry|setAttribute\('(fase|pulso)|Math\.sin|setInterval/);
-  assert.equal((e.match(/new InstancedBufferAttribute\(/g) ?? []).length, 2);
+  assert.equal((e.match(/new InstancedBufferAttribute\(/g) ?? []).length, 3);   // F8: + aEdad (vida.ts, solo al cambiar los datos); la pulsación sigue sin atributos propios
   assert.equal((e.match(/contarPulsantes\(/g) ?? []).length, 1);                         // una vez por cambio de datos (fijarEventos)
   assert.match(/fijarEventos\(puntos: PuntosGlobo\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '', /contarPulsantes\(orden\.magnitudes, orden\.n, UMBRAL_MAG_PULSO\)/);
   assert.equal((e.match(/new InstancedMesh\(geom, this\.matPunto, capacidad\)/g) ?? []).length, 1);   // CAMBIO: sigue habiendo un único InstancedMesh de MARCADORES (el otro es el pool de anillos)

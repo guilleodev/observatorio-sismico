@@ -95,7 +95,10 @@ test('telemetría: UNA región viva, línea «Lectura» y h2 visualmente ocultos
   assert.match(c, /notaCargadosPeriodo\(this\.eventos\(\)\.length\)/); assert.match(c, /\{\{ total\(\) \?\? 'ND' \}\}/);
   assert.match(html(), /<h2 id="panel-titulo" class="encabezado-vista" tabindex="-1">Panel<\/h2>/);   // destino del foco: sigue en el DOM
   assert.match(css(), /#vista-panel > \.encabezado-vista \{ position: absolute;[^}]*clip-path: inset\(50%\)/);
-  assert.match(css(), /#vista-panel > \.encabezado-vista:focus-visible, #vista-panel > \.encabezado-vista:focus \{[^}]*clip-path: none/);   // al recibir el foco se ve (anillo visible)
+  // F8: solo con foco de TECLADO (:focus-visible) se ve (anillo visible, WCAG 2.4.7), y bajo la cabecera; con ratón o toque (foco programático tras un clic) se queda oculto y no tapa el contenido
+  assert.match(css(), /#vista-panel > \.encabezado-vista:focus-visible \{[^}]*clip-path: none/);
+  assert.doesNotMatch(css(), /#vista-panel > \.encabezado-vista:focus \{/);
+  assert.match(css(), /#vista-panel > \.encabezado-vista \{ position: absolute; top: var\(--alto-cabecera\);/);
 });
 
 // ---------- escenario ----------
@@ -126,7 +129,7 @@ test('HUD: contenedores y escenario sin puntero (pointer-events: none); solo los
   assert.match(b, /\.hud-izq, \.hud-der \{[^}]*z-index: 1100/);                                                                             // por encima de Leaflet (≤ 1050 selector, 1001 etiqueta) y por debajo de la cabecera (1200)
   assert.match(css(), /\.cabecera \{ position: sticky; top: 0; z-index: 1200;/);
   for (const t of [css(), kpi(), app('globo/globo.component.ts'), global()]) assert.doesNotMatch(sinComentarios(t), /backdrop-filter/);
-  const panel = global(); assert.match(panel, /--panel-vidrio: rgba\(15, 26, 46, \.92\)/);                                                    // alfa ≥ .88
+  const panel = global(); assert.match(panel, /--panel-vidrio: rgba\(22, 25, 30, \.92\)/);   // F8: grafito neutro (antes azul marino)                                                    // alfa ≥ .88
   assert.ok(Number(/--panel-vidrio: rgba\(\d+, \d+, \d+, ([\d.]+)\)/.exec(panel)?.[1]) >= 0.88);
 });
 
@@ -230,7 +233,7 @@ test('< 1100 px sin HUD flotante: barra-resumen de filtros en móvil, rejilla en
   assert.match(c, /\.o-leyenda, \.o-notas \{ grid-column: 1 \/ -1; \}/);
   assert.match(c, /@media \(max-width: 767px\)[\s\S]*\.filtros-toggle \{ display: inline-flex; align-items: center; \}/);                       // el botón de plegar solo en móvil y escritorio
   assert.match(c, /\.hud-panel \{ background: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; \}/);                         // móvil: ni caja doble ni borde grueso
-  assert.match(c, /\.filtros-barra \{ padding: var\(--esp-2\) var\(--esp-3\); background: var\(--panel-vidrio\); border: 1px solid var\(--linea\)/);
+  assert.match(c, /\.filtros-barra \{ padding: var\(--esp-2\) var\(--esp-3\); background: var\(--panel-vidrio\); border: 1px solid var\(--linea\);/);   // F8: contorno fino cian tenue
   assert.match(c, /\.vista-titulo \{ position: absolute;/);                                                                                  // móvil: «Vista:» queda como nombre accesible (cabe a 320 px)
   assert.doesNotMatch(sinComentarios(c), /border-top: 3px|border-top: 2px solid var\(--acento\)/);                                           // fuera franjas gruesas
   assert.doesNotMatch(sinComentarios(c), /\.col-(izq|der|centro)|\.principal/);

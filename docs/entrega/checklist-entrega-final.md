@@ -7,8 +7,8 @@
 - [x] Matriz de trazabilidad y requisitos fuente actualizados a la situación real.
 - [x] F7 publicada con una función de Netlify (sin clave para el visitante) y verificada **con reservas** (`verificacion-funcion-netlify.md`); respaldos `6af4a52d…` y F6 conservados.
 - [x] Refresco público de **60 s** (ENUNCIADO §9); 3 peticiones por ciclo a ngrok medidas.
-- [x] Escaneo de secretos: 0 hallazgos en el árbol y en 17 commits; 0 coincidencias de la clave. Frontend **494** pruebas pasan; Angular idéntico a `9008772`.
-- [x] Guion del vídeo (11 escenas), checklist de OBS y lista de capturas **preparados** (no hay vídeo ni capturas).
+- [x] Escaneo de secretos: 0 hallazgos en el árbol y en 17 commits; 0 coincidencias de la clave. Frontend **521** pruebas pasan (2026-11-15); el frontend **difiere de `9008772`** por las mejoras de `8.6-mejoras-interfaz.md`.
+- [x] Guion del vídeo (**5 min, orden de la rúbrica; material personal fuera de Git**), checklist de OBS y lista de capturas **preparados** (no hay vídeo ni capturas).
 - [x] R5 (SQL de calidad archivado y muestra del 2026-11-11), R6 (explicación probable), R9 (diagramas válidos en Mermaid 11) mejoradas.
 - [x] Repositorio **listo para el commit manual** (`preparacion-commit.md`).
 
@@ -33,6 +33,7 @@
 - [ ] Decidir si se **rota la clave de FastAPI** al terminar la evaluación (`procedimiento-credenciales-profesor.md`).
 
 ## C. Justo antes de entregar (T040(b), T024, T025)
+- [ ] **Publicar y verificar las mejoras de interfaz (8.6)**: pruebas, `npm run build`, escaneo de secretos, `preparar-netlify-funcion.sh`, despliegue (prueba o producción, con autorización expresa) y comprobación de la web, la función y la ausencia de la clave en el *bundle*; mirar el **móvil real** (Pixel), la vista Eventos y el pie con los dos logos; actualizar las marcas `[ACTUALIZAR EN CIERRE]`.
 - [ ] **Resolver las marcas `[ACTUALIZAR EN CIERRE]`** del README (10) y de la memoria (6): versión publicada, fecha, estado del sistema, capturas.
 - [ ] Sistema real sano: `docker compose ps` (cinco `healthy`), `bash scripts/f6/invariantes.sh <etiqueta>`, ingesta «hace < 60 s», **0 huecos** (`recuperar --listar`).
 - [ ] **ngrok abierto** y la web pública cargando **sin clave** desde **otro dispositivo**; la versión publicada es `6af4b81f…` (no mantenimiento ni la anterior).

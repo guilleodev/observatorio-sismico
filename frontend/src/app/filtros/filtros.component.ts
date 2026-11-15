@@ -77,7 +77,7 @@ import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos
     label { display: flex; flex-direction: column; gap: 4px; font-size: var(--t-s); font-weight: 600; color: var(--texto-2); min-width: 0; }
     input, select { min-width: 0; width: 100%; }
     input, select { font: inherit; font-size: .92rem; font-weight: 400; padding: 5px 10px; min-height: 36px; border: 1px solid var(--borde-control); border-radius: var(--radio-s); background-color: var(--fondo); color: var(--texto); }
-    input:hover:not(:disabled), select:hover { border-color: var(--texto-2); }
+    input:hover:not(:disabled), select:hover, input:focus-visible, select:focus-visible { border-color: var(--acento); }
     /* fechas deshabilitadas (periodo no personalizado): borde discontinuo y fondo apagado; el texto sigue legible */
     input:disabled { background-color: var(--superficie-2); color: var(--texto-2); border: 1px dashed var(--borde); cursor: not-allowed; }
     .acciones { display: flex; flex-wrap: wrap; gap: var(--esp-2); }

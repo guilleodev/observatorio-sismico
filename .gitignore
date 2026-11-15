@@ -28,3 +28,6 @@ data/respaldo/
 # System files
 .DS_Store
 Thumbs.db
+# Material personal: guiones del vídeo (texto a decir). No se sube.
+docs/privado/*
+!docs/privado/LEEME.md

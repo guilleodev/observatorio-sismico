@@ -7,14 +7,15 @@
        cuando sale de la vista la cabecera se «condensa» (más sombra, sin subtítulo) sin escuchar `scroll`. Orden DOM = orden de foco: identidad → nav → modo/estado/refresco. -->
   <div class="centinela" #centinela aria-hidden="true"></div>
   <header class="cabecera" [class.condensada]="condensada()" [class.replay]="esReplay()">
-    <div class="cab-id">
+    <!-- Fase 1: logo y título son UN enlace real al Panel (href="#/panel": funciona con clic central y teclado). Al pulsarlo se vuelve arriba del todo y se actualizan los datos (irAlInicio). -->
+    <a class="cab-id" href="#/panel" title="Ir al Panel y actualizar los datos" (click)="$event.preventDefault(); irAlInicio()">
       <span class="cab-marca" aria-hidden="true"><app-icono nombre="marca" /></span>
       <div class="identidad">
         <!-- Dos variantes del título (la oculta con display: none no se lee): completo en ancho, corto en estrecho -->
         <h1><span class="h1-largo">Observatorio de actividad sísmica</span><span class="h1-corto">Observatorio sísmico</span></h1>
         <p class="cab-sub">Monitorización · USGS</p>
       </div>
-    </div>
+    </a>
     <!-- Navegación entre vistas: tres enlaces REALES (<a href="#/…">: funcionan con clic central, teclado y Atrás/Adelante); `aria-current="page"` marca la activa. El hash lo gestiona navegacion.ts.
          Carril segmentado: icono SVG decorativo + etiqueta. No es un tablist. -->
     <nav class="nav-vistas" aria-label="Vistas">
@@ -124,6 +125,15 @@
             <li><span class="punto punto-nd" aria-hidden="true"></span>No disponible</li>
           </ul>
           }
+          <!-- F8: escala de TAMAÑOS (la leyenda de arriba explica el color por profundidad; esto explica el tamaño por magnitud). Mismas proporciones que radioMagnitud (formato.ts): M 2, M 4 y M 6 o más (a partir de M 6,5 el radio ya no crece). Decorativa para lectores: la nota de tamaño está en «Notas del mapa». -->
+          <div class="leyenda-tamano" role="group" aria-label="Tamaño según la magnitud: M 2 pequeño, M 4 mediano, M 6 o más grande">
+            <span class="etiqueta-ui">Tamaño · magnitud</span>
+            <ul class="leyenda-tamanos">
+              <li><span class="circulo-tamano t2" aria-hidden="true"></span>M 2</li>
+              <li><span class="circulo-tamano t4" aria-hidden="true"></span>M 4</li>
+              <li><span class="circulo-tamano t6" aria-hidden="true"></span>M 6 o más</li>
+            </ul>
+          </div>
           <p class="oculto" role="status" aria-live="polite">{{ anuncioLeyenda() }}</p>
         </div>
         <!-- CAMBIO (ronda 2): las notas de tamaño y de mapa base salen del pie (texto permanente) a este desplegable, junto a la leyenda; el texto es el mismo. -->
@@ -207,12 +217,6 @@
     @if (esApi()) { <app-filtros-activos [resumen]="resumenFiltros()" [periodo]="periodo()" [etiqueta]="etiquetaVista()" (cambiar)="cambiarFiltros()" /> }
     <!-- El aviso de «sin coordenadas» vive AQUÍ (donde ocurre al elegir una fila): un role="alert" dentro de una vista oculta no se anunciaría -->
     @if (avisoSeleccion()) { <p role="alert" class="aviso-seleccion"><app-icono nombre="aviso" /><span>{{ avisoSeleccion() }}</span></p> }
-    @if (eventoSeleccionado() !== null) {
-      <p class="franja-seleccion" [class.replay]="esReplay()"><span class="franja-texto">Evento seleccionado: <strong>{{ lugarSeleccionado() }}</strong></span>
-        <span class="franja-acciones">
-          <button type="button" class="enlace-accion" (click)="irAlSeleccionado()">Ir al evento seleccionado</button>
-          <a href="#/panel" class="enlace-accion" (click)="$event.preventDefault(); verEnVisor()">{{ visor() === '3d' ? 'Ver en el globo' : 'Ver en el mapa' }}</a></span></p>
-    }
     @if (esApi() && estadisticas()) {
       <div id="tabla" class="zona-tabla" data-ancla tabindex="-1"><app-tabla [etiqueta]="etiquetaVista()" [eventos]="eventos()" [seleccionado]="seleccionado()" [textoVisor]="visor() === '3d' ? 'Ver en el globo' : 'Ver en el mapa'" (seleccionar)="elegir($event, 'tabla')" (verVisor)="verEnVisor()" (cambiarFiltros)="cambiarFiltros()" /></div>
     } @else {
@@ -221,5 +225,15 @@
   </section>
   <!-- CAMBIO (ronda 1): el «eyebrow» BIG DATA · PROYECTO DE AULA pasa de la cabecera al pie -->
   <!-- CAMBIO (análisis B): pie de proyecto terminado (sin el texto de plantilla antiguo). Una sola atribución completa: datos, fronteras y cartografía; el eyebrow se integra en la primera línea. Sin enlaces (la hoja no admite URLs; la atribución con enlace vive en el propio mapa). -->
-  <footer class="o-pie"><p class="eyebrow">BIG DATA · PROYECTO DE AULA</p><p class="pie-proyecto">Observatorio Sísmico · Proyecto académico de Big Data (Máster en IA y Big Data)</p><p class="pie-datos">Datos: USGS (feed en vivo y catálogo FDSN) · Fronteras: Natural Earth · Cartografía: © OpenStreetMap contributors</p></footer>
+  <!-- Fase 2: pie discreto con la firma de la persona autora (logo guilleodev, nombre y máster) y el logo del centro; debajo, las atribuciones de datos (obligatorias). Imágenes con tamaño fijo (sin saltos de diseño), carga diferida y sin enlaces. -->
+  <footer class="o-pie">
+    <img class="logo-autor" src="img/guilleodev.png" alt="guilleodev" width="123" height="26" loading="lazy" decoding="async">
+    <div class="pie-firma">
+      <p class="eyebrow">BIG DATA · PROYECTO DE AULA</p>
+      <p class="pie-autor" translate="no">Guillermo Redondo Camacho</p>
+      <p class="pie-proyecto">Observatorio Sísmico · Proyecto académico de Big Data (Máster en IA y Big Data)</p>
+    </div>
+    <img class="logo-centro" src="img/alan-turing.png" alt="Alan Turing, Centro Público Integrado de Formación Profesional" width="120" height="44" loading="lazy" decoding="async">
+    <p class="pie-datos">Datos: USGS (feed en vivo y catálogo FDSN) · Fronteras: Natural Earth · Cartografía: © OpenStreetMap contributors</p>
+  </footer>
 </main>

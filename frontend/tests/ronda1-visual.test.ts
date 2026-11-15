@@ -46,7 +46,8 @@ test('cabecera: position sticky, top 0, z-index por encima de Leaflet (> 1000), 
   assert.ok(Number(/z-index: (\d+)/.exec(cab)?.[1]) > 1001, 'por encima de los controles de Leaflet (1000) y de la etiqueta REPRODUCCIÓN del mapa (1001)');
   assert.match(regla(c, '.nav-vistas'), /justify-self: center/);              // centrada respecto a la cabecera, no al espacio restante
   const g = global();
-  assert.match(g, /--alto-cabecera: 56px/); assert.match(g, /@media \(max-width: 767px\) \{ :root \{ --alto-cabecera: 48px; \} \}/);
+  // Fase 1: en móvil la cabecera tiene dos filas (48 + 52 px) para que la nav tenga objetivos táctiles de 44 px
+  assert.match(g, /--alto-cabecera: 56px/); assert.match(g, /@media \(max-width: 767px\) \{ :root \{ --alto-cabecera: 100px; \} \}/);
   assert.match(g, /scroll-padding-top: calc\(var\(--alto-cabecera\)/);        // WCAG 2.4.11: foco no oculto por la cabecera
   assert.match(g, /scroll-margin-top: calc\(var\(--alto-cabecera\)/);
   assert.doesNotMatch(g, /scroll-margin-top: 56px/);
@@ -77,7 +78,7 @@ test('una sola <nav aria-label="Vistas"> con tres enlaces reales, aria-current, 
   assert.match(cssApp(), /\.nav-vistas a:focus-visible \{ outline: 3px solid var\(--foco\)/);
   assert.match(cssApp(), /\.nav-vistas a:hover \{/);
   assert.match(regla(cssApp(), '.nav-vistas a[aria-current="page"]'), /background: var\(--nav-activa-fondo\)/);
-  assert.match(h, /<footer class="o-pie"><p class="eyebrow">BIG DATA · PROYECTO DE AULA<\/p>/);
+  assert.match(h, /<footer class="o-pie">[\s\S]*?<p class="eyebrow">BIG DATA · PROYECTO DE AULA<\/p>/);   // Fase 2: el eyebrow sigue en el pie (dentro de .pie-firma)
   // las zonas: identidad antes que la nav, y la nav antes que el estado (orden de foco)
   assert.ok(h.indexOf('class="cab-id"') < h.indexOf('<nav class="nav-vistas"') && h.indexOf('<nav class="nav-vistas"') < h.indexOf('class="cab-estado"'));
 });
@@ -130,13 +131,15 @@ test('REPRODUCCIÓN visible en móvil: banda violeta bajo la cabecera con texto 
   assert.ok(razonContraste(token(global(), 'replay-texto'), token(global(), 'replay-fondo')) >= 4.5);      // texto de la banda y del distintivo
 });
 
-test('móvil: una sola fila de 48 px, marca solo icono (título oculto sin display: none), iconos de la nav solo desde 400 px y sin truncar el texto', () => {
+test('móvil (Fase 1): cabecera de dos filas (48 + 52 px), logo y título visibles como enlace al Panel, nav a todo el ancho con objetivos de 44 px y sin truncar el texto', () => {
   const c = cssApp();
-  assert.match(c, /@media \(max-width: 767px\) \{[\s\S]*?\.cabecera \{ grid-template-columns: auto minmax\(0, 1fr\) auto;/);
-  assert.match(c, /\.identidad \{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset\(50%\)/);
-  assert.match(c, /\.nav-vistas app-icono \{ display: none; \}/); assert.match(c, /@media \(min-width: 400px\) and \(max-width: 767px\) \{ \.nav-vistas app-icono \{ display: inline-flex; \} \}/);
+  assert.match(c, /@media \(max-width: 767px\) \{[\s\S]*?\.cabecera \{ grid-template-columns: auto minmax\(0, 1fr\) auto; grid-template-rows: 48px 52px;/);
+  assert.doesNotMatch(c, /\.identidad \{ position: absolute/);                                           // el título ya no se oculta en móvil: es parte del enlace al Panel
+  assert.doesNotMatch(c, /\.nav-vistas app-icono \{ display: none; \}/);                                 // los iconos de la nav se ven siempre (hay sitio: la nav ocupa su propia fila)
+  assert.match(c, /\.nav-vistas \{ grid-row: 2; grid-column: 1 \/ -1;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(c, /\.nav-vistas a \{ min-height: 44px;/);                                                // objetivo táctil ≥ 44 px en móvil (WCAG 2.5.5 AAA; el mínimo AA es 24 px)
   assert.doesNotMatch(regla(c, '.nav-vistas a'), /text-overflow|overflow: hidden/);                      // el texto de la nav no se recorta
-  assert.match(c, /Cálculo de anchos/);                                                                  // los anchos quedan documentados junto al CSS
+  assert.match(c, /\.cab-id \{[^}]*min-height: 44px/);                                                   // el logo/título también es un objetivo táctil de 44 px
 });
 
 // ---------- iconos ----------
@@ -165,7 +168,7 @@ test('tokens nuevos definidos en :root (con respaldo en var(--x, …) donde se u
   assert.match(raiz, /--fuente-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;/);
   const alfa = Number(/--panel-vidrio: rgba\(\d+, \d+, \d+, ([\d.]+)\)/.exec(raiz)?.[1]); assert.ok(alfa >= 0.86, 'panel de vidrio casi opaco');
   // los tokens conservados no cambian de valor
-  for (const [n, v] of [['fondo', '#0a1120'], ['superficie-1', '#0f1a2e'], ['acento', '#22d3ee'], ['replay', '#a78bfa'], ['radio', '10px'], ['radio-s', '6px']]) assert.match(raiz, new RegExp(`--${n}: ${v};`), n);
+  for (const [n, v] of [['fondo', '#0f1114'], ['superficie-1', '#16191e'], ['acento', '#22d3ee'], ['replay', '#a78bfa'], ['radio', '10px'], ['radio-s', '6px']]) assert.match(raiz, new RegExp(`--${n}: ${v};`), n);
   // cada var(--x) sin respaldo que usan las hojas nuevas está definida en :root o localmente (--ico, --tono, --alto-visor…)
   const locales = new Set(['ico', 'tono', 'alto-visor']);
   for (const t of [cssApp(), ind(), icono(), g]) for (const m of t.matchAll(/var\(--([a-z0-9-]+)\)/g)) assert.ok(new RegExp(`--${m[1]}:`).test(g + cssApp() + ind()) || locales.has(m[1]), `--${m[1]} sin definir`);
@@ -216,7 +219,7 @@ test('movimiento: sin `transition: all`; las transiciones y animaciones nuevas s
 test('sin almacenamiento, sin fuentes ni recursos externos (nada de @import, Google Fonts, CDN, <link> ni imágenes remotas) en lo nuevo', () => {
   const nuevos = [global(), cssApp(), html(), ind(), icono(), app('app.component.ts')].join('\n');
   assert.doesNotMatch(nuevos, /localStorage|sessionStorage|document\.cookie|indexedDB/);
-  assert.doesNotMatch([global(), cssApp(), html(), ind(), icono()].join('\n'), /@import|@font-face|fonts\.googleapis|fonts\.gstatic|cdn\.|unpkg|jsdelivr|<link |<img |url\(/i);   // (app.component.ts usa `new URL(` legítimamente: no entra en esta comprobación)
+  assert.doesNotMatch([global(), cssApp(), html(), ind(), icono()].join('\n'), /@import|@font-face|fonts\.googleapis|fonts\.gstatic|cdn\.|unpkg|jsdelivr|<link |<img[^>]*src="(?!img\/)|url\(/i);   // Fase 2: solo imágenes LOCALES de `public/img/` (el pie); (app.component.ts usa `new URL(` legítimamente: no entra en esta comprobación)
   assert.doesNotMatch(global() + cssApp() + ind() + icono(), /https?:\/\//);
   assert.doesNotMatch(src('index.html'), /<link[^>]+rel="stylesheet"|fonts\.googleapis|https?:\/\/(?!www\.w3\.org)/);
   assert.match(global(), /--fuente: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;/);                // pila de sistema

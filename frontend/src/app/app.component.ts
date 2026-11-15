@@ -133,8 +133,6 @@ export class AppComponent implements OnDestroy {
     for (const [i, e] of this.eventos().entries()) if (idDe(e, i) === id) return e;
     return null;
   });
-  /** Lugar del evento seleccionado para la franja de la vista Eventos (texto; las lecturas pueden traer propiedades incompletas). */
-  readonly lugarSeleccionado = computed(() => (this.eventoSeleccionado()?.properties as Propiedades | undefined)?.place || 'sin descripción');
   // CAMBIO (ronda 2 Mission Control): los filtros son plegables en móvil (barra-resumen) y en escritorio ≥ 1100 px (HUD flotante: píldora); en tablet el CSS los muestra siempre. Estado de UI en memoria (nada de almacenamiento).
   // Valor inicial según el ancho de la ventana (hud.ts, pura): abiertos desde 1440 px; colapsados por debajo (y en móvil, plegados como antes). Solo se evalúa al crear la página.
   private readonly hudInicial = hudPorDefecto(window.innerWidth);
@@ -200,9 +198,8 @@ export class AppComponent implements OnDestroy {
   verMetodologia(): void { this.metodologiaAbierta.set(true); this.irAVista('analisis', 'metodologia-titulo'); }
   /** «Cambiar filtros» (franja de filtros activos de Análisis y Eventos): vuelve al Panel, abre el formulario (móvil) y enfoca #filtros. */
   cambiarFiltros(): void { this.filtrosAbiertos.set(true); this.irAVista('panel', 'filtros'); }
-  /** «Ir al evento seleccionado» (vista Eventos): la tabla salta a la página del evento y enfoca su fila. */
-  private readonly tabla = viewChild(TablaComponent);
-  irAlSeleccionado(): void { this.tabla()?.irAlSeleccionado(); }
+  /** Logo y título de la cabecera: llevan al Panel (arriba del todo) y actualizan los datos, como el logo de cualquier web. Fuera del modo API no hay nada que actualizar. */
+  irAlInicio(): void { this.irAVista('panel'); this.actualizarAhora(); }
 
   /** El Panel vuelve a verse: si el visor es el mapa 2D, Leaflet recupera su tamaño (estuvo oculto). El globo no necesita nada: `visible` lo reanuda. */
   alMostrarPanel(): void { if (this.visor() === '2d') this.map?.invalidateSize(); }
@@ -213,8 +210,8 @@ export class AppComponent implements OnDestroy {
   readonly itemsProfundidad = computed(() => { const e = this.estadisticas(); return e ? itemsIntervalos(e.profundidad) : []; });
   /** Ronda 3: color de cada barra de profundidad (mismo orden que `itemsProfundidad`). Solo colorea por la leyenda si el intervalo completo cae dentro de un rango; si cruza un corte, neutro. */
   readonly coloresProfundidad = computed(() => { const e = this.estadisticas(); return e ? e.profundidad.items.map((i) => colorIntervaloProfundidad(i.from, i.to)) : null; });
-  /** Ronda 3: sección «Metodología y estado del sistema» desplegada (abierta por defecto; estado solo en memoria). «Ir a Cargar el resto» la reabre. */
-  readonly metodologiaAbierta = signal(true);
+  /** Sección «Metodología y estado del sistema»: contraída por defecto (Fase 1: la vista Análisis arranca más limpia; estado solo en memoria). «Ver detalle» e «Ir a Cargar el resto» la abren. */
+  readonly metodologiaAbierta = signal(false);
   readonly omitidoHora = computed(() => {
     const h = this.estadisticas()?.por_hora;
     return h && h.items === null
@@ -676,10 +673,29 @@ export class AppComponent implements OnDestroy {
     this.avisoSeleccion.set('');
     if (sinMapa) this.map?.closePopup();
     if (destino === null) { this.map?.closePopup(); return; }
+    this.mostrarFichaEnMovil();
     const marcador = this.marcadores.get(destino);
     if (!marcador) { this.avisoSeleccion.set('Este evento no tiene coordenadas válidas y no se dibuja en el mapa; se conserva en la tabla.'); return; }
     this.resaltar(destino);
     if (origen === 'tabla' && !sinMapa) { this.map?.panTo(marcador.getLatLng()); marcador.openPopup(); }
+  }
+
+  /**
+   * Fase 1 (móvil, < 768 px): en el Panel la ficha del evento queda DEBAJO del visor y no se sabe que hay que bajar. Al elegir un evento se desplaza suavemente hasta ella,
+   * solo si aún no se ve su parte alta (no se mueve si ya estaba a la vista, p. ej. con «anterior/siguiente» desde la propia ficha) y sin animación con «reducir movimiento».
+   * No mueve el foco (la región viva de la ficha ya anuncia la selección). En otras vistas o en pantallas anchas no hace nada.
+   */
+  private mostrarFichaEnMovil(): void {
+    if (this.vista() !== 'panel' || !window.matchMedia('(max-width: 767px)').matches) return;
+    afterNextRender(() => {
+      // la ficha cambia de tamaño al llenarse y el visor se recoloca: se mide un instante después (150 ms), ya con el diseño asentado, para que el destino sea el correcto
+      setTimeout(() => {
+        const ficha = document.querySelector<HTMLElement>('app-detalle-evento.o-detalle');
+        if (!ficha || this.destroyed || ficha.getBoundingClientRect().top < window.innerHeight * 0.6) return;
+        const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        ficha.scrollIntoView({ block: 'start', behavior: reducir ? 'auto' : 'smooth' });
+      }, 150);
+    }, { injector: this.injector });
   }
 
   private resaltar(id: string): void {

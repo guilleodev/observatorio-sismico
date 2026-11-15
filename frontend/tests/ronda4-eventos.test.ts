@@ -104,12 +104,11 @@ test('fila seleccionada: aria-current, aria-pressed, marcador textual «Seleccio
   assert.match(c, /@if \(f\.id === seleccionado\(\)\) \{ <button type="button" class="accion ver-visor" \(click\)="verVisor\.emit\(\)">/);   // solo en la fila seleccionada
   assert.match(c, /readonly verVisor = output<void>\(\)/); assert.match(c, /readonly textoVisor = input<string>/);
   const h = html();
-  assert.match(h, /\(verVisor\)="verEnVisor\(\)"/);                                                   // MISMO handler que la franja del seleccionado
+  assert.match(h, /\(verVisor\)="verEnVisor\(\)"/);                                                   // «Ver en el globo/mapa» de la fila → verEnVisor (Fase 1: la franja del seleccionado ya no existe)
   assert.match(h, /\[textoVisor\]="visor\(\) === '3d' \? 'Ver en el globo' : 'Ver en el mapa'"/);
-  assert.match(h, /<a href="#\/panel" class="enlace-accion" \(click\)="\$event\.preventDefault\(\); verEnVisor\(\)">\{\{ visor\(\) === '3d' \? 'Ver en el globo' : 'Ver en el mapa' \}\}<\/a>/);
-  assert.match(h, /\(click\)="irAlSeleccionado\(\)">Ir al evento seleccionado<\/button>/);
+  assert.doesNotMatch(h, /Ir al evento seleccionado|franja-seleccion/);
   assert.match(app('app.component.ts'), /verEnVisor\(\): void \{ this\.irAVista\('panel', 'mapa'\); \}/);
-  assert.match(c, /querySelector<HTMLElement>\('tr\.seleccionada \.fila'\)/);                         // «Ir al evento seleccionado» sigue encontrando el botón de la fila
+  assert.match(c, /querySelector<HTMLElement>\('tr\.seleccionada \.fila'\)/);                         // el método de la tabla sigue encontrando el botón de la fila
 });
 
 // ---------- estados ----------
@@ -149,16 +148,16 @@ test('búsqueda type=search con label visible, paginación etiquetada y botones 
   assert.doesNotMatch(/\.barra \{[^}]*\}/.exec(c)?.[0] ?? '', /sticky/);
 });
 
-test('encabezado de Eventos: h2 destino de foco, contador grande en mono con el mismo texto, nota «hay más» discreta y chips antes de la franja y la tabla', () => {
+test('encabezado de Eventos: h2 destino de foco, contador grande en mono con el mismo texto, nota «hay más» discreta y chips antes de la tabla (sin franja del seleccionado: Fase 1)', () => {
   const e = eventos();
   assert.match(e, /<h2 id="eventos-titulo" class="seccion-titulo encabezado-vista" tabindex="-1">Eventos del periodo consultado<\/h2>/);
   assert.match(e, /@if \(notaHayMas\(\); as nota\) \{ <span class="nota-mas">\{\{ nota \}\} <a href="#\/analisis" class="enlace-discreto"/);
   assert.match(e, /Ir a «Cargar el resto»/);
   const i = (s: string) => e.indexOf(s);
-  assert.ok(i('eventos-titulo') < i('<app-filtros-activos') && i('<app-filtros-activos') < i('class="franja-seleccion"') && i('class="franja-seleccion"') < i('<app-tabla'));
+  assert.ok(i('eventos-titulo') < i('<app-filtros-activos') && i('<app-filtros-activos') < i('<app-tabla'));
   assert.match(app('app.component.css'), /\.contador-vista \.cifra \{ font-size: var\(--t-xl\);/);
-  assert.match(e, /<p class="franja-seleccion" \[class\.replay\]="esReplay\(\)">/);
-  assert.match(app('app.component.css'), /\.franja-seleccion\.replay \{[^}]*var\(--replay\)/);
+  assert.doesNotMatch(e, /franja-seleccion/);                                                        // Fase 1: la franja se retiró (HTML y CSS)
+  assert.doesNotMatch(app('app.component.css'), /\.franja-(seleccion|texto|acciones)/);
 });
 
 test('partirContador: cifra principal + resto, sin cambiar el texto («226 eventos cargados de 1.200 del periodo»)', () => {

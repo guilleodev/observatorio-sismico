@@ -184,6 +184,7 @@ test('sin almacenamiento, sin transition: all ni animaciones nuevas en el redise
   assert.ok(razonContraste(t('texto-2'), t('superficie-1')) >= 4.5);           // títulos de panel
   assert.ok(razonContraste(t('acento-texto'), t('superficie-1')) >= 4.5);      // icono y «M x» del panel
   // CAMBIO (ronda 1 Mission Control): `.panel-ui` ya no lleva borde completo + franja superior de 2 px cian, sino línea fina (--linea) y «filo de luz» de 1 px (::before con --filo). Se comprueba la nueva forma.
-  assert.match(tok, /\.panel-ui \{[^}]*border: 1px solid var\(--linea\)/); assert.match(tok, /\.panel-ui::before \{[^}]*background: var\(--filo\)/);
+  // F8: el panel es PLANO (sin sombra) con contorno fino cian tenue (--linea ya es cian al 13 %); el «filo de luz» del ::before se conserva.
+  assert.match(tok, /\.panel-ui \{[^}]*background: var\(--panel-vidrio\); border: 1px solid var\(--linea\);[^}]*box-shadow: none/); assert.match(tok, /\.panel-ui::before \{[^}]*background: var\(--filo\)/);
   assert.match(tok, /\.panel-ui\.replay::before \{[^}]*var\(--filo-replay\)/);
 });

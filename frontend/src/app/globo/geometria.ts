@@ -50,18 +50,18 @@ export function punto(a: Xyz, b: Xyz): number { return a[0] * b[0] + a[1] * b[1]
 // ---------- Paleta (tokens de styles.css) ---------------------------------------------------------------------------------------------------------
 /** [nombre del token CSS, valor de respaldo]. Los respaldos deben coincidir con styles.css (lo comprueba tests/globo.test.ts). */
 export const TOKENS_GLOBO = {
-  fondo: ['--fondo', '#0a1120'],
+  fondo: ['--fondo', '#0f1114'],
   /** Océano: el cuerpo del planeta (y la esfera lisa si la textura no llega). */
-  esfera: ['--superficie-2', '#15233b'],
+  esfera: ['--superficie-2', '#1d2128'],
   /** Tierra firme: algo más clara que el océano (relación ≈ 1,5:1; solo diferencia masas, la forma de los marcadores la da su borde). */
-  continente: ['--globo-continente', '#264264'],
-  reticula: ['--borde', '#2a3c5c'],
-  fronteras: ['--borde-control', '#6b82a6'],
+  continente: ['--globo-continente', '#2f3541'],
+  reticula: ['--borde', '#343a46'],
+  fronteras: ['--borde-control', '#7d8696'],
   halo: ['--acento', '#22d3ee'],
   borde: ['--punto-borde', '#e2e8f0'],
   seleccion: ['--acento-texto', '#67e8f9'],
   /** Estrellas de fondo (F7, 4.ª iteración): gris azulado del texto secundario, atenuado en el shader por su brillo (opacidad 0,12–0,42). */
-  estrellas: ['--texto-2', '#a9b8d0'],
+  estrellas: ['--texto-2', '#a8adb8'],
   /** Anillos de eventos nuevos en REPRODUCCIÓN: el violeta del modo replay (en vivo usan el cian de acento, `halo`). */
   replay: ['--replay', '#a78bfa'],
 } as const;
@@ -98,6 +98,8 @@ export interface PuntosGlobo {
   radios: Float32Array;
   /** Magnitud; NaN = sin magnitud. */
   magnitudes: Float64Array;
+  /** Hora del evento (ms Unix); NaN = sin hora válida. Opcional: la usa vida.ts (frescura). Los puntos creados a mano (pruebas) pueden no llevarla. */
+  tiempos?: Float64Array;
   colores: string[];
   radioMax: number;
 }
@@ -119,7 +121,7 @@ export interface ResultadoPuntos {
  */
 export function prepararPuntos(eventos: readonly Evento[], cod: Codificacion, tope: number = MAX_EVENTOS_GLOBO): ResultadoPuntos {
   const ids: string[] = []; const colores: string[] = [];
-  const normales: number[] = []; const radios: number[] = []; const mags: number[] = [];
+  const normales: number[] = []; const radios: number[] = []; const mags: number[] = []; const tiempos: number[] = [];
   let omitidos = 0; let recortados = 0; let radioMax = 0;
   for (const [indice, e] of eventos.entries()) {
     const p = e.properties;
@@ -131,9 +133,10 @@ export function prepararPuntos(eventos: readonly Evento[], cod: Codificacion, to
     const r = cod.radio(p.mag) * FACTOR_RADIO;
     normales.push(x, y, z); radios.push(r); if (r > radioMax) radioMax = r;
     mags.push(typeof p.mag === 'number' && Number.isFinite(p.mag) ? p.mag : NaN);
+    tiempos.push(typeof p.time === 'number' && Number.isFinite(p.time) ? p.time : NaN);
     ids.push(cod.id(e, indice)); colores.push(cod.color(prof));
   }
-  const puntos: PuntosGlobo = { n: ids.length, ids, normales: Float32Array.from(normales), radios: Float32Array.from(radios), magnitudes: Float64Array.from(mags), colores, radioMax };
+  const puntos: PuntosGlobo = { n: ids.length, ids, normales: Float32Array.from(normales), radios: Float32Array.from(radios), magnitudes: Float64Array.from(mags), tiempos: Float64Array.from(tiempos), colores, radioMax };
   return { puntos, dibujados: ids.length, omitidos, recortados, tope };
 }
 
@@ -151,12 +154,14 @@ export function ordenarPorCapas(p: PuntosGlobo): PuntosGlobo {
   orden.sort((a, b) => (p.radios[b] - p.radios[a]) || (a - b));
   const ids: string[] = new Array(p.n); const colores: string[] = new Array(p.n);
   const normales = new Float32Array(p.n * 3); const radios = new Float32Array(p.n); const magnitudes = new Float64Array(p.n);
+  const tiempos = p.tiempos ? new Float64Array(p.n) : undefined;
   for (let k = 0; k < p.n; k++) {
     const i = orden[k];
     ids[k] = p.ids[i]; colores[k] = p.colores[i]; radios[k] = p.radios[i]; magnitudes[k] = p.magnitudes[i];
+    if (tiempos && p.tiempos) tiempos[k] = p.tiempos[i];
     normales[3 * k] = p.normales[3 * i]; normales[3 * k + 1] = p.normales[3 * i + 1]; normales[3 * k + 2] = p.normales[3 * i + 2];
   }
-  return { n: p.n, ids, normales, radios, magnitudes, colores, radioMax: p.radioMax };
+  return { n: p.n, ids, normales, radios, magnitudes, ...(tiempos ? { tiempos } : {}), colores, radioMax: p.radioMax };
 }
 
 // ---------- Selección por proximidad --------------------------------------------------------------------------------------------------------------
@@ -366,6 +371,19 @@ export function desplazamientoCentroPx(ancho: number, alto: number, reserva: num
 export const DISTANCIA_INICIAL = 3.2;
 export const DISTANCIA_MIN = 1.25;
 export const DISTANCIA_MAX = 6;
+/** Fracción del ANCHO del visor que ocupa la esfera en la vista inicial cuando el visor es más alto que ancho (móvil en vertical): deja un pequeño margen a cada lado. */
+export const OCUPACION_ANCHO_VERTICAL = 0.92;
+/**
+ * Distancia predeterminada de la cámara según la proporción del visor (ancho/alto). El FOV es VERTICAL y fijo: en un visor vertical (móvil) la esfera de la distancia 3,2 es
+ * más ancha que la pantalla y entra «con demasiado zoom». Con `aspecto` ≥ 1 (escritorio, tablet en horizontal) NO cambia nada (devuelve DISTANCIA_INICIAL); con visores
+ * verticales se aleja lo justo para que la esfera ocupe OCUPACION_ANCHO_VERTICAL del ancho. Siempre dentro de [DISTANCIA_INICIAL, DISTANCIA_MAX - 0,5]. Entrada no válida → DISTANCIA_INICIAL.
+ */
+export function distanciaInicialPara(aspecto: number): number {
+  if (!(aspecto > 0) || !Number.isFinite(aspecto) || aspecto >= 1) return DISTANCIA_INICIAL;
+  const tanMitadHorizontal = Math.tan((FOV_GLOBO * RAD) / 2) * aspecto;                    // tan de la mitad del campo de visión horizontal
+  const distancia = RADIO_ESFERA / Math.sin(Math.atan(OCUPACION_ANCHO_VERTICAL * tanMitadHorizontal));   // silueta: tan(asin(R/d)) = ocupación · tanMitadH
+  return Math.max(DISTANCIA_INICIAL, Math.min(DISTANCIA_MAX - 0.5, distancia));
+}
 /** Cámara inicial: el mismo centro que el mapa 2D (lat 18, lon 0). */
 export const LAT_INICIAL = 18;
 export const LON_INICIAL = 0;

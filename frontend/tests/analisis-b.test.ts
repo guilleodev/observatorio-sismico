@@ -138,13 +138,15 @@ test('la tabla completa vive en un <details> cerrado por defecto con su texto de
   assert.match(estilos(), /\.plegable > summary \{[^}]*text-decoration: underline/); assert.match(estilos(), /\.plegable > summary:focus-visible \{ outline: 3px solid var\(--foco\)/);
 });
 
-test('el aviso principal («no demuestra un cambio real») y los motivos de periodo incompleto están FUERA de los desplegables, con icono y texto', () => {
+test('el aviso principal («no demuestra un cambio real») y los motivos de periodo incompleto están FUERA de los desplegables, con icono y texto (Fase 2: una sola nota neutra, sin amarillo)', () => {
   const fuera = sinDetails(plantilla());
-  assert.match(fuera, /<div class="aviso-principal" role="note">\s*<app-icono nombre="aviso" class="aviso-ico" \/>/);
+  assert.match(fuera, /<div class="nota-lectura" role="note">\s*<app-icono nombre="info" class="nota-ico" \/>/);
+  assert.doesNotMatch(comp(), /--aviso-fondo|--aviso-texto|var\(--aviso\)/);                         // ya no hay fondos ni textos amarillos en la comparación
   assert.ok(fuera.includes('Esta diferencia no demuestra por sí sola un cambio real de actividad.')); assert.ok(fuera.includes('No es una predicción ni una evaluación de riesgo.'));
   assert.ok(fuera.includes('@for (m of avisos().motivos; track m)')); assert.ok(fuera.includes('avisos().magnitudElevada')); assert.ok(fuera.includes('avisos().coberturaBaja'));
   assert.ok(!fuera.includes('{{ aviso }}'));                                                          // el texto largo de cobertura sí va plegado
-  assert.match(estilos(), /\.aviso-principal \{[^}]*background: var\(--aviso-fondo\)[^}]*color: var\(--aviso-texto\)/);
+  assert.match(estilos(), /\.nota-lectura \{[^}]*border-left: 2px solid var\(--borde-control\)[^}]*color: var\(--texto-2\)/);
+  assert.ok(razonContraste(token('texto-2'), token('banda-fondo')) >= 4.5);                         // la nota se lee sobre la banda de la comparación
 });
 
 test('insignias de fuente con TEXTO («Feed en vivo (USGS)», «Histórico 2025 (catálogo FDSN)») y sin violeta (reservado a REPRODUCCIÓN) en la comparación viva', () => {
@@ -234,15 +236,23 @@ test('pie: ya no aparece «Base proporcionada…»; sí el proyecto y las atribu
   assert.equal((pie.match(/BIG DATA · PROYECTO DE AULA/g) ?? []).length, 1);                            // el eyebrow no se duplica en el pie
   assert.equal((h.match(/<footer/g) ?? []).length, 1);
   assert.doesNotMatch(pie, /<a |https?:\/\/|\d{4}-\d{2}-\d{2}|v\d+\.\d+/);                              // sin enlaces, fechas ni versiones inventadas
-  assert.match(h, /<footer class="o-pie"><p class="eyebrow">BIG DATA · PROYECTO DE AULA<\/p>/);
+  assert.match(h, /<footer class="o-pie">[\s\S]*?<p class="eyebrow">BIG DATA · PROYECTO DE AULA<\/p>/);
+  // Fase 2: firma de la persona autora y logos LOCALES (public/img), con texto alternativo y tamaño fijo; sin enlaces
+  assert.match(pie, /<img class="logo-autor" src="img\/guilleodev\.png" alt="guilleodev" width="123" height="26"/);
+  assert.match(pie, /<img class="logo-centro" src="img\/alan-turing.png" alt="Alan Turing, Centro Público Integrado de Formación Profesional" width="120" height="44"/);
+  assert.match(pie, /<p class="pie-autor" translate="no">Guillermo Redondo Camacho<\/p>/);
+  assert.equal((pie.match(/<img /g) ?? []).length, 2);
   assert.ok(h.indexOf('<footer') > h.indexOf('id="eventos"') && h.indexOf('<footer') < h.indexOf('</main>'));   // último elemento del contenido
 });
 
 test('pie: discreto (línea fina, sin caja), se parte en varias líneas en móvil, texto ≥ .8rem con --texto-2 AA sobre el fondo y sin desbordes', () => {
   const c = css();
-  assert.match(c, /\nfooter \{[^}]*border-top: 1px solid var\(--linea\)[^}]*flex-wrap: wrap/); assert.doesNotMatch(/\nfooter \{[^}]*\}/.exec(c)?.[0] ?? '', /border-radius|box-shadow/);
+  assert.match(c, /\nfooter \{[^}]*border-top: 1px solid var\(--linea\)[^}]*display: grid; grid-template-columns: auto minmax\(0, 1fr\) auto/); assert.doesNotMatch(/\nfooter \{[^}]*\}/.exec(c)?.[0] ?? '', /border-radius|box-shadow/);
   assert.match(c, /footer p \{[^}]*font-size: var\(--t-s\)[^}]*line-height: 1\.5[^}]*color: var\(--texto-2\)[^}]*overflow-wrap: anywhere/);
-  assert.match(c, /footer \.pie-datos \{ flex: 1 1 100%; \}/);
+  assert.match(c, /footer \.pie-datos \{ grid-column: 1 \/ -1;/);
+  assert.match(c, /@media \(max-width: 767px\) \{\s*footer \{ grid-template-columns: minmax\(0, 1fr\) auto;/);          // móvil: logos en la primera fila y texto debajo
+  assert.match(c, /\.logo-centro \{[^}]*width: 120px; height: 44px;[^}]*filter: brightness\(1\.35\) saturate\(1\.1\)/);   // el logo conserva sus colores; solo se aviva un poco para leerse sobre el grafito
+  assert.doesNotMatch(/\.logo-centro \{[^}]*\}/.exec(c)?.[0] ?? '', /invert|opacity/);                                  // sin monocromo ni transparencia
   assert.ok(razonContraste(token('texto-2'), token('fondo')) >= 4.5);
   assert.ok(razonContraste(token('acento-texto'), token('fondo')) >= 4.5);                            // el eyebrow
 });

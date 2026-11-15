@@ -29,7 +29,7 @@ export const BORDE_MAPA = '#1f2937';
 export type EstiloMapa = 'oscuro' | 'claro';
 export const ESTILO_MAPA_INICIAL: EstiloMapa = 'oscuro';
 /** Fondo del contenedor del mapa (visible si se apaga la base). Deben coincidir con --mapa-fondo-oscuro / --mapa-fondo-claro de styles.css (lo comprueba tests/mapa.test.ts). */
-export const FONDO_MAPA: Record<EstiloMapa, string> = { oscuro: '#0b1626', claro: '#dceaf1' };
+export const FONDO_MAPA: Record<EstiloMapa, string> = { oscuro: '#12151a', claro: '#dceaf1' };
 /** Borde claro de los círculos sobre base oscura: el borde #1f2937 se perdería (contraste < 3:1). */
 export const BORDE_MAPA_OSCURO = '#e2e8f0';
 /** Color de la selección (el grosor pasa de 1,5 a 4 px en ambos estilos); en oscuro, cian del sistema de diseño. */

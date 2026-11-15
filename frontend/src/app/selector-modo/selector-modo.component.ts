@@ -39,7 +39,7 @@ import type { EjecucionReplay, ModoVista } from '../modelos';
     /* control segmentado: dos tarjetas iguales; en pantallas estrechas se apilan */
     .opciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-2); }
     label { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 36px; min-width: 0; padding: 6px 12px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-s); }
-    label:hover { border-color: var(--borde-control); }
+    label:hover { border-color: var(--acento); }
     label.activa { border-width: 2px; padding: 5px 11px; }
     label.live.activa { background: var(--acento-fondo); border-color: var(--acento); }
     label.repro.activa { background: var(--replay-fondo); border-color: var(--replay); color: var(--replay-texto); }

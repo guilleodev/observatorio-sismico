@@ -19,11 +19,11 @@
 //  · Calidad (calidad.ts): mide el coste de render y ajusta el pixelRatio sin recrear nada. · Carga (carga.ts): `alFase` avisa de las fases reales.
 import {
   AdditiveBlending, BackSide, BufferGeometry, CanvasTexture, CircleGeometry, Color, Float32BufferAttribute, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial, LineSegments, Matrix4,
-  Mesh, PerspectiveCamera, Points, Quaternion, Raycaster, SRGBColorSpace, Scene, ShaderMaterial, SphereGeometry, Spherical, Vector2, Vector3, WebGLRenderer,
+  Mesh, PerspectiveCamera, Points, Quaternion, Raycaster, SRGBColorSpace, Scene, ShaderMaterial, SphereGeometry, Spherical, Sprite, SpriteMaterial, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
-  DISTANCIA_INICIAL, DISTANCIA_MAX, DISTANCIA_MIN, ELEVACION_PUNTO, FOV_GLOBO, LAT_INICIAL, LON_INICIAL, RADIO_ESFERA, desplazamientoCentroPx, distanciaTrasZoom,
+  DISTANCIA_INICIAL, DISTANCIA_MAX, DISTANCIA_MIN, ELEVACION_PUNTO, FOV_GLOBO, LAT_INICIAL, LON_INICIAL, RADIO_ESFERA, desplazamientoCentroPx, distanciaInicialPara, distanciaTrasZoom,
   esClic, latLonAXyz, ordenarPorCapas, segmentosFronteras, seleccionarPorRayo,
 } from './geometria';
 import type { PaletaGlobo, PuntosGlobo, Seleccion } from './geometria';
@@ -37,7 +37,9 @@ import { ROTACION_Y_TEXTURA, dibujarTierra, tamanoTextura } from './textura';
 import { INTERVALO_SOL_MS, OSCURECIMIENTO_NOCHE, SEN_CREPUSCULO, TINTE_TERMINADOR, UMBRAL_CAMBIO_SOLAR_GRADOS, cambioAngularGrados, posicionSolar, vectorSolar } from './sol';
 import type { Vec3 } from './sol';
 import { INICIO_INACTIVO, MAX_ONDAS, DURACION_ONDA_MS, SeguimientoOndas, radioMaxOnda, ranurasLibres } from './ondas';
+import { ALFA_MIN_ANTIGUO, ALFA_RESPLANDOR, ANCHO_RESPLANDOR, DURACION_ENTRADA_MS, EDAD_DESCONOCIDA, ESCALA_ENTRADA_MIN, FRESCURA_RESPLANDOR_DESDE, FRESCURA_RESPLANDOR_HASTA, HORAS_FRESCURA, REPARTO_ENTRADA, RESPIRACION_ESCALA, RESPIRACION_RESPLANDOR_MIN, edadEnHoras, hayDatosEnVivo, progresoEntrada } from './vida';
 import { generarEstrellas } from './estrellas';
+import { anchoEtiqueta, elegirEtiquetados, textoEtiqueta } from './etiquetas';
 import { MaquinaCalidad } from './calidad';
 import { ALFA_ATENUADO, MASCARA_TODOS, codificarRangos, filtrarPuntos, mascaraDeRango } from './leyenda';
 import { FRAGMENTO_ESTRELLAS, FRAGMENTO_ONDA, VERTICE_ESTRELLAS, VERTICE_ONDA } from './shaders';
@@ -117,7 +119,8 @@ const FRAGMENTO_PLANETA = `
     float velo = 1.0 - ${OSCURECIMIENTO_NOCHE.toFixed(3)} * noche;
     vec3 c = base * luz * limbo * velo;
     c *= mix(vec3(1.0), vec3(1.3, 1.0, 0.75), ${TINTE_TERMINADOR.toFixed(3)} * 4.0 * noche * (1.0 - noche));
-    c += uRim * pow(1.0 - cara, 3.0) * 0.2;
+    // F8: reborde atmosférico algo más marcado (volumen). Se probó un brillo especular del Sol y se RETIRÓ: no se entendía como el Sol (parecía un foco), así que no hay brillo especular.
+    c += uRim * pow(1.0 - cara, 3.0) * 0.28;
     gl_FragColor = vec4(c, 1.0);
     #include <colorspace_fragment>
   }`;
@@ -136,8 +139,17 @@ const FRAGMENTO_PLANETA = `
 // LEYENDA INTERACTIVA (leyenda.ts): `aRango` (0–3, atributo por instancia, escrito solo al cambiar los datos) y `uMascara` (bits de los rangos visibles, uniform que solo cambia al
 // pulsar la leyenda; 15 = todos). Un marcador de un rango no activo se dibuja con opacidad ALFA_ATENUADO y no pulsa; el seleccionado se dibuja siempre a opacidad plena. Sin
 // lógica por evento en JavaScript ni trabajo por fotograma. Estos marcadores NO reciben el factor día/noche del planeta.
+//
+// VIDA (vida.ts, F8): `aEdad` (atributo por instancia: horas desde el evento hasta el instante de carga; −1 = sin hora) + `uEdadExtra` (horas transcurridas desde esa carga; uniform común) dan la
+// frescura exp(−edad/10 h): lo reciente a opacidad plena y lo antiguo hasta ALFA_MIN_ANTIGUO, más un resplandor estático tenue en lo muy reciente (vGlow). `uVivo` = 0 apaga ambos (REPRODUCCIÓN o
+// sin datos de las últimas horas). `uEntrada` (0→1) escalona la aparición de los marcadores al cargar (1 = sin efecto). El color (profundidad) y el tamaño (magnitud) NO se tocan; el seleccionado no se atenúa.
 const VERTICE_PUNTO = `
   attribute float aRango;
+  attribute float aEdad;
+  uniform float uEdadExtra;
+  uniform float uEntrada;
+  uniform float uVivo;
+  varying float vGlow;
   uniform float uSel;
   uniform float uFase;
   uniform float uAmp;
@@ -160,10 +172,16 @@ const VERTICE_PUNTO = `
     vPulso = uAmp * step(float(gl_InstanceID) + 0.5, uNPulso) * (0.5 + 0.5 * sin(uFase + 6.2831853 * hash)) * (1.0 - vSel);
     float visible = max(vSel, mod(floor(uMascara / exp2(aRango)), 2.0));
     vPulso *= visible;
-    vDim = mix(${ALFA_ATENUADO.toFixed(3)}, 1.0, visible);
+    float efecto = uVivo * step(0.0, aEdad) * (1.0 - vSel);
+    float fresco = exp(-max(aEdad + uEdadExtra, 0.0) / ${HORAS_FRESCURA.toFixed(1)});
+    float apar = smoothstep(hash * ${REPARTO_ENTRADA.toFixed(3)}, hash * ${REPARTO_ENTRADA.toFixed(3)} + ${(1 - REPARTO_ENTRADA).toFixed(3)}, uEntrada);
+    vDim = mix(${ALFA_ATENUADO.toFixed(3)}, 1.0, visible) * mix(1.0, mix(${ALFA_MIN_ANTIGUO.toFixed(3)}, 1.0, fresco), efecto) * apar;
+    float respira = 0.5 + 0.5 * sin(uFase + 6.2831853 * hash);          // 0–1, con la fase de cada instancia: ninguno late a la vez
+    vGlow = efecto * smoothstep(${FRESCURA_RESPLANDOR_DESDE.toFixed(3)}, ${FRESCURA_RESPLANDOR_HASTA.toFixed(3)}, fresco) * visible * mix(1.0, ${RESPIRACION_RESPLANDOR_MIN.toFixed(2)} + ${(1 - RESPIRACION_RESPLANDOR_MIN).toFixed(2)} * respira, uAmp);
     vec3 centro = instanceMatrix[3].xyz;
     if (dot(normalize(centro), cameraPosition) <= 1.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-    vec3 p = vec3(position.xy * ${ESCALA_QUAD.toFixed(4)} * (1.0 + 0.2 * vSel), position.z);
+    float escalaRespira = 1.0 + ${RESPIRACION_ESCALA.toFixed(3)} * uAmp * (2.0 * respira - 1.0) * (1.0 - vSel);   // «respiración» leve de TODOS los marcadores (uAmp = 0 con movimiento reducido)
+    vec3 p = vec3(position.xy * ${ESCALA_QUAD.toFixed(4)} * (1.0 + 0.2 * vSel) * mix(${ESCALA_ENTRADA_MIN.toFixed(3)}, 1.0, apar) * escalaRespira, position.z);
     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(p, 1.0);
   }`;
 const FRAGMENTO_PUNTO = `
@@ -174,6 +192,7 @@ const FRAGMENTO_PUNTO = `
   varying float vSel;
   varying float vPulso;
   varying float vDim;
+  varying float vGlow;
   void main() {
     float r = length(vPos);
     float aa = max(fwidth(r), 0.0005);
@@ -182,8 +201,10 @@ const FRAGMENTO_PUNTO = `
     vec3 c = mix(vColor, mix(uBorde, uSeleccion, vSel), t);
     float disco = 1.0 - smoothstep(1.0 - aa, 1.0, r);
     float halo = (1.0 - smoothstep(1.0, 1.0 + max(${AMPLITUD_HALO.toFixed(3)} * vPulso, 0.002), r)) * ${ALFA_HALO.toFixed(3)} * vPulso;
+    halo += (1.0 - smoothstep(1.0, 1.0 + ${ANCHO_RESPLANDOR.toFixed(3)}, r)) * ${ALFA_RESPLANDOR.toFixed(3)} * vGlow;   // resplandor estático de lo muy reciente (vida.ts)
     float a = disco + (1.0 - disco) * halo;
-    gl_FragColor = vec4(mix(uBorde, c, disco / max(a, 0.0001)), a * vDim);
+    vec3 colorHalo = mix(uBorde, vColor, 0.6);                                                                          // el halo toma el tinte de la profundidad (el relleno no cambia)
+    gl_FragColor = vec4(mix(colorHalo, c, disco / max(a, 0.0001)), a * vDim);
     #include <colorspace_fragment>
   }`;
 // Halo de selección: disco translúcido con un anillo, algo mayor que el marcador. Se dibuja DETRÁS de los marcadores (renderOrder menor), sin escribir profundidad
@@ -261,6 +282,7 @@ export class EscenaGlobo {
   // transición de cámara (camara.ts): UNA sola; el tipo distingue la de selección, la de región y la de recuperación de la vista (al completarse esta última se reanuda la rotación)
   private readonly transicion = new TransicionCamara();
   private tipoTransicion: 'seleccion' | 'recuperar' | 'region' | null = null;
+  private distanciaPred = DISTANCIA_INICIAL; private medidaInicialHecha = false;   // Fase 1: distancia predeterminada según la proporción del visor (más lejos en móvil vertical); se fija con la PRIMERA medida válida
   private zoomSel: EstadoZoom = ZOOM_SIN_SESION;     // zoom aplicado al seleccionar (acercar ×0,8) y si la persona lo cambió después; se reinicia al recuperar la vista
   // Evento sobre el que ya se centró la cámara (seleccionar el mismo no repite). Es también la BANDERA que evita la doble recuperación: recuperarVista() lo pone a null, así que el
   // posterior fijarSeleccion(null) (efecto del componente tras `cerrar`) ve null y no inicia otra recuperación.
@@ -275,7 +297,10 @@ export class EscenaGlobo {
   private readonly finRanuras = new Float64Array(MAX_ONDAS); private finOndas = 0; private epoca = 0;
   private readonly seguimiento = new SeguimientoOndas();
   // leyenda interactiva (leyenda.ts): geometría PROPIA de los marcadores con el atributo aRango, rango por instancia, rango activo, índice de la instancia seleccionada y subconjunto seleccionable
-  private geomMarcas: CircleGeometry | null = null; private atributoRango: InstancedBufferAttribute | null = null;
+  private geomMarcas: CircleGeometry | null = null; private atributoRango: InstancedBufferAttribute | null = null; private atributoEdad: InstancedBufferAttribute | null = null;
+  // vida.ts: instante (ms) de la última carga, entrada escalonada pendiente/en curso y si la escena está en REPRODUCCIÓN (sin frescura)
+  private etiquetas: Sprite[] = [];   // etiquetas «M x,x» de los mayores (etiquetas.ts): como mucho 3 sprites, recreados solo al cambiar los datos
+  private refEdadMs = 0; private hayVivo = false; private modoReplay = false; private entradaPendiente = true; private t0Entrada = 0; private finEntrada = 0;
   private rangoInst = new Uint8Array(0); private rangoActivo: number | null = null; private iSel = -1; private indicePick: PuntosGlobo | null = null;
   // estrellas y calidad adaptativa
   private matEstrellas!: ShaderMaterial; private calidad!: MaquinaCalidad;
@@ -354,7 +379,7 @@ export class EscenaGlobo {
     this.geomPunto = new CircleGeometry(1, SEGMENTOS_PUNTO);
     this.matPunto = new ShaderMaterial({
       uniforms: { uBorde: { value: new Color(paleta.borde) }, uSeleccion: { value: new Color(paleta.seleccion) }, uSel: { value: -1 }, uFase: { value: 0 }, uAmp: { value: 0 }, uNPulso: { value: 0 },
-        uMascara: { value: MASCARA_TODOS } },
+        uMascara: { value: MASCARA_TODOS }, uEdadExtra: { value: 0 }, uEntrada: { value: 1 }, uVivo: { value: 0 } },
       vertexShader: VERTICE_PUNTO, fragmentShader: FRAGMENTO_PUNTO, transparent: true, depthTest: false, depthWrite: false,
     });
     const matHalo = new ShaderMaterial({ uniforms: { uColor: { value: new Color(paleta.seleccion) } }, vertexShader: VERTICE_HALO_SEL, fragmentShader: FRAGMENTO_HALO_SEL,
@@ -375,8 +400,8 @@ export class EscenaGlobo {
     const e = generarEstrellas();
     const geomEstrellas = new BufferGeometry();
     geomEstrellas.setAttribute('position', new Float32BufferAttribute(e.posiciones, 3));
-    geomEstrellas.setAttribute('aEstrella', new Float32BufferAttribute(e.propiedades, 2));
-    this.matEstrellas = new ShaderMaterial({ uniforms: { uColor: { value: new Color(paleta.estrellas) }, uPx: { value: this.renderer.getPixelRatio() } },
+    geomEstrellas.setAttribute('aEstrella', new Float32BufferAttribute(e.propiedades, 3));
+    this.matEstrellas = new ShaderMaterial({ uniforms: { uColor: { value: new Color(paleta.estrellas) }, uPx: { value: this.renderer.getPixelRatio() }, uAhora: { value: 0 }, uParpadeo: { value: this.mqMovimiento?.matches ? 0 : 1 } },
       vertexShader: VERTICE_ESTRELLAS, fragmentShader: FRAGMENTO_ESTRELLAS, transparent: true, depthWrite: false });   // depthTest activo: el planeta las tapa; no escriben profundidad
     const estrellas = new Points(geomEstrellas, this.matEstrellas);
     estrellas.renderOrder = -10; estrellas.frustumCulled = false;
@@ -434,6 +459,8 @@ export class EscenaGlobo {
     this.rangoInst = new Uint8Array(capacidad);
     this.atributoRango = new InstancedBufferAttribute(new Float32Array(capacidad), 1);
     geom.setAttribute('aRango', this.atributoRango);
+    this.atributoEdad = new InstancedBufferAttribute(new Float32Array(capacidad).fill(EDAD_DESCONOCIDA), 1);   // vida.ts: horas desde el evento hasta la carga (−1 = sin hora)
+    geom.setAttribute('aEdad', this.atributoEdad);
     const malla = new InstancedMesh(geom, this.matPunto, capacidad);
     malla.setColorAt(0, new Color(0xffffff)); // crea instanceColor ya: el shader se compila una vez con USE_INSTANCING_COLOR
     malla.count = 0;
@@ -470,6 +497,9 @@ export class EscenaGlobo {
     malla.instanceMatrix.needsUpdate = true;
     if (malla.instanceColor) malla.instanceColor.needsUpdate = true;
     this.cargarRangos(orden);                    // rango de profundidad por instancia (leyenda): una pasada O(n) por cambio de datos
+    this.cargarEdades(orden);                    // edad por instancia (vida.ts): otra pasada O(n) por cambio de datos
+    this.actualizarEtiquetas(orden);             // etiquetas de los mayores (etiquetas.ts): como mucho 3, solo al cambiar los datos
+    this.iniciarEntrada(orden.n);                // entrada escalonada: solo con los PRIMEROS datos
     this.nPulso = contarPulsantes(orden.magnitudes, orden.n, UMBRAL_MAG_PULSO); // una vez por cambio de datos; el shader solo compara el índice de instancia con este número
     this.matPunto.uniforms['uNPulso'].value = this.nPulso;
     this.fijarSeleccion(this.idSeleccion, false); // un refresco de datos no debe mover la cámara
@@ -483,6 +513,75 @@ export class EscenaGlobo {
     const a = this.atributoRango!;
     for (let i = 0; i < orden.n; i++) a.setX(i, this.rangoInst[i]);
     a.needsUpdate = true;
+  }
+
+  /**
+   * vida.ts: guarda la edad (horas) de cada evento en `aEdad`, medida en el instante de esta carga (`refEdadMs`); `uEdadExtra` (en el fotograma) suma lo transcurrido después, así el atributo
+   * no se reescribe nunca por el paso del tiempo. Decide también si hay datos EN VIVO (algún evento de las últimas horas): si no, la frescura se apaga (uVivo = 0).
+   */
+  private cargarEdades(orden: PuntosGlobo): void {
+    const a = this.atributoEdad!; const ahora = Date.now();
+    this.refEdadMs = ahora;
+    for (let i = 0; i < orden.n; i++) a.setX(i, orden.tiempos ? edadEnHoras(ahora, orden.tiempos[i]) : EDAD_DESCONOCIDA);
+    a.needsUpdate = true;
+    this.hayVivo = hayDatosEnVivo(orden.tiempos, orden.n, ahora);
+    this.aplicarVivo();
+  }
+
+  /**
+   * Etiquetas «M x,x» junto a los terremotos más fuertes (etiquetas.ts: M ≥ 5, máximo 3). Son Sprites (una textura de canvas pequeña cada una) con prueba de profundidad: el planeta las oculta
+   * cuando el evento está en la cara posterior. Se recrean SOLO al cambiar los datos y su tamaño en pantalla se mantiene con el zoom (escalarEtiquetas). Son decorativas: no entran en la selección.
+   */
+  private actualizarEtiquetas(orden: PuntosGlobo): void {
+    this.limpiarEtiquetas();
+    const r0 = RADIO_ESFERA + ELEVACION_PUNTO + 0.004;
+    for (const i of elegirEtiquetados(orden.magnitudes, orden.n, undefined, undefined, orden.normales)) {
+      const texto = textoEtiqueta(orden.magnitudes[i]);
+      if (texto === '') continue;
+      const sprite = new Sprite(new SpriteMaterial({ map: this.texturaEtiqueta(texto), transparent: true, depthWrite: false }));
+      sprite.center.set(0, 0.5);                       // el texto empieza a la derecha del marcador (el canvas deja un margen a la izquierda)
+      const o = i * 3;
+      sprite.position.set(orden.normales[o] * r0, orden.normales[o + 1] * r0, orden.normales[o + 2] * r0);
+      sprite.renderOrder = 12;                         // por encima de los marcadores (10) y los anillos (6)
+      this.escena.add(sprite); this.etiquetas.push(sprite);
+    }
+    this.escalarEtiquetas();
+    this.pedirFotograma();
+  }
+
+  /** Textura de una etiqueta: 192 × 64 px (se muestra a la mitad: nítida en pantallas 2×), texto claro con contorno oscuro para leerse sobre el océano, la tierra y los marcadores. */
+  private texturaEtiqueta(texto: string): CanvasTexture {
+    const lienzo = document.createElement('canvas'); lienzo.width = 192; lienzo.height = 64;
+    const g = lienzo.getContext('2d')!;
+    g.font = '600 26px ui-monospace, "SF Mono", Consolas, monospace'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 7; g.strokeStyle = 'rgba(8, 9, 11, 0.9)'; g.strokeText(texto, 30, 33);
+    g.fillStyle = '#e9ebef'; g.fillText(texto, 30, 33);
+    const textura = new CanvasTexture(lienzo); textura.colorSpace = SRGBColorSpace;
+    return textura;
+  }
+
+  /** Mantiene el tamaño en pantalla de las etiquetas con el zoom (anchura de mundo ∝ distancia de la cámara). Con 0–3 sprites el coste es nulo. */
+  private escalarEtiquetas(): void {
+    if (this.etiquetas.length === 0) return;
+    const w = anchoEtiqueta(this.camara.position.length());
+    for (const s of this.etiquetas) s.scale.set(w, w / 3, 1);
+  }
+
+  private limpiarEtiquetas(): void {
+    for (const s of this.etiquetas) { this.escena.remove(s); s.material.map?.dispose(); s.material.dispose(); }
+    this.etiquetas = [];
+  }
+
+  /** `uVivo` = 1 solo con datos en vivo y fuera de REPRODUCCIÓN (con hora histórica todo sería «antiguo» y atenuar por igual no informa). */
+  private aplicarVivo(): void { this.matPunto.uniforms['uVivo'].value = this.hayVivo && !this.modoReplay ? 1 : 0; }
+
+  /** Entrada escalonada de los marcadores al cargar los primeros datos (una sola vez; sin animación con movimiento reducido o con la vista en pausa). */
+  private iniciarEntrada(n: number): void {
+    if (!this.entradaPendiente || n === 0) return;
+    this.entradaPendiente = false;
+    if ((this.mqMovimiento?.matches ?? false) || this.enPausa) return;
+    this.t0Entrada = performance.now(); this.finEntrada = this.t0Entrada + DURACION_ENTRADA_MS;
+    this.matPunto.uniforms['uEntrada'].value = 0;
   }
 
   /**
@@ -511,6 +610,7 @@ export class EscenaGlobo {
   fijarReplay(replay: boolean): void {
     if (this.destruida) return;
     (this.matOnda.uniforms['uColor'].value as Color).set(replay ? this.opciones.paleta.replay : this.opciones.paleta.halo);
+    if (this.modoReplay !== replay) { this.modoReplay = replay; this.aplicarVivo(); this.pedirFotograma(); }   // vida.ts: en REPRODUCCIÓN no hay frescura (la hora de los eventos es histórica)
   }
 
   /**
@@ -672,7 +772,7 @@ export class EscenaGlobo {
     this.rotacion.interactuar(performance.now());   // se detiene ya; si la recuperación se cancela, rige el retardo normal de 3 s
     this.drenarInercia();
     this.camara.up.set(...UP_VERTICAL);             // normaliza `up` a (0,1,0) (camara.ts; es el valor por defecto que OrbitControls y lookAt asumen); el roll queda en cero porque la orientación sale de lookAt
-    const plan = planificarRecuperacion(this.poseActual(), DISTANCIA_INICIAL);
+    const plan = planificarRecuperacion(this.poseActual(), this.distanciaPred);
     this.iniciarTransicion(plan.destino, 'recuperar');
     if (!this.transicion.activa) this.terminarRecuperacion();   // movimiento reducido, vista oculta o ya en la pose: no hay animación que esperar
   }
@@ -791,11 +891,13 @@ export class EscenaGlobo {
   private readonly alCambiarCamara = (): void => {
     // velocidad de giro proporcional a la distancia a la superficie: cerca, un arrastre de 1 px mueve menos
     this.controles.rotateSpeed = Math.max(0.15, Math.min(1, (this.camara.position.length() - 1) * 0.35));
+    this.escalarEtiquetas();                       // etiquetas de los mayores: mismo tamaño en pantalla con cualquier zoom
     if (!this.enFotograma) this.pedirFotograma(); // dentro del fotograma ya se va a dibujar; fuera, hay que pedirlo
   };
 
   private readonly aplicarMovimiento = (): void => {
     this.controles.enableDamping = !(this.mqMovimiento?.matches ?? false); // movimiento reducido: sin inercia
+    if (this.matEstrellas) this.matEstrellas.uniforms['uParpadeo'].value = this.mqMovimiento?.matches ? 0 : 1;   // F8: sin parpadeo de estrellas con movimiento reducido (las estrellas se crean después de la primera llamada)
     if (this.mqMovimiento?.matches) { this.rotacion.fijarMovimientoReducido(true); this.opciones.alCambiarRotacion(false); } // ... y sin rotación automática ni pulsación
     this.pedirFotograma(); // un cambio de preferencia en caliente se refleja ya (apaga la pulsación y, si no hay nada más, el bucle se para)
   };
@@ -834,6 +936,10 @@ export class EscenaGlobo {
     const ondas = t < this.finOndas;                                                  // ¿hay algún anillo de evento nuevo vivo? (sin bucles: un único instante de fin)
     this.ondas.visible = ondas;                                                       // sin anillos vivos no se dibuja ni la draw call
     this.matOnda.uniforms['uAhora'].value = (t - this.epoca) / 1000;                  // un único uniform de tiempo para todos los anillos
+    this.matEstrellas.uniforms['uAhora'].value = (t - this.epoca) / 1000;             // parpadeo de unas pocas estrellas (estrellas.ts): solo se mueve mientras haya fotogramas por otro motivo
+    this.matPunto.uniforms['uEdadExtra'].value = (Date.now() - this.refEdadMs) / 3_600_000;   // vida.ts: horas desde la carga (la edad de cada marcador no se reescribe)
+    const entrando = t < this.finEntrada;                                              // entrada escalonada de los marcadores (vida.ts): un único instante de fin
+    this.matPunto.uniforms['uEntrada'].value = entrando ? progresoEntrada(t - this.t0Entrada, false) : 1;
     if (giro > 0 && this.hayHover && esperaTooltipMs(performance.now(), this.ultimoCalculoTooltip) === 0) this.calcularTooltip(); // el globo se mueve bajo un cursor quieto: se revalida la etiqueta (throttled)
     this.enFotograma = true;
     const movimiento = this.controles.update(); // con giro automático devuelve true porque la cámara se movió, no por inercia
@@ -843,11 +949,11 @@ export class EscenaGlobo {
     const nuevoPixelRatio = this.calidad.registrar(performance.now() - t0, t);   // coste de CPU del render (calidad.ts); con el bucle parado no hay muestras
     if (nuevoPixelRatio !== null) this.cambiarPixelRatio(nuevoPixelRatio);
     this.tRender = t;
-    if (ondas) this.sucio = true;                                         // anillos vivos: fotogramas completos (≈ 2 s) para que la expansión sea fluida
+    if (ondas || entrando) this.sucio = true;                             // anillos vivos o entrada en curso: fotogramas completos (≈ 2 s / 1,2 s) para que el movimiento sea fluido
     if (this.transicion.activa) { this.sucio = true; this.encolar(); }       // transición en curso: un fotograma completo tras otro hasta que termine
     else if (movimiento && giro === 0 && paso === null) { this.sucio = true; this.encolar(); } // inercia del arrastre: seguir a fotograma completo
     else if (this.rotacion.girando) this.encolar();                     // rotación en curso (o en rampa)
-    else if (pulsa || ondas) this.encolar();                             // pulsación ambiental (tasa baja) o anillos vivos: solo mientras existan, sin movimiento reducido y vista activa
+    else if (pulsa || ondas || entrando) this.encolar();                 // pulsación ambiental (tasa baja), anillos vivos o entrada: solo mientras existan, sin movimiento reducido y vista activa
     else this.programarReanudacion();                                    // nada que mover: el bucle se PARA (cero trabajo)
   };
 
@@ -863,7 +969,8 @@ export class EscenaGlobo {
 
   /** ¿Hay que mantener el bucle solo por la pulsación? (pulso.ts: hay pulsantes, sin movimiento reducido, vista activa y, si así se configura, rotación no pausada). */
   private get pulsoActivo(): boolean {
-    return hayPulso({ movimientoReducido: this.mqMovimiento?.matches ?? false, nPulsantes: this.nPulso, enPausa: this.enPausa, rotacionActiva: this.rotacion.estaActiva });
+    // F8: con cualquier marcador dibujado hay «respiración» leve (vida.ts), no solo cuando hay M ≥ 5 (nPulso): el bucle de baja tasa (≈ 25 fps) se mantiene mientras haya marcadores y se PARA igual si se pausa la rotación o hay movimiento reducido
+    return hayPulso({ movimientoReducido: this.mqMovimiento?.matches ?? false, nPulsantes: Math.max(this.nPulso, this.malla?.count ?? 0), enPausa: this.enPausa, rotacionActiva: this.rotacion.estaActiva });
   }
 
   /** Si la rotación solo espera el retardo de inactividad, un único temporizador despierta el bucle; si está bloqueada (pausa, selección, 2D…) no hay nada que esperar. */
@@ -902,6 +1009,8 @@ export class EscenaGlobo {
     this.ancho = w; this.alto = h;
     this.renderer.setSize(w, h, false); // el tamaño visible lo fija el CSS
     this.camara.aspect = w / h;
+    this.distanciaPred = distanciaInicialPara(w / h);
+    if (!this.medidaInicialHecha) { this.medidaInicialHecha = true; this.colocarCamara(LAT_INICIAL, LON_INICIAL, this.distanciaPred); }   // primera medida válida: encuadre inicial (antes de cualquier interacción)
     this.camara.updateProjectionMatrix();
     this.aplicarReserva(true);          // el desplazamiento depende del tamaño: se recalcula aquí (y vuelve a pedir fotograma)
     this.pedirFotograma();
@@ -1024,6 +1133,7 @@ export class EscenaGlobo {
     this.idTemporizador = 0;
     if (this.idTemporizadorSol !== 0) clearTimeout(this.idTemporizadorSol);
     this.idTemporizadorSol = 0;                           // sin temporizador del Sol tras destruir
+    this.limpiarEtiquetas();                              // texturas y materiales de las etiquetas de los mayores
     this.cancelarTransicion(); this.ocultarTooltip();   // sin transición viva ni temporizador de etiqueta tras destruir
     this.observadorTamano?.disconnect(); this.observadorVisibilidad?.disconnect();
     this.mqMovimiento?.removeEventListener('change', this.aplicarMovimiento);
@@ -1039,7 +1149,7 @@ export class EscenaGlobo {
     this.controles.removeEventListener('change', this.alCambiarCamara);
     this.controles.dispose();
     if (this.malla) { this.escena.remove(this.malla); this.malla.dispose(); this.malla = null; }
-    this.geomMarcas?.dispose(); this.geomMarcas = null; this.atributoRango = null;   // geometría propia de los marcadores (aRango)
+    this.geomMarcas?.dispose(); this.geomMarcas = null; this.atributoRango = null; this.atributoEdad = null;   // geometría propia de los marcadores (aRango, aEdad)
     if (this.ondas) { this.escena.remove(this.ondas); this.ondas.dispose(); }         // pool de anillos (su geometría y su material están en `propios`)
     if (this.fronteras) { this.fronteras.geometry.dispose(); (this.fronteras.material as LineBasicMaterial).dispose(); this.fronteras = null; }
     this.texturaTierra?.dispose(); this.texturaTierra = null;

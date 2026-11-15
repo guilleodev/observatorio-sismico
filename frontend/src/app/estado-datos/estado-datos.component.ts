@@ -3,6 +3,7 @@
 // Accesibilidad: UNA región viva (aria-live polite) con el mensaje de la lectura y la etiqueta REPRODUCCIÓN (cambian por evento, no por segundo).
 // «Última lectura del frontend» cambia cada segundo y por eso queda FUERA de la región viva.
 import { Component, computed, input } from '@angular/core';
+import { CifraAnimadaComponent } from '../cifra-animada.component';
 import { estadoGeneral } from '../estado';
 import type { EntradaEstado } from '../estado';
 import type { BloquePais, Evento } from '../modelos';
@@ -11,6 +12,7 @@ import { estadoUnico, indicadorConexion, indicadorDatos, notaCargados, notaCarga
 @Component({
   selector: 'app-estado-datos',
   standalone: true,
+  imports: [CifraAnimadaComponent],
   template: `
     <section class="datos" [class.replay]="enReplay()" aria-labelledby="datos-titulo">
       <div class="cab">
@@ -30,14 +32,14 @@ import { estadoUnico, indicadorConexion, indicadorDatos, notaCargados, notaCarga
         @if (enReplay()) { <span class="replay-marca" aria-hidden="true">▶ REPRODUCCIÓN</span> }
         <ul class="kpis">
           @if (esApi()) {
-            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Terremotos en el periodo</span><span class="v grande num mono">{{ total() ?? 'ND' }}</span><span class="sub" [attr.title]="'total que informa la API · ' + notaPeriodo()">{{ notaPeriodo() }}</span></li>
+            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Terremotos en el periodo</span><span class="v grande num mono"><app-cifra [valor]="total() ?? 'ND'" /></span><span class="sub" [attr.title]="'total que informa la API · ' + notaPeriodo()">{{ notaPeriodo() }}</span></li>
           }
           <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Magnitud máxima</span><span class="v grande num mono">{{ magMaxima() }}</span><span class="sub" [attr.title]="notaAlcance()">{{ notaAlcance() }}</span></li>
-          <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Eventos ≥ M4.5</span><span class="v grande num mono">{{ mayores() }}</span><span class="sub" [attr.title]="notaAlcance()">{{ notaAlcance() }}</span></li>
+          <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Eventos ≥ M4.5</span><span class="v grande num mono"><app-cifra [valor]="mayores()" /></span><span class="sub" [attr.title]="notaAlcance()">{{ notaAlcance() }}</span></li>
           @if (nPaisesPeriodo() !== null) {
-            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Países con eventos</span><span class="v grande num mono">{{ nPaisesPeriodo() }}</span><span class="sub" title="en el periodo (sin contar «Sin país asignado»)">en el periodo</span></li>
+            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Países con eventos</span><span class="v grande num mono"><app-cifra [valor]="nPaisesPeriodo()" /></span><span class="sub" title="en el periodo (sin contar «Sin país asignado»)">en el periodo</span></li>
           } @else {
-            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Visualizados</span><span class="v grande num mono">{{ conteo() }}</span><span class="sub" [attr.title]="cobertura()">{{ cobertura() }}</span></li>
+            <li class="kpi" [attr.data-tono]="tonoNeutro()"><span class="k etiqueta-ui">Visualizados</span><span class="v grande num mono"><app-cifra [valor]="conteo()" /></span><span class="sub" [attr.title]="cobertura()">{{ cobertura() }}</span></li>
           }
           @if (esApi()) {
             <li class="kpi kpi-estado" [attr.data-tono]="estadoKpi().tono"><span class="k etiqueta-ui">Estado</span><span class="v"><span class="ico" aria-hidden="true">{{ estadoKpi().icono }}</span>{{ estadoKpi().texto }}</span><span class="sub" [attr.title]="ingestaCorta()">{{ ingestaCorta() }}</span></li>

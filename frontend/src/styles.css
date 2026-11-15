@@ -1,16 +1,16 @@
 /* F7: sistema de diseño OSCURO. Las variables viven en :root y las usan los estilos de cada componente (los estilos encapsulados heredan las variables CSS). */
 :root {
-  /* superficies (azul marino en tres niveles) */
-  --fondo: #0a1120;
-  --superficie-1: #0f1a2e;
-  --superficie-2: #15233b;
-  --superficie-3: #1c2e4d;
+  /* superficies (F8: GRAFITO neutro en tres niveles; antes azul marino) */
+  --fondo: #0f1114;
+  --superficie-1: #16191e;
+  --superficie-2: #1d2128;
+  --superficie-3: #272c35;
   /* bordes: decorativo (tarjetas) y de control (inputs, botones; >= 3:1 sobre la superficie) */
-  --borde: #2a3c5c;
-  --borde-control: #6b82a6;
+  --borde: #343a46;
+  --borde-control: #7d8696;
   /* texto */
-  --texto: #e6edf7;
-  --texto-2: #a9b8d0;
+  --texto: #e9ebef;
+  --texto-2: #a8adb8;
   /* acento cian/turquesa */
   --acento: #22d3ee;
   --acento-texto: #67e8f9;
@@ -24,7 +24,7 @@
   --error-fondo: #3a1518;
   --error-texto: #fecaca;
   --info: #60a5fa;
-  --info-fondo: #12284a;
+  --info-fondo: #1b222c;
   --info-texto: #cfe2ff;
   /* REPRODUCCIÓN: violeta propio, distinto del cian de «en vivo» (invariante 8) */
   --replay: #a78bfa;
@@ -40,23 +40,24 @@
   --foco: #67e8f9;
   --fuente: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* F7 (bloques superiores): fondo del modo «En vivo» seleccionado y escala tipográfica (aditivos) */
-  --acento-fondo: #0c2a3b;
+  --acento-fondo: #0e2c33;
   --t-xs: .72rem; --t-s: .8rem; --t-m: .9rem; --t-l: 1.15rem; --t-xl: 1.75rem;
   /* F7 (mapa): fondos del contenedor del mapa (iguales a FONDO_MAPA de formato.ts), borde claro de marcadores/puntos de la leyenda y filtro de las teselas OSM en el estilo oscuro */
-  --mapa-fondo-oscuro: #0b1626;
+  --mapa-fondo-oscuro: #12151a;
   --mapa-fondo-claro: #dceaf1;
   --punto-borde: #e2e8f0;
   /* F7 (globo 3D): tierra firme de la textura del planeta (el océano usa --superficie-2); el borde claro --punto-borde se mide sobre ambos en tests/globo.test.ts */
-  --globo-continente: #264264;
-  --filtro-teselas-oscuro: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6);
+  --globo-continente: #2f3541;
+  --filtro-teselas-oscuro: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.15);
 
   /* ===== «Mission Control» (F7, ronda 1): sistema visual compartido. Todo ADITIVO: nada de lo anterior cambia de valor. =====
      Semántica de color: cian = activo/primario · violeta = REPRODUCCIÓN (--replay*) · ámbar = avisos (--aviso*) · azul-gris = el resto.
      Capas: escenario (fondo profundo) → paneles de vidrio ligero (casi opacos, SIN backdrop-filter) → datos en línea. */
-  --escenario: #070e1c;                                  /* fondo profundo bajo los paneles y el carril de la nav */
-  --panel-vidrio: rgba(15, 26, 46, .92);                 /* superficie-1 con alfa >= .86: se lee como panel sin desenfocar nada */
-  --cab-fondo: rgba(10, 17, 32, .94);                    /* fondo de la cabecera sticky (mismo tono que --fondo) */
-  --linea: rgba(147, 180, 235, .12);                     /* línea fina decorativa (8–12 % de azul claro) */
+  --escenario: #0b0c0f;                                  /* fondo profundo bajo los paneles y el carril de la nav */
+  --panel-vidrio: rgba(22, 25, 30, .92);                 /* superficie-1 con alfa >= .86: se lee como panel sin desenfocar nada */
+  --cab-fondo: rgba(15, 17, 20, .94);                    /* fondo de la cabecera sticky (mismo tono que --fondo) */
+  --linea: rgba(103, 232, 249, .13);                     /* línea fina decorativa: cian muy tenue (F8: así todas las líneas y bordes finos llevan un toque de acento) */
+  --borde-acento: rgba(34, 211, 238, .5);                /* F8: borde de acento (hover de filas, resalte de selección) */
   --filo: linear-gradient(90deg, transparent, rgba(103, 232, 249, .5) 50%, transparent);          /* «filo de luz» superior, cian tenue */
   --filo-replay: linear-gradient(90deg, transparent, rgba(167, 139, 250, .6) 50%, transparent);   /* el mismo filo en REPRODUCCIÓN (violeta) */
   --elev-1: 0 1px 2px rgba(0, 0, 0, .45);
@@ -64,8 +65,8 @@
   --elev-3: 0 12px 32px rgba(0, 0, 0, .55);
   --radio-stage: 16px; --radio-panel: var(--radio); --radio-control: var(--radio-s);
   /* nav segmentada de la cabecera: carril oscuro y píldora activa cian tenue (contrastes medidos en tests/ronda1-visual.test.ts) */
-  --nav-fondo: #0b1424;
-  --nav-activa-fondo: #0e3a4d;
+  --nav-fondo: #131519;
+  --nav-activa-fondo: #10343d;
   /* tipografía SIN fuentes externas: pila de sistema para el texto y monoespaciada para cifras y fechas UTC */
   --fuente-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
   --t-2xs: .68rem; --t-display: 2.25rem;                 /* se suman a --t-xs … --t-xl de arriba (escala: 2xs · xs · s · m · l · xl · display) */
@@ -76,9 +77,9 @@
   --barra-cian-b: #0e8fa8;
   --barra-mag-a: #a5c8d6;
   --barra-mag-b: #5f8da2;
-  --banda-fondo: #0b2036;
+  --banda-fondo: #112127;
 }
-@media (max-width: 767px) { :root { --alto-cabecera: 48px; } }
+@media (max-width: 767px) { :root { --alto-cabecera: 100px; } }
 
 /* Fondo: un resplandor cian muy tenue arriba sobre el color base. Estático, sin imágenes ni filtros. */
 html { color-scheme: dark; background: radial-gradient(ellipse 90% 55% at 50% 0, rgba(34, 211, 238, .06), transparent 70%) no-repeat, var(--fondo); scroll-padding-top: calc(var(--alto-cabecera) + var(--esp-3)); }
@@ -115,7 +116,7 @@ option { background-color: var(--superficie-1); color: var(--texto); }
 /* ---------- Rediseño del dashboard: panel común y destinos de las anclas ---------- */
 /* Panel de control: superficie-1, borde sutil, radio y una línea de acento cian discreta arriba (violeta en REPRODUCCIÓN). Solo reutiliza tokens existentes (contrastes medidos en tests/dashboard.test.ts). */
 /* CAMBIO (ronda 1 Mission Control): «panel de vidrio ligero» = fondo casi opaco + línea fina (--linea) + «filo de luz» superior de 1 px (::before, cian; violeta en REPRODUCCIÓN) en vez del borde completo y la franja de 2 px. */
-.panel-ui { position: relative; min-width: 0; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: var(--radio-panel); box-shadow: var(--elev-2); padding: var(--esp-3) var(--esp-4); }
+.panel-ui { position: relative; min-width: 0; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: var(--radio-panel); box-shadow: none; padding: var(--esp-3) var(--esp-4); }   /* panel plano (sin sombra) con contorno fino cian tenue */
 .panel-ui::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px; background: var(--filo); pointer-events: none; }
 .panel-ui.replay::before { background: var(--filo-replay); }
 .panel-titulo { display: flex; align-items: center; gap: var(--esp-2); margin: 0 0 var(--esp-3); font-size: var(--t-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
@@ -185,7 +186,7 @@ option { background-color: var(--superficie-1); color: var(--texto); }
 .leaflet-container .leaflet-control-layers input { accent-color: var(--acento); }
 .leaflet-container .leaflet-control-layers-expanded { padding: 8px 12px; }
 /* atribución */
-.leaflet-container .leaflet-control-attribution { background: rgba(10, 17, 32, .88); color: var(--texto-2); }
+.leaflet-container .leaflet-control-attribution { background: rgba(15, 17, 20, .88); color: var(--texto-2); }
 .leaflet-container .leaflet-control-attribution a { color: var(--acento-texto); }
 .leaflet-container:focus-visible { outline: 3px solid var(--foco); outline-offset: -3px; }
 /* Ronda 2 «Mission Control»: con el escenario inmersivo (≥ 1100 px) los HUD flotan sobre el mapa. Los controles propios de Leaflet NO deben quedar tapados: se apartan con CSS, sin tocar el código de Leaflet.
@@ -203,4 +204,10 @@ option { background-color: var(--superficie-1); color: var(--texto); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .leaflet-fade-anim .leaflet-popup, .leaflet-zoom-anim .leaflet-zoom-animated { transition: none !important; }
+}
+
+/* F8: transición entre vistas (Panel · Análisis · Eventos): fundido de 180 ms SOLO de opacidad (sin transform: no crea contexto de apilamiento que afecte al globo ni a Leaflet). Solo con movimiento permitido; con «reducir movimiento» el cambio es instantáneo. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes entrada-vista { from { opacity: 0; } to { opacity: 1; } }
+  .vista-seccion:not([hidden]) { animation: entrada-vista .18s ease-out; }
 }

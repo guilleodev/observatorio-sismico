@@ -18,6 +18,7 @@ import { MaquinaCarga, TEXTO_FASE, esFaseTerminal, estaCargando, indicadorVisibl
 import type { FaseCarga } from './carga';
 import { RANGOS_LEYENDA, contarRangos, idsDeRango, indiceDeRango, textoRecuento } from './leyenda';
 import type { ConteosRangos, RangoProfundidad } from './leyenda';
+import { formatearHoraUtc } from '../cifra-animada';
 import type { EscenaGlobo } from './escena'; // solo el TIPO: no arrastra three al paquete principal (el módulo real se carga con import() más abajo)
 import type { EjecucionReplay, Evento } from '../modelos';
 
@@ -75,6 +76,7 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
       <div class="pie">
         <div class="fila">
           <p class="recuento" role="status">{{ recuento() }}@if (resultado().omitidos > 0) { · {{ omitidosTexto() }} }</p>
+          <p class="reloj-utc" translate="no" title="Hora UTC actual: la que usa la sombra día/noche del globo (no es la hora de los eventos)"><time>{{ reloj() }}</time> UTC</p>
           <div class="navegacion" role="group" aria-label="Recorrer los terremotos por magnitud">
             <button type="button" (click)="vecino(-1)" [disabled]="sinNavegables()">Evento anterior</button>
             <button type="button" (click)="vecino(1)" [disabled]="sinNavegables()">Evento siguiente</button>
@@ -93,7 +95,8 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
             <li>Al seleccionar un terremoto, la cámara se centra en él y se acerca con suavidad por el camino más corto. Para cerrar el detalle usa «Cerrar», pulsa en una zona vacía del globo (sin arrastrar) o «Restablecer»: la cámara vuelve con suavidad al zoom predeterminado, enderezada y mirando la misma región, y la Tierra reanuda su giro. Con movimiento reducido el cambio es directo.</li>
             <li>«Región» lleva la cámara a una zona del mundo (Pacífico, Japón, Indonesia, Mediterráneo, Andes, Norteamérica); son encuadres aproximados y no cambian los filtros, los datos ni la selección.</li>
             <li>Con ratón, al pasar sobre un terremoto aparece su lugar y su magnitud. Los de magnitud 5 o más laten de forma muy sutil; con movimiento reducido no laten.</li>
-            <li>Sombra día/noche según la hora UTC actual; no indica la hora de los eventos (tampoco en REPRODUCCIÓN). Es solo ambiental: los terremotos no se oscurecen de noche.</li>
+            <li>Sombra día/noche según la hora UTC actual (la del reloj del pie del globo); no indica la hora de los eventos (tampoco en REPRODUCCIÓN). Es solo ambiental: los terremotos no se oscurecen de noche.</li>
+            <li>Los terremotos más recientes se ven con más opacidad y un leve resplandor; los de hace muchas horas, algo más tenues (el color sigue indicando la profundidad y el tamaño la magnitud). Al cargar, los puntos aparecen escalonados y todos «respiran» de forma muy leve (±4 % de tamaño). Con movimiento reducido no hay animación; en REPRODUCCIÓN no se aplica la diferencia por antigüedad.</li>
             <li>Anillo breve al llegar un evento nuevo; es solo una señal visual (no es una onda sísmica real). No aparece con el primer lote de datos, al cambiar de modo o de filtros, ni con movimiento reducido.</li>
             <li>Las estrellas del fondo son decorativas y no se pueden seleccionar.</li>
             <li>Con la vista 3D, la leyenda de profundidad (panel de la derecha) resalta un solo rango y atenúa el resto; los atenuados no se seleccionan con el puntero y «Evento anterior» y «Evento siguiente» recorren solo los visibles. No cambia los filtros, la tabla ni el mapa 2D. Pulsa de nuevo el rango o «Mostrar todos» para quitarlo.</li>
@@ -126,11 +129,11 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
        Con REPRODUCCIÓN (clase es-replay del escenario, ≥ 701 px) la etiqueta ocupa la fila B y las pistas bajan a la «C» (100 px). */
     .pistas { position: absolute; top: 56px; left: calc(var(--hud-izq, 0px) + var(--esp-3)); max-width: calc(100% - var(--hud-izq, 0px) - var(--hud-der, 0px) - 2 * var(--esp-3)); display: grid; gap: 4px; justify-items: start; pointer-events: none; }
     @media (min-width: 701px) { :host-context(.es-replay) .pistas { top: 100px; } }
-    .pista { margin: 0; padding: 2px 10px; background: rgba(10, 17, 32, .82); color: var(--texto-2); border: 1px solid var(--borde); border-radius: 999px; font-size: var(--t-s); }
+    .pista { margin: 0; padding: 2px 10px; background: rgba(15, 17, 20, .82); color: var(--texto-2); border: 1px solid var(--borde); border-radius: 999px; font-size: var(--t-s); }
     .pista .fino { display: none; }
     @media (hover: hover) and (pointer: fine) { .pista .fino { display: inline; } .pista .tactil { display: none; } }
     /* grupo único de controles: píldora compacta abajo al centro */
-    .controles { position: absolute; left: var(--esp-3); right: var(--esp-3); bottom: var(--esp-3); margin-inline: auto; width: fit-content; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 4px; max-width: calc(100% - 2 * var(--esp-3)); background: var(--superficie-2); border: 1px solid var(--borde-control); border-radius: var(--radio-s); box-shadow: var(--sombra-s); }
+    .controles { position: absolute; left: var(--esp-3); right: var(--esp-3); bottom: var(--esp-3); margin-inline: auto; width: fit-content; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 4px; max-width: calc(100% - 2 * var(--esp-3)); background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: 999px; box-shadow: none; }   /* Fase 2: píldora plana, sin contorno ni sombra */
     button { min-width: 36px; min-height: 36px; padding: 0 10px; font: 600 var(--t-m) var(--fuente); background: var(--superficie-1); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); cursor: pointer; touch-action: manipulation; }
     button.texto { font-size: var(--t-s); }
     button:hover:not(:disabled) { border-color: var(--acento); color: var(--acento-texto); }
@@ -142,12 +145,13 @@ type EstadoGlobo = 'inactivo' | 'cargando' | 'listo' | 'contexto' | 'error';
     select.region:focus-visible { outline: 3px solid var(--foco); outline-offset: 1px; }
     @media (max-width: 700px) { .controles button.texto { padding: 0 8px; } }
     /* etiqueta del hover: no captura eventos (el clic, el arrastre y el táctil llegan al canvas), se mueve solo con transform y cabe en el escenario */
-    .etiqueta { position: absolute; left: 0; top: 0; max-width: min(320px, 90%); padding: 3px 8px; background: rgba(10, 17, 32, .94); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); font-size: var(--t-s); line-height: 1.3; overflow-wrap: anywhere; pointer-events: none; }
+    .etiqueta { position: absolute; left: 0; top: 0; max-width: min(320px, 90%); padding: 3px 8px; background: rgba(15, 17, 20, .94); color: var(--texto); border: 1px solid var(--borde-control); border-radius: var(--radio-s); font-size: var(--t-s); line-height: 1.3; overflow-wrap: anywhere; pointer-events: none; }
     .etiqueta[hidden] { display: none; }
     /* CAMBIO (rediseño dashboard): la tarjeta de detalle y su ficha (antes aquí) pasaron al panel app-detalle-evento de la columna derecha. */
     .pie { min-width: 0; display: grid; gap: var(--esp-2); padding: var(--esp-3) var(--esp-4); background: var(--superficie-1); border-top: 1px solid var(--borde); }
     .fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-2) var(--esp-4); }
     .recuento { margin: 0; min-width: 0; font-size: var(--t-m); font-variant-numeric: tabular-nums; }
+    .reloj-utc { margin: 0; flex: none; font-family: var(--fuente-mono); font-size: var(--t-s); color: var(--texto-2); font-variant-numeric: tabular-nums; letter-spacing: .04em; }   /* F8: reloj UTC discreto junto al recuento */
     .aviso { margin: 0; padding: var(--esp-2) var(--esp-3); background: var(--aviso-fondo); color: var(--aviso-texto); border: 1px solid var(--aviso); border-radius: var(--radio-s); font-size: var(--t-m); }
     .navegacion { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2); }
     .navegacion button { font-size: var(--t-s); }
@@ -217,6 +221,9 @@ export class GloboComponent implements OnDestroy {
   /** Clave de la lectura (modo, etiqueta de ejecución, filtros): si cambia, los anillos de eventos nuevos reinician su base de ids. */
   private readonly claveLectura = computed(() => `${this.replay()}|${this.etiqueta() ?? ''}|${this.filtros()}`);
   private readonly nf = new Intl.NumberFormat('es-ES');
+  /** F8: reloj UTC del pie del globo («HH:MM»): se refresca cada 30 s (un temporizador, liberado en ngOnDestroy). Acompaña a la sombra día/noche, que usa esa misma hora. */
+  readonly reloj = signal(formatearHoraUtc(Date.now()));
+  private readonly idReloj = setInterval(() => this.reloj.set(formatearHoraUtc(Date.now())), 30_000);
 
   /** Eventos con coordenadas válidas (mismo criterio que el mapa 2D). Solo se calcula tras mostrar el globo por primera vez. */
   readonly resultado = computed(() => (this.activado() ? prepararPuntos(this.eventos(), CODIFICACION) : VACIO));
@@ -442,6 +449,7 @@ export class GloboComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearInterval(this.idReloj);
     this.destruido = true;
     this.cancelarLimite();
     this.aborto.abort();

@@ -41,7 +41,7 @@ Los identificadores (`ARQ-01`, `EXT-03`, …) son propios de esta auditoría y l
 | Mención original | Fuente | Adaptación | Estado |
 |---|---|---|---|
 | «URL del panel y procedimiento para activar el backend/túnel durante la defensa» [E] | ENUNCIADO §12 | Procedimiento de activación documentado + **checklist de la ventana de evaluación** (T039). La URL la usa el profesor por su cuenta. | Pendiente de URL definitiva y publicación segura de F7 (CA-06) |
-| «Explicación individual del flujo completo y de una decisión técnica propia» [E] | ENUNCIADO §12; Guía 3.3 («explicación oral»); lista final punto 13; FAQ 35 último punto | Bloque del **vídeo** (V9): recorrido de un evento desde USGS hasta el panel y una decisión técnica propia. | Resuelta en lo práctico (CA-08) |
+| «Explicación individual del flujo completo y de una decisión técnica propia» [E] | ENUNCIADO §12; Guía 3.3 («explicación oral»); lista final punto 13; FAQ 35 último punto | Bloque del **vídeo** (escena G): recorrido de un evento desde USGS hasta el panel y una decisión técnica propia. | Resuelta en lo práctico (CA-08) |
 | «La URL de Netlify funciona y sé activar el backend y el túnel durante la defensa» [E] | Guía, lista final punto 12 | Ídem: URL funcional, abierta desde otro dispositivo, y procedimiento/checklist de activación. | Verificado con reservas: F7 publicada con función de Netlify y comprobada en un navegador del propio equipo y en un Pixel (confirmación sin evidencia archivada) |
 | «Demostrar actividad si no aparece un nuevo terremoto durante la defensa» [E] | FAQ 32; Guía 2.9 | REPRODUCCIÓN: debe haber una ejecución de replay almacenada y visible cuando el túnel esté activo; escena propia del vídeo. | Implementado y verificado (F6); asegurar su presencia en la ventana |
 | «Procedimiento para activar el sistema durante la defensa» (5 pasos) [E] | Guía 3.2 | Se convierte en la checklist de activación previa a la ventana y en la escena de arranque del vídeo. | Pendiente (T039, T020) |
@@ -194,7 +194,7 @@ No figuran en los materiales; se derivan de lo comunicado en clase y de Guía 1 
 | ID | Tipo | Requisito |
 |---|---|---|
 | WEB-01 | D | El profesor puede abrir la **aplicación publicada** desde el enlace de entrega, navegar por las secciones, usar las funcionalidades, ver datos y resultados y comprobar que funciona **sin depender del ordenador del alumno más allá de la API y el túnel** (arquitectura obligatoria §2/§9). |
-| WEB-02 | D | La web publicada debe corresponder a la **versión que se entrega** (hoy: local F7 `9008772`; Netlify F6). Publicación segura de F7 pendiente (CA-06; T034–T036). |
+| WEB-02 | D | La web publicada debe corresponder a la **versión que se entrega** (hoy: local F7 + mejoras 8.6 del 2026-11-15; Netlify F7 `6af4b81f…` sin esas mejoras). Publicación de las mejoras pendiente (CA-06). |
 | WEB-03 | D | **Ventana de evaluación** (~2 días): PC encendido y sin suspensión, Docker, Kafka, PostgreSQL, productor, consumidor y API operativos, túnel activo, frontend publicado y **credencial** entregada al profesor por un canal privado (T037–T039). Mantener el PC encendido **no** equivale a SC-010. |
 | WEB-04 | E+D | La API publicada debe tratar el fallo de conexión con claridad (ACE-09/10, FAQ 31/35). |
 | REPO-01 | D | El profesor revisa el **repositorio privado** por su cuenta: código completo y organizado, README definitivo, memoria independiente, arquitectura y decisiones técnicas, pruebas y resultados, evidencias verificables, instrucciones, correspondencia con la rúbrica y limitaciones explicadas. |
@@ -214,7 +214,7 @@ Según los propios textos: informe de calidad automático, archivo de calidad se
 |---|---|---|---|
 | CA-01 | Formato: vídeo + web + repositorio, sin defensa ni preguntas | **Confirmada en clase** | Archivar una fuente escrita si existe (texto, medio y fecha). Los documentos originales siguen mencionando la defensa. |
 | CA-02 | Fecha límite y canal de entrega | **Pendiente** | Fecha, hora y vía. |
-| CA-03 | Requisitos del vídeo (duración, formato, resolución, idioma, cámara/pantalla, plataforma, archivo/enlace) | **Pendiente (desconocido)** | Confirmación; el guion será modular y no asumirá cifras. |
+| CA-03 | Requisitos del vídeo (duración, formato, resolución, idioma, cámara/pantalla, plataforma, archivo/enlace) | **Parcial**: el profesor indicó (apuntes de la persona estudiante, sin confirmar por escrito) **máximo 5 min**, siguiendo el orden de la rúbrica y mostrando evidencias del nivel más alto; resto pendiente (formato, cámara, plataforma) | Confirmación; el guion es personal y no asume cifras. |
 | CA-04 | Rúbrica específica del vídeo | **Pendiente** | Mientras tanto se usa la rúbrica de ENUNCIADO §13. |
 | CA-05 | Acceso al repositorio privado | **Pendiente** | Usuario/correo del profesor y verificación de permisos antes de entregar. |
 | CA-06 | Acceso a la web y ventana de evaluación | **Parcialmente resuelta** | Fechas de la ventana, URL definitiva, estrategia segura de publicación de F7, entrega privada de credenciales. |

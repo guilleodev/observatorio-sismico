@@ -228,7 +228,7 @@ const A_LA_DERECHA: readonly ClaveColumna[] = ['mag', 'profundidad', 'lon', 'lat
     .fila { display: block; max-width: 18rem; min-height: calc(var(--alto-fila) - 1px); padding: 0; background: none; border: 0; text-align: left; font-weight: 600; color: var(--texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     @media (hover: hover) {
       tbody tr:hover td { background: var(--superficie-2); }
-      tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 var(--borde-control); }
+      tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 var(--borde-acento); }
       tbody tr.seleccionada:hover td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
       .tabla.replay tbody tr.seleccionada:hover td:first-child { box-shadow: inset 3px 0 0 var(--replay); }
       tbody tr:hover .fila { color: var(--acento-texto); }

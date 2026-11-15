@@ -34,13 +34,18 @@ export const FRAGMENTO_ONDA = `
   }`;
 
 // ---------- ESTRELLAS (estrellas.ts) --------------------------------------------------------------------------------------------------------------------
-// Un único Points. Sin uniform de tiempo: no hay animación. aEstrella = [tamaño px CSS, brillo]; uPx = pixelRatio actual (el tamaño visual no cambia con la calidad adaptativa).
+// Un único Points. aEstrella = [tamaño px CSS, brillo, fase del parpadeo (−1 = no parpadea)]; uPx = pixelRatio actual (el tamaño visual no cambia con la calidad adaptativa).
+// F8: unas pocas estrellas parpadean con el uniform común uAhora (segundos de la escena) y uParpadeo (1 = activo, 0 = movimiento reducido). No piden fotogramas: solo se mueven mientras
+// el bucle ya corre por otro motivo (rotación, pulso, anillos); con todo en reposo el bucle sigue parado.
 export const VERTICE_ESTRELLAS = `
-  attribute vec2 aEstrella;
+  attribute vec3 aEstrella;
   uniform float uPx;
+  uniform float uAhora;
+  uniform float uParpadeo;
   varying float vBrillo;
   void main() {
-    vBrillo = aEstrella.y;
+    float tw = aEstrella.z < 0.0 ? 1.0 : mix(1.0, 0.55 + 0.45 * sin(uAhora * (0.9 + 1.6 * aEstrella.z) + 40.0 * aEstrella.z), uParpadeo);
+    vBrillo = aEstrella.y * tw;
     gl_PointSize = aEstrella.x * uPx;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }`;

@@ -32,7 +32,7 @@ Decisiones ya tomadas por la persona estudiante (2026-11-11): refresco de 60 s c
 ## 2. Preparación del build de F7
 
 ### 2.1 Puertas previas (solo lectura; sin efectos)
-1. `git diff --stat 9008772 HEAD -- frontend` vacío: el frontend es el congelado.
+1. `git diff --stat 9008772 HEAD -- frontend` vacío: el frontend es el congelado. *(Condición válida el 2026-11-11; desde el 2026-11-15 el frontend incluye las mejoras de `8.6-mejoras-interfaz.md` y la comprobación equivalente es que el árbol coincide con el commit que se publica.)*
 2. `git status --short frontend` sin cambios (en particular `frontend/public/config.json` intacto).
 3. `bash scripts/f6/escaneo_secretos.sh` sin hallazgos (T031 lo repetirá sobre el historial completo).
 4. Copia de seguridad de la vuelta atrás (sección 8) hecha **antes** de generar nada nuevo.

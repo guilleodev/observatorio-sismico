@@ -17,7 +17,9 @@ main { --alto-visor: clamp(480px, 62vh, 760px); max-width: 1760px; margin: auto;
 .cabecera.condensada { box-shadow: var(--elev-3); }
 .cabecera.condensada .cab-sub { display: none; }
 /* izquierda: marca SVG + título (+ subtítulo) */
-.cab-id { display: flex; align-items: center; gap: var(--esp-2); min-width: 0; justify-self: start; }
+.cab-id { display: flex; align-items: center; gap: var(--esp-2); min-width: 0; min-height: 44px; justify-self: start; color: inherit; text-decoration: none; border-radius: var(--radio-control); touch-action: manipulation; }   /* Fase 1: enlace al Panel (logo + título) */
+.cab-id:hover h1 { color: var(--acento-texto); }
+.cab-id:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
 .cab-marca { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--acento-texto); background: var(--acento-fondo); border: 1px solid var(--linea); border-radius: var(--radio-control); --ico: 22px; }
 .identidad { min-width: 0; }
 h1 { margin: 0; font-size: clamp(.95rem, 1.2vw, 1.1rem); font-weight: 750; letter-spacing: -.01em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -46,7 +48,7 @@ h1 { margin: 0; font-size: clamp(.95rem, 1.2vw, 1.1rem); font-weight: 750; lette
    La transición de fondo/sombra (<= 150 ms, solo con movimiento permitido) está en styles.css. */
 .nav-vistas { display: flex; gap: 2px; padding: 3px; justify-self: center; background: var(--nav-fondo); border: 1px solid var(--linea); border-radius: 999px; }
 .nav-vistas a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; min-width: 36px; padding: 0 14px; color: var(--texto-2); border-radius: 999px; font: 600 var(--t-m) var(--fuente); text-decoration: none; white-space: nowrap; touch-action: manipulation; --ico: 16px; }
-.nav-vistas a:hover { color: var(--texto); background: rgba(147, 180, 235, .1); }
+.nav-vistas a:hover { color: var(--texto); background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1px var(--borde-acento); }
 .nav-vistas a[aria-current="page"] { background: var(--nav-activa-fondo); color: var(--texto); font-weight: 700; box-shadow: inset 0 1px 0 rgba(103, 232, 249, .55), 0 0 0 1px rgba(34, 211, 238, .35); }
 .nav-vistas a[aria-current="page"] app-icono { color: var(--acento-texto); }
 .nav-vistas a:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
@@ -56,17 +58,13 @@ h1 { margin: 0; font-size: clamp(.95rem, 1.2vw, 1.1rem); font-weight: 750; lette
 .vista-seccion[hidden] { display: none; }   /* el display: grid de arriba vencería al `hidden` del navegador: se restablece aquí */
 .encabezado-vista { margin: 0; font-size: var(--t-l); }
 .encabezado-vista:focus-visible { outline: 3px solid var(--foco); outline-offset: 4px; }   /* el foco llega aquí al cambiar de vista */
-/* CAMBIO (ronda 4 Mission Control): la franja del seleccionado es una BARRA DE CONTEXTO (línea fina + marca de acento de 3 px a la izquierda, violeta en REPRODUCCIÓN), no una tarjeta */
-.franja-seleccion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--esp-2) var(--esp-4); margin: 0; padding: 6px 14px; background: var(--acento-fondo); border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); border-left: 3px solid var(--acento); }
-.franja-seleccion.replay { background: var(--replay-fondo); border-left-color: var(--replay); }
-.franja-texto { min-width: 0; overflow-wrap: anywhere; }
-.franja-acciones { display: inline-flex; flex-wrap: wrap; gap: var(--esp-2); }
+/* Fase 1: la franja «Evento seleccionado» de la vista Eventos se ha retirado (la selección se ve en la fila de la tabla y en el panel de detalle del Panel). */
 button.enlace-accion { cursor: pointer; }
 .enlace-accion:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
 /* título del Panel (ronda 2): visualmente OCULTO (sigue en el DOM con tabindex=-1: es el destino de foco al cambiar de vista y el nombre accesible de la sección). Al recibir el foco se muestra sin mover nada (absoluto) para que el anillo de foco sea visible. */
 #vista-panel { position: relative; }
-#vista-panel > .encabezado-vista { position: absolute; top: 0; left: 0; z-index: 1300; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; font-size: var(--t-s); text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
-#vista-panel > .encabezado-vista:focus-visible, #vista-panel > .encabezado-vista:focus { width: auto; height: auto; overflow: visible; clip-path: none; padding: 2px 8px; background: var(--panel-vidrio); border-radius: var(--radio-control); }
+#vista-panel > .encabezado-vista { position: absolute; top: var(--alto-cabecera); left: var(--esp-3); z-index: 1100; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; font-size: var(--t-s); text-transform: uppercase; letter-spacing: .08em; color: var(--texto-2); }
+#vista-panel > .encabezado-vista:focus-visible { width: auto; height: auto; overflow: visible; clip-path: none; padding: 2px 8px; background: var(--panel-vidrio); border-radius: var(--radio-control); }
 
 /* ---------- banda de incidencias (marco común, solo cuando aplica; CAMBIO ronda 2) ----------
    Fina, con icono + título + texto (no solo color): error = rojo (sin conexión), aviso = ámbar. Sin región viva (ver app.component.html). Los enlaces/botones miden >= 36 px. */
@@ -132,7 +130,7 @@ button.enlace-accion { cursor: pointer; }
 .vista-selector { position: absolute; top: 10px; left: 0; right: 0; z-index: 1050; width: fit-content; max-width: calc(100% - 120px); margin-inline: auto; display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; padding: 3px; background: var(--panel-vidrio); border: 1px solid var(--linea); border-radius: 999px; box-shadow: var(--elev-2); }
 .vista-titulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .vista-selector button { min-height: 36px; min-width: 36px; padding: 0 14px; font: 600 var(--t-m) var(--fuente); background: transparent; color: var(--texto); border: 1px solid transparent; border-radius: 999px; cursor: pointer; white-space: nowrap; }
-.vista-selector button:hover:not(:disabled) { border-color: var(--borde-control); }
+.vista-selector button:hover:not(:disabled) { border-color: var(--acento); }
 .vista-selector button[aria-pressed="true"] { background: var(--acento-fondo); color: var(--acento-texto); border: 1px solid var(--acento); font-weight: 700; }
 .vista-selector button:disabled { opacity: .55; cursor: not-allowed; }
 .vista-selector button:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
@@ -211,11 +209,20 @@ button.enlace-accion { cursor: pointer; }
 .no-aplica::before { content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 1px; background: var(--filo-replay); pointer-events: none; }
 
 /* CAMBIO (análisis B): pie discreto y profesional: línea fina superior en vez de caja; primera fila = eyebrow + proyecto (se parte en móvil), segunda fila = atribuciones. Texto ≥ .8rem, --texto-2 sobre --fondo (AA), interlineado 1.5. */
-footer { padding: var(--esp-3) var(--esp-1) var(--esp-2); background: transparent; border: 0; border-top: 1px solid var(--linea); display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--esp-1) var(--esp-4); min-width: 0; }
+/* CAMBIO (Fase 2): el pie lleva la firma de la persona autora. Rejilla de 3 zonas (logo guilleodev · nombre y máster · logo del centro) y las atribuciones debajo a todo el ancho; en móvil (< 768 px) los dos logos
+   comparten la primera fila y el texto va debajo. Sin cajas: solo la línea fina superior. El logo del centro (azul) se pasa a monocromo claro para que se lea sobre el fondo oscuro (el azul original no llega a 3:1). */
+footer { padding: var(--esp-4) var(--esp-1) var(--esp-3); background: transparent; border: 0; border-top: 1px solid var(--linea); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--esp-3) var(--esp-5); min-width: 0; }
 footer p { margin: 0; font-size: var(--t-s); line-height: 1.5; color: var(--texto-2); min-width: 0; overflow-wrap: anywhere; }
-footer .eyebrow { flex: none; }
-footer .pie-proyecto { flex: 1 1 18rem; }
-footer .pie-datos { flex: 1 1 100%; }
+.logo-autor { display: block; width: 123px; height: 26px; max-width: 100%; opacity: .92; }
+.logo-centro { display: block; width: 120px; height: 44px; max-width: 100%; justify-self: end; filter: brightness(1.35) saturate(1.1); }
+.pie-firma { display: grid; gap: 2px; min-width: 0; }
+footer .pie-autor { font-size: var(--t-m); font-weight: 650; color: var(--texto); letter-spacing: .01em; }
+footer .pie-datos { grid-column: 1 / -1; padding-top: var(--esp-2); border-top: 1px solid var(--linea); }
+@media (max-width: 767px) {
+  footer { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--esp-3); }
+  .logo-autor { grid-column: 1; grid-row: 1; } .logo-centro { grid-column: 2; grid-row: 1; }
+  .pie-firma { grid-column: 1 / -1; grid-row: 2; }
+}
 
 /* ---------- ESCRITORIO >= 1100 px: ESCENARIO INMERSIVO con HUD flotantes (ronda 2 Mission Control) ----------
    El escenario ocupa todo el ancho de <main> (hasta 1760 px) y su alto es --alto-visor: clamp(560px, 100dvh − cabecera − ≈ 124 px, 980px) (los ≈ 124 px son telemetría ≈ 60 + huecos + incidencias ≈ 24 + 24 de aire; `vh` de respaldo y `dvh` si existe).
@@ -289,23 +296,17 @@ footer .pie-datos { flex: 1 1 100%; }
   main { --alto-visor: max(380px, 65vh); display: flex; flex-direction: column; padding: var(--esp-2) var(--esp-3) var(--esp-4); gap: var(--esp-3); }
   @supports (height: 1svh) { main { --alto-visor: max(380px, 65svh); } }
   .escenario { display: contents; }
-  /* CAMBIO (ronda 1): la cabecera es UNA fila sticky de 48 px: marca (solo icono) · nav centrada en el hueco central · [glifo de modo + icono de estado + refrescar].
-     Cálculo de anchos (texto ≈ .78rem, estimado, NO medido en navegador): zona derecha ≈ glifo 24 + detalles ≈ 52 + refrescar 36 + 2 huecos de 4 = 116 px; marca 28; nav solo texto ≈ 168 px, con iconos ≈ 215 px.
-       320 px → marca oculta: 304 − 116 − 12 = 176 ≥ 168 (solo texto) · 360 px → 344 − 28 − 116 − 12 = 188 ≥ 168 (solo texto) · 375 px → 203 ≥ 168 (solo texto) · ≥ 400 px → 228 ≥ 215 (icono + texto).
-     La nav queda centrada en el hueco CENTRAL (columna 1fr), no exactamente en el centro de la pantalla: la zona derecha es más ancha que la izquierda y la simetría exacta exigiría truncar texto (se prioriza la legibilidad). */
-  .cabecera { grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; padding: 0 var(--esp-2); margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-3)) 0; }
+  /* Fase 1: la cabecera móvil pasa a DOS filas (--alto-cabecera = 100 px): fila 1 (48 px) = logo + título (enlace al Panel) · estado/refresco; fila 2 (52 px) = nav de vistas a todo el ancho con tres
+     objetivos táctiles iguales de 44 px de alto (antes 36 px y letra de .78rem). Los anchos ya no compiten con la zona derecha, así que el icono y el título corto se ven siempre. */
+  .cabecera { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 48px 52px; align-content: start; column-gap: 6px; row-gap: 0; padding: 0 var(--esp-2); margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-3)) 0; }
   .cabecera::before { left: var(--esp-2); right: var(--esp-2); }
-  .cab-marca { width: 28px; height: 28px; --ico: 18px; }
-  /* el título sigue en el árbol de accesibilidad (h1) pero no se ve: solo el icono de marca */
-  .identidad { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .cab-estado { gap: 4px; }
-  .nav-vistas { padding: 2px; gap: 1px; max-width: 100%; }
-  .nav-vistas a { padding: 0 5px; gap: 3px; font-size: .78rem; --ico: 14px; }
-  .nav-vistas app-icono { display: none; }
+  .cab-id { grid-row: 1; grid-column: 1 / 3; align-self: center; }
+  .cab-marca { width: 32px; height: 32px; --ico: 20px; }
+  .cab-estado { grid-row: 1; grid-column: 3; align-self: center; gap: 4px; }
+  .nav-vistas { grid-row: 2; grid-column: 1 / -1; align-self: center; justify-self: stretch; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 3px; gap: 3px; }
+  .nav-vistas a { min-height: 44px; padding: 0 6px; gap: 6px; font-size: .92rem; --ico: 18px; }
   .banda-replay { margin: calc(-1 * var(--esp-3)) calc(-1 * var(--esp-3)) 0; }
 }
-@media (min-width: 400px) and (max-width: 767px) { .nav-vistas app-icono { display: inline-flex; } }
-@media (max-width: 359px) { .cab-marca { display: none; } }   /* a 320 px la marca cede su sitio a la nav (el h1 sigue accesible: está visualmente oculto, no con display: none) */
 @media (max-width: 767px) {
   .o-acceso { order: 2; }
   .o-incidencias { order: 2; }   /* banda de incidencias: justo tras el acceso y antes de la vista (mismo `order` que .o-acceso: gana el orden DOM, que ya es acceso → incidencias) */
@@ -329,3 +330,12 @@ footer .pie-datos { flex: 1 1 100%; }
   .filtros-cuerpo { padding: var(--esp-3); background: var(--panel-vidrio); border: 1px solid var(--linea); border-top: 0; border-radius: 0 0 var(--radio-panel) var(--radio-panel); }
   .filtros-cuerpo.plegado { display: none; }
 }
+
+/* ---------- F8: escala de tamaños de la leyenda + transición entre vistas ---------- */
+/* Diámetros = diametroPuntoMagnitud(M) de formato.ts (radio × 16/18): M 2 → 8 px, M 4 → 11,6 px, M 6 → 15,1 px. Círculos huecos en --texto-2 (contraste ≥ 3:1 sobre el panel): el relleno por profundidad es otro significado. */
+.leyenda-tamano { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-1) var(--esp-3); margin-top: var(--esp-2); padding-top: var(--esp-2); border-top: 1px solid var(--linea); }
+.leyenda-tamanos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-1) var(--esp-3); font-size: var(--t-s); color: var(--texto-2); }
+.leyenda-tamanos li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.circulo-tamano { display: inline-block; flex: none; box-sizing: border-box; border: 1.5px solid var(--texto-2); border-radius: 50%; }
+.circulo-tamano.t2 { width: 8px; height: 8px; } .circulo-tamano.t4 { width: 11.6px; height: 11.6px; } .circulo-tamano.t6 { width: 15.1px; height: 15.1px; }
+/* (La transición entre vistas vive en styles.css, bajo prefers-reduced-motion: no-preference: el movimiento no se define en la hoja de la app.) */

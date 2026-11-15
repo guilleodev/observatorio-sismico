@@ -10,7 +10,7 @@ import {
   CREPUSCULO_GRADOS, INTERVALO_SOL_MS, OSCURECIMIENTO_NOCHE, UMBRAL_CAMBIO_SOLAR_GRADOS, cambioAngularGrados, factorNoche, normalizarLongitud, posicionSolar, vectorSolar,
 } from '../src/app/globo/sol.ts';
 import { MAX_IDS_ONDEADOS, MAX_NUEVOS_LOTE, MAX_ONDAS, DURACION_ONDA_MS, SeguimientoOndas, decidirOndas, radioMaxOnda, ranurasLibres } from '../src/app/globo/ondas.ts';
-import { BRILLO_MAX, BRILLO_MIN, CANTIDAD_ESTRELLAS, RADIO_ESTRELLAS, TAMANO_MAX_PX, TAMANO_MIN_PX, generarEstrellas, mulberry32 } from '../src/app/globo/estrellas.ts';
+import { BRILLO_MAX, BRILLO_MIN, CANTIDAD_ESTRELLAS, FASE_SIN_PARPADEO, FLOATS_POR_ESTRELLA, RADIO_ESTRELLAS, TAMANO_MAX_PX, TAMANO_MIN_PX, generarEstrellas, mulberry32 } from '../src/app/globo/estrellas.ts';
 import {
   ALFA_ATENUADO, MASCARA_TODOS, RANGOS_LEYENDA, alternarRango, codificarRangos, contarRangos, esVisible, filtrarPuntos, idsDeRango, indiceRangoDeColor, indiceRangoProfundidad, mascaraDeRango,
   nombreBotonRango, rangoDeProfundidad, textoAnuncioRango, textoRecuento,
@@ -80,7 +80,7 @@ test('día/noche en el código: solo el planeta recibe uSol; marcadores, halos y
   const act = /private actualizarSol\(\): void \{[\s\S]*?\n  \}/.exec(e)?.[0] ?? '';
   assert.match(act, /UMBRAL_CAMBIO_SOLAR_GRADOS\) return;[\s\S]*this\.pedirFotograma\(\)/);                           // solo si se movió: UN fotograma, no render continuo
   assert.match(e, /private programarSol\(\)/); assert.match(e, /clearTimeout\(this\.idTemporizadorSol\)/);
-  assert.match(leer('globo/globo.component.ts'), /Sombra día\/noche según la hora UTC actual; no indica la hora de los eventos/);
+  assert.match(leer('globo/globo.component.ts'), /Sombra día\/noche según la hora UTC actual \(la del reloj del pie del globo\); no indica la hora de los eventos/);
 });
 
 // ---------- 2. anillos de eventos nuevos ----------
@@ -154,7 +154,7 @@ test('ondas en el código: pool de MAX_ONDAS en un InstancedMesh aparte, sin dep
   assert.match(c, /effect\(\(\) => \{ this\.claveLectura\(\);/); assert.ok(c.indexOf('this.claveLectura()') < c.indexOf('this.escena?.fijarEventos(r.puntos)'));   // reinicio ANTES del efecto de datos
   assert.match(c, /\$\{this\.replay\(\)\}\|\$\{this\.etiqueta\(\) \?\? ''\}\|\$\{this\.filtros\(\)\}/);
   const fot = /private readonly fotograma = [\s\S]*?\n  \};/.exec(e)?.[0] ?? '';
-  assert.match(fot, /const ondas = t < this\.finOndas;/); assert.match(fot, /else if \(pulsa \|\| ondas\) this\.encolar\(\)/);   // el bucle solo sigue mientras haya anillos vivos
+  assert.match(fot, /const ondas = t < this\.finOndas;/); assert.match(fot, /else if \(pulsa \|\| ondas \|\| entrando\) this\.encolar\(\)/);   // F8: también mientras dura la entrada escalonada   // el bucle solo sigue mientras haya anillos vivos
   assert.match(c, /Anillo breve al llegar un evento nuevo; es solo una señal visual/);
   assert.match(e, /this\.ondas\.dispose\(\)/); assert.match(e, /this\.propios\.push\(geomEstrellas, this\.matEstrellas, geomOnda, this\.matOnda\)/);
 });
@@ -165,14 +165,17 @@ test('estrellas: deterministas, cantidad fija, sobre una esfera de radio 10, bie
   assert.equal(a.cantidad, CANTIDAD_ESTRELLAS); assert.ok(CANTIDAD_ESTRELLAS >= 300 && CANTIDAD_ESTRELLAS <= 600);
   assert.deepEqual(a.posiciones, b.posiciones); assert.deepEqual(a.propiedades, b.propiedades);
   assert.notDeepEqual(a.posiciones, generarEstrellas(CANTIDAD_ESTRELLAS, 1).posiciones);
-  assert.equal(a.posiciones.length, 3 * CANTIDAD_ESTRELLAS);
+  assert.equal(a.posiciones.length, 3 * CANTIDAD_ESTRELLAS); assert.equal(a.propiedades.length, FLOATS_POR_ESTRELLA * CANTIDAD_ESTRELLAS);
+  const parpadean = Array.from({ length: a.cantidad }, (_, i) => a.propiedades[3 * i + 2]).filter((f) => f >= 0).length;
+  assert.ok(parpadean > 0.1 * a.cantidad && parpadean < 0.3 * a.cantidad, `parpadean ${parpadean}`);   // F8: ≈ una de cada cinco
   const m = [0, 0, 0]; let norte = 0;
   for (let i = 0; i < a.cantidad; i++) {
     cerca(Math.hypot(a.posiciones[3 * i], a.posiciones[3 * i + 1], a.posiciones[3 * i + 2]), RADIO_ESTRELLAS, 1e-4);
     for (let k = 0; k < 3; k++) m[k] += a.posiciones[3 * i + k] / a.cantidad;
     if (a.posiciones[3 * i + 1] > 0) norte++;
-    assert.ok(a.propiedades[2 * i] >= TAMANO_MIN_PX && a.propiedades[2 * i] <= TAMANO_MAX_PX);
-    assert.ok(a.propiedades[2 * i + 1] >= BRILLO_MIN - 1e-6 && a.propiedades[2 * i + 1] <= BRILLO_MAX + 1e-6);
+    assert.ok(a.propiedades[3 * i] >= TAMANO_MIN_PX && a.propiedades[3 * i] <= TAMANO_MAX_PX);
+    assert.ok(a.propiedades[3 * i + 1] >= BRILLO_MIN - 1e-6 && a.propiedades[3 * i + 1] <= BRILLO_MAX + 1e-6);
+    const fase = a.propiedades[3 * i + 2]; assert.ok(fase === FASE_SIN_PARPADEO || (fase >= 0 && fase < 1));
   }
   for (const v of m) assert.ok(Math.abs(v) < 1.2, `centroide ${v}`);              // sin sesgo hacia ningún lado
   assert.ok(norte > 0.4 * a.cantidad && norte < 0.6 * a.cantidad);
@@ -188,7 +191,9 @@ test('estrellas en el código: un Points, depthWrite false, renderOrder bajo, si
   assert.match(e, /ShaderMaterial\(\{ uniforms: \{ uColor: \{ value: new Color\(paleta\.estrellas\) \}[\s\S]*?transparent: true, depthWrite: false \}\)/);
   assert.match(e, /estrellas\.renderOrder = -10/);
   const bloque = /export const VERTICE_ESTRELLAS[\s\S]*$/.exec(sh)?.[0] ?? '';
-  assert.doesNotMatch(bloque, /uAhora|uFase|uTiempo|sin\(/);
+  // F8: unas pocas estrellas parpadean con el uniform común uAhora (sin atributo de tiempo por estrella ni fotogramas propios) y uParpadeo = 0 con movimiento reducido
+  assert.match(bloque, /uniform float uAhora;/); assert.match(bloque, /uniform float uParpadeo;/); assert.doesNotMatch(bloque, /uFase|uTiempo/);
+  assert.match(e, /if \(this\.matEstrellas\) this\.matEstrellas\.uniforms\['uParpadeo'\]\.value = this\.mqMovimiento\?\.matches \? 0 : 1;/);
   assert.doesNotMatch(/private construirAmbiente[\s\S]*?\n  \}/.exec(e)?.[0] ?? '', /rafId|encolar|pedirFotograma/);   // no piden fotogramas
   assert.ok(!/estrellas/i.test(/private buscarBajo[\s\S]*?\n  \}/.exec(e)?.[0] ?? ''));                                // no entran en el picking
   assert.match(e, /geomEstrellas, this\.matEstrellas/);
@@ -348,7 +353,7 @@ test('los módulos puros nuevos no usan three, DOM, red, almacenamiento ni impor
     assert.doesNotMatch(t, /document\.|window\.|from 'three|fetch\(|localStorage|sessionStorage|indexedDB|https?:\/\//, f);
     assert.doesNotMatch(t, /^import (?!type)/m, f);
   }
-  const p = resolverPaleta(() => ''); assert.equal(p.estrellas, '#a9b8d0'); assert.equal(p.replay, '#a78bfa');
+  const p = resolverPaleta(() => ''); assert.equal(p.estrellas, '#a8adb8'); assert.equal(p.replay, '#a78bfa');
   assert.ok(razonContraste(p.replay, p.fondo) > 3 && razonContraste(p.halo, p.fondo) > 3);                                   // el anillo violeta y el cian se distinguen del fondo
   assert.equal(readdirSync(RAIZ + 'globo').includes('shaders.ts'), true);
 });

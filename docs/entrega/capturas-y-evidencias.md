@@ -2,6 +2,8 @@
 
 **Estado a 2026-11-11**: **no se ha archivado ninguna captura** ni ninguna evidencia nueva de imagen; todo lo marcado «pendiente» está sin hacer. Las evidencias de texto ya existentes (F3–F8.3) están enlazadas. **No se inventa ninguna captura ni cifra.**
 
+**Columna «Se usa en»**: las letras A–G son las escenas del vídeo de 5 min (A Apertura, B Extracción, C Calidad, D Modelado, E Análisis, F Reflexión, G Cierre; ver [matriz](matriz-trazabilidad.md)). Con 5 min no hacen falta todas: se usan las de B a F.
+
 **Dónde guardarlas**: `docs/evidencias/f8/capturas/` con nombre `C-XX-descripcion.png` (sin datos personales). **Reglas**: ninguna con la clave, `.env`, URL de ngrok, inspector `127.0.0.1:4040`, panel de Netlify con variables, notificaciones ni rutas personales (`checklist-grabacion.md` §1); cada captura con **fecha y hora**; si muestra datos en vivo, se indica «EN VIVO» y la fecha.
 
 **Clases**: **[E] estable** (datos fijos: REPRODUCCIÓN, periodo 5–7 nov 2026, documentos) → se pueden tomar **ya**; **[D] dinámica** (EN VIVO, web publicada, dispositivos reales, contadores) → se toman **al final**, tras congelar la versión publicada (T040(a), antes de grabar) y se **repiten si algo cambia**.
@@ -9,24 +11,24 @@
 ## 1. Capturas de imagen
 | Id | Qué mostrar | Clase | Estado | Cómo / quién | Se usa en |
 |---|---|---|---|---|---|
-| C-01 | Panel con globo 3D, EN VIVO, filtros por defecto | [D] | Pendiente | Navegador sobre la web publicada; persona estudiante o herramienta con autorización | memoria §1.4, README §18, V5 |
-| C-02 | Panel con un evento seleccionado (ficha y leyenda) | [D] | Pendiente | ídem | memoria §1.4, V5 |
-| C-03 | Mapa 2D de Leaflet con leyenda | [D] | Pendiente | ídem | memoria §1.4, V5 |
+| C-01 | Panel con globo 3D, EN VIVO, filtros por defecto | [D] | Pendiente | Navegador sobre la web publicada; persona estudiante o herramienta con autorización | memoria §1.4, README §18, E |
+| C-02 | Panel con un evento seleccionado (ficha y leyenda) | [D] | Pendiente | ídem | memoria §1.4, E |
+| C-03 | Mapa 2D de Leaflet con leyenda | [D] | Pendiente | ídem | memoria §1.4, E |
 | C-03b | **Fallback sin WebGL**: «Globo 3D no disponible…» con el mapa 2D | [E] | Pendiente (comprobado el 2026-11-11 en una copia local con WebGL desactivado, **sin captura**) | Chrome con WebGL desactivado (`chrome://flags` → *Override software rendering list* desactivado y `--disable-gpu`) o la copia local; persona estudiante | R5, memoria §1.4 |
-| C-04 | Análisis completo (gráficas y comparación con 2025) | [D] | Pendiente | navegador | memoria §6.1, V5 |
-| C-05 | Filtros de la conclusión 1: `min_mag = 4,5`, 5–7 nov 2026, global y «Sin país asignado» | [E] | Pendiente | filtro **Personalizado (UTC)** con `2026-11-05T17:00` → `2026-11-07T18:00`; la persona estudiante valida | memoria §6.2–6.3, V5 |
-| C-06 | Filtros de la conclusión 2: comparación a M ≥ 4,5, mismo periodo | [E] | Pendiente | ídem | memoria §6.2–6.3, V5 |
-| C-07 | Filtros de la conclusión 3: `min_mag = 4` y `min_mag = 4,5` | [E] | Pendiente | ídem | memoria §6.2–6.3, V5 |
-| C-08 | Eventos: tabla con selección y vista previa 3D | [D] | Pendiente | navegador | memoria §1.4, V5 |
-| C-09 | REPRODUCCIÓN en Panel (etiqueta violeta y ejecución) | [E] | Pendiente | navegador, ejecución `r-f6-estab-11082023` | memoria §9.4, V6 |
-| C-10 | REPRODUCCIÓN en Análisis («no aplica») y en Eventos | [E] | Pendiente | navegador | memoria §9.4, V6 |
-| C-11 | Evento con magnitud «ND» (caso controlado de replay) | [E] | Pendiente | navegador | memoria §8, V3 |
-| C-12 | **Túnel cerrado**: «Sin conexión con la API» (Error HTTP 502), datos conservados | [D] | Pendiente | persona estudiante (cierra ngrok **fuera de captura**); T036 ya lo comprobó **sin captura** | memoria §8, V7 |
-| C-12b | **Túnel reabierto**: «Conexión recuperada» | [D] | Pendiente | ídem | memoria §8, V7 |
-| C-13 | Panel y Análisis en el **Pixel** con datos móviles | [D] | **Pendiente** (la persona estudiante confirmó que funcionó, **sin captura**) | persona estudiante | memoria §1.4, V10 |
+| C-04 | Análisis completo (gráficas y comparación con 2025) | [D] | Pendiente | navegador | memoria §6.1, E |
+| C-05 | Filtros de la conclusión 1: `min_mag = 4,5`, 5–7 nov 2026, global y «Sin país asignado» | [E] | Pendiente | filtro **Personalizado (UTC)** con `2026-11-05T17:00` → `2026-11-07T18:00`; la persona estudiante valida | memoria §6.2–6.3, E |
+| C-06 | Filtros de la conclusión 2: comparación a M ≥ 4,5, mismo periodo | [E] | Pendiente | ídem | memoria §6.2–6.3, E |
+| C-07 | Filtros de la conclusión 3: `min_mag = 4` y `min_mag = 4,5` | [E] | Pendiente | ídem | memoria §6.2–6.3, E |
+| C-08 | Eventos: tabla con selección y vista previa 3D | [D] | Pendiente | navegador | memoria §1.4, E |
+| C-09 | REPRODUCCIÓN en Panel (etiqueta violeta y ejecución) | [E] | Pendiente | navegador, ejecución `r-f6-estab-11082023` | memoria §9.4, D |
+| C-10 | REPRODUCCIÓN en Análisis («no aplica») y en Eventos | [E] | Pendiente | navegador | memoria §9.4, D |
+| C-11 | Evento con magnitud «ND» (caso controlado de replay) | [E] | Pendiente | navegador | memoria §8, C |
+| C-12 | **Túnel cerrado**: «Sin conexión con la API» (Error HTTP 502), datos conservados | [D] | Pendiente | persona estudiante (cierra ngrok **fuera de captura**); T036 ya lo comprobó **sin captura** | memoria §8, F |
+| C-12b | **Túnel reabierto**: «Conexión recuperada» | [D] | Pendiente | ídem | memoria §8, F |
+| C-13 | Panel y Análisis en el **Pixel** con datos móviles | [D] | **Pendiente** (la persona estudiante confirmó que funcionó, **sin captura**) | persona estudiante | memoria §1.4, G |
 | C-14 | La web publicada **sin formulario de clave** desde otro dispositivo | [D] | Pendiente | persona estudiante | memoria §10.3 |
-| C-15 | `docker compose ps` con los cinco servicios `healthy` y solo la API publicada | [D] | Pendiente | terminal, sin rutas personales | V1, README §6 |
-| C-16 | Cuarentena por motivo y recuentos del histórico/catálogo (terminal) | [D] | Pendiente | terminal (consultas de `guion-video.md` §8) | V2–V3, memoria §4 |
+| C-15 | `docker compose ps` con los cinco servicios `healthy` y solo la API publicada | [D] | Pendiente | terminal, sin rutas personales | A, README §6 |
+| C-16 | Cuarentena por motivo y recuentos del histórico/catálogo (terminal) | [D] | Pendiente | terminal (consultas de solo lectura del guion personal) | B–C, memoria §4 |
 | C-17 | Contador de ngrok (*Usage*) y fecha de reinicio del ciclo, **sin datos de cuenta** | [D] | Pendiente (la persona estudiante lo dejó pendiente) | persona estudiante | memoria §7.4, R8 |
 
 ## 2. Evidencias que no son imágenes (texto, resultados)
@@ -34,7 +36,7 @@
 |---|---|---|---|
 | E-01 | Salida de `bash scripts/f6/invariantes.sh <etiqueta>` justo antes de entregar | Pendiente | [D] |
 | E-02 | Resultado final de `escaneo_secretos.sh` y de la búsqueda del valor de la clave (0 coincidencias) | Hecho el 2026-11-11 (`8.3-seguridad-secretos.md`); **repetir** en la auditoría final | [D] |
-| E-03 | Pruebas del frontend (`node --test`): **494** pasan (2026-11-11) y backend **964** (2026-11-09, reutilizado) | Hecho (con las reservas de `resultados.md`) | [E] |
+| E-03 | Pruebas del frontend (`node --test`): **521** pasan (2026-11-15) y backend **964** (2026-11-09, reutilizado) | Hecho (con las reservas de `resultados.md`) | [E] |
 | E-04 | Verificación de la web pública con la función (`verificacion-funcion-netlify.md`) | Hecho (con reservas) | [D] |
 | E-05 | Logs de la función de Netlify (¿algo sensible?) y consumo de invocaciones | Pendiente | [D] |
 | E-06 | Comprobación en Netlify de que `API_CLAVE_ACCESO` aparece oculta | Pendiente | [D] |

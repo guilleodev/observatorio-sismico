@@ -79,16 +79,19 @@ import type { Comparacion } from '../modelos';
           }
         </div>
         <div class="col-avisos">
-          <div class="aviso-principal" role="note">
-            <app-icono nombre="aviso" class="aviso-ico" />
-            <p><strong>Esta diferencia no demuestra por sí sola un cambio real de actividad.</strong> No es una predicción ni una evaluación de riesgo.</p>
+          <!-- Fase 2: UNA sola nota de lectura, neutra (icono de información, sin fondos amarillos): el aviso principal y los matices de magnitud y cobertura juntos y siempre visibles (mismo texto de antes) -->
+          <div class="nota-lectura" role="note">
+            <app-icono nombre="info" class="nota-ico" />
+            <div class="nota-cuerpo">
+              <p class="nota-principal"><strong>Esta diferencia no demuestra por sí sola un cambio real de actividad.</strong> No es una predicción ni una evaluación de riesgo.</p>
+              @if (avisos().magnitudElevada || avisos().coberturaBaja) {
+                <ul class="matices">
+                  @if (avisos().magnitudElevada) { <li>{{ avisos().magnitudElevada }}</li> }
+                  @if (avisos().coberturaBaja) { <li>{{ avisos().coberturaBaja }}</li> }
+                </ul>
+              }
+            </div>
           </div>
-          @if (avisos().magnitudElevada) {
-            <p class="aviso" role="note">{{ avisos().magnitudElevada }}</p>
-          }
-          @if (avisos().coberturaBaja) {
-            <p class="aviso" role="note">{{ avisos().coberturaBaja }}</p>
-          }
           <details class="plegable como">
             <summary>Cómo leer esta comparación</summary>
             <div class="como-cuerpo">
@@ -151,17 +154,20 @@ import type { Comparacion } from '../modelos';
     .eje-fila { margin-top: -2px; }
     .eje { display: flex; justify-content: space-between; font-size: var(--t-s); color: var(--texto-2); }
     .nota { margin: var(--esp-2) 0 0; font-size: var(--t-s); line-height: 1.5; color: var(--texto-2); max-width: 75ch; }
-    .nota .leyenda-incompleto { display: block; margin-top: 2px; color: var(--aviso-texto); }
+    .nota .leyenda-incompleto { display: block; margin-top: 2px; color: var(--texto); }   /* Fase 2: sin amarillo (el rayado y el borde discontinuo ya lo distinguen) */
     .sin-grafico { margin: 0; }
-    /* Avisos: el principal es una banda de alto contraste siempre visible; el resto, notas con filo lateral. */
-    .aviso-principal { display: flex; align-items: flex-start; gap: var(--esp-3); padding: var(--esp-3); background: var(--aviso-fondo); border: 1px solid var(--aviso); border-left-width: 4px; border-radius: 0 var(--radio-s) var(--radio-s) 0; color: var(--aviso-texto); }
-    .aviso-principal p { margin: 0; font-size: var(--t-m); line-height: 1.45; }
-    .aviso-ico { --ico: 1.4rem; color: var(--aviso); margin-top: 1px; }
-    .aviso { font-size: var(--t-s); line-height: 1.45; margin: 0; padding: 8px 10px; background: var(--aviso-fondo); border-left: 3px solid var(--aviso); color: var(--aviso-texto); border-radius: 0 var(--radio-s) var(--radio-s) 0; }
+    /* Avisos (Fase 2: tono calmado). Las notas de lectura son informativas, no alarmas: una sola nota con icono de información, línea fina a la izquierda y texto en --texto-2 (la frase clave en --texto).
+       El AMARILLO queda reservado a avisos de verdad en la banda de incidencias; aquí solo el estado «no disponible» (error) conserva su color. Mismo texto y mismo orden que antes; nada se pliega. */
+    .nota-lectura { display: flex; align-items: flex-start; gap: var(--esp-3); padding: var(--esp-1) 0 var(--esp-1) var(--esp-3); border-left: 2px solid var(--borde-control); color: var(--texto-2); }
+    .nota-ico { --ico: 1.2rem; flex: none; color: var(--acento-texto); margin-top: 2px; }
+    .nota-cuerpo { min-width: 0; display: grid; gap: var(--esp-2); }
+    .nota-principal { margin: 0; font-size: var(--t-m); line-height: 1.5; }
+    .nota-principal strong, .aviso strong { color: var(--texto); font-weight: 650; }
+    .matices { margin: 0; padding: 0 0 0 1.1rem; display: grid; gap: 4px; font-size: var(--t-s); line-height: 1.5; }
+    .aviso { font-size: var(--t-s); line-height: 1.5; margin: 0; padding: 2px 0 2px var(--esp-3); border-left: 2px solid var(--borde-control); color: var(--texto-2); }
     .aviso p { margin: 4px 0; }
     .aviso ul { margin: 4px 0 4px 18px; padding: 0; }
-    .aviso.malo { background: var(--error-fondo); border-color: var(--error); color: var(--error-texto); }
-    .aviso.incompleto { background: var(--aviso-fondo); border-color: var(--aviso); }
+    .aviso.malo { background: var(--error-fondo); border-color: var(--error); color: var(--error-texto); padding: 8px 10px; border-left-width: 3px; border-radius: 0 var(--radio-s) var(--radio-s) 0; }
     /* Desplegables (cerrados por defecto): el resumen se distingue como control por el subrayado y el peso; foco visible. */
     .plegable > summary { cursor: pointer; min-height: 36px; display: flex; align-items: center; font-size: var(--t-m); font-weight: 600; color: var(--acento-texto); text-decoration: underline; text-underline-offset: 3px; }
     .plegable > summary:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }

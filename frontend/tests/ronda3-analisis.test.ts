@@ -212,11 +212,11 @@ test('comparación en REPRODUCCIÓN: «no aplica» como banda del mismo ancho, c
 });
 
 // ---------- metodología y estado ----------
-test('metodología: <details> ABIERTO por defecto (señal en memoria), h2 #metodologia-titulo dentro del summary, app-estado completo y notas en <dl>', () => {
+test('metodología: <details> CONTRAÍDO por defecto (señal en memoria; Fase 1), h2 #metodologia-titulo dentro del summary, app-estado completo y notas en <dl>', () => {
   const a = analisis();
   assert.match(a, /<section id="metodologia" class="metodologia" aria-labelledby="metodologia-titulo">/);
   assert.match(a, /<details class="metodo" \[open\]="metodologiaAbierta\(\)" \(toggle\)="metodologiaAbierta\.set\(\$any\(\$event\.target\)\.open\)">/);
-  assert.match(app('app.component.ts'), /readonly metodologiaAbierta = signal\(true\);/);                      // abierto por defecto, sin almacenamiento
+  assert.match(app('app.component.ts'), /readonly metodologiaAbierta = signal\(false\);/);                     // contraído por defecto (Fase 1), sin almacenamiento; «Ver detalle» y «Cargar el resto» la abren
   assert.match(a, /<summary class="metodo-resumen">\s*<h2 id="metodologia-titulo" class="subseccion-titulo" tabindex="-1" data-ancla>Metodología y estado del sistema<\/h2>/);
   assert.match(a, /<app-icono nombre="chevron" class="metodo-chevron" \/>/);
   assert.match(a, /@if \(esApi\(\)\) \{ <app-estado class="o-estado" \[entrada\]="entradaEstado\(\)" \[ultimoAcceso\]="ultimoAcceso\(\)" \[periodo\]="periodo\(\)" \[filtros\]="resumenFiltros\(\)" \[cargandoResto\]="cargandoResto\(\)" \[ejecucion\]="ejecucion\(\)" \(cargarResto\)="cargarResto\(\)" \/> \}/);
