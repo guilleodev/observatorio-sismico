@@ -36,6 +36,7 @@
 - [ ] **Publicar y verificar las mejoras de interfaz (8.6)**: pruebas, `npm run build`, escaneo de secretos, `preparar-netlify-funcion.sh`, despliegue (prueba o producción, con autorización expresa) y comprobación de la web, la función y la ausencia de la clave en el *bundle*; mirar el **móvil real** (Pixel), la vista Eventos y el pie con los dos logos; actualizar las marcas `[ACTUALIZAR EN CIERRE]`.
 - [ ] **Resolver las marcas `[ACTUALIZAR EN CIERRE]`** del README (10) y de la memoria (6): versión publicada, fecha, estado del sistema, capturas.
 - [ ] Sistema real sano: `docker compose ps` (cinco `healthy`), `bash scripts/f6/invariantes.sh <etiqueta>`, ingesta «hace < 60 s», **0 huecos** (`recuperar --listar`).
+- [ ] **EMSC**: `/api/salud` → `fuentes.emsc.activa = true` y edad < 120 s; `live.estado_fuente` sin errores recientes; en el panel, «Fuente = EMSC» devuelve eventos y la atribución CC BY 4.0 está en el pie. Si se decide no usarla: `EMSC_ACTIVO=false` y recrear el productor.
 - [ ] **ngrok abierto** y la web pública cargando **sin clave** desde **otro dispositivo**; la versión publicada es `6afa2ccf…` (2026-11-15, mejoras 8.6; no mantenimiento ni la anterior `6af4b81f…`).
 - [ ] **El vídeo coincide con la web publicada** y no muestra nada prohibido (clave, URL de ngrok, notificaciones).
 - [ ] Repetir `bash scripts/f6/escaneo_secretos.sh` y la búsqueda del valor de la clave; `git status` limpio tras el commit; `git diff --check`.

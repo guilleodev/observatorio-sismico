@@ -111,7 +111,15 @@ export function textoMagnitud(mag: unknown): string {
  * F7 (mapa): la misma información que `textoFicha`, estructurada para la ventana emergente (título, insignia de magnitud y filas etiqueta/valor).
  * Los textos son equivalentes a los de `textoFicha`; el componente los inserta con textContent (nunca HTML).
  */
-export function filasFicha(propiedades: { place?: string | null; mag?: unknown; magType?: string | null; time?: unknown; updated?: unknown; country_name?: string | null }, profundidad: unknown, id: unknown): FichaEvento {
+/** F8: nombre legible de la fuente de un evento a partir de su `source` interno (`usgs-all-day`, `usgs-fdsn-recuperacion`, `emsc-fdsn`). */
+export function nombreFuente(source: string | null | undefined): string {
+  if (typeof source !== 'string' || source === '') return 'ND';
+  if (source.startsWith('emsc')) return 'EMSC';
+  if (source.startsWith('usgs')) return 'USGS';
+  return source;
+}
+
+export function filasFicha(propiedades: { place?: string | null; mag?: unknown; magType?: string | null; time?: unknown; updated?: unknown; country_name?: string | null; source?: string | null }, profundidad: unknown, id: unknown): FichaEvento {
   const mag = numeroFinito(propiedades.mag);
   const prof = numeroFinito(profundidad);
   return {
@@ -124,6 +132,7 @@ export function filasFicha(propiedades: { place?: string | null; mag?: unknown; 
       { etiqueta: 'Fecha UTC', valor: fechaUtc(propiedades.time) },
       { etiqueta: 'Actualizado UTC', valor: fechaUtc(propiedades.updated) },
       { etiqueta: 'País', valor: propiedades.country_name ?? 'Sin país asignado' },
+      ...(typeof propiedades.source === 'string' && propiedades.source !== '' ? [{ etiqueta: 'Fuente', valor: nombreFuente(propiedades.source) }] : []), // F8
       { etiqueta: 'ID', valor: String(id ?? 'ND') },
     ],
   };

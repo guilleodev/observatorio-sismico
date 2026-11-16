@@ -104,7 +104,8 @@ def test_salud_ok_y_503():
     assert ok.status_code == 200
     # F5 (5.6): campos aditivos del contrato; status, database y last_ingestion conservan nombre y significado
     assert ok.json() == {"status": "ok", "database": "ok", "last_ingestion": None, "generated": AHORA, "ingestion_age_s": None, "stale": True,
-                         "stale_after_s": 300, "gaps_pending": 0, "live_since": None}
+                         "stale_after_s": 300, "gaps_pending": 0, "live_since": None,
+                         "fuentes": {"emsc": {"activa": False, "last_ingestion": None, "ingestion_age_s": None}}}  # F8: bloque aditivo
     assert cliente(RepoFalso(falla=True)).get("/api/salud").status_code == 503
 
 
@@ -240,7 +241,7 @@ def test_la_api_devuelve_el_pais_asignado_o_null_sin_cambiar_el_resto(tmp_path):
                 assert (por_id["prueba-971"]["country_id"], por_id["prueba-971"]["country_name"]) == (None, None)
                 cuerpo = a_geojson([por_id["prueba-970"], por_id["prueba-971"]], AHORA, None)
                 props = [f["properties"] for f in cuerpo["features"]]
-                assert all(set(p) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name"} for p in props)  # contrato intacto
+                assert all(set(p) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name", "source"} for p in props)  # contrato intacto; F8 añade `source` (aditivo)
                 assert "NaN" not in json.dumps(cuerpo)
 
     asyncio.run(prueba())

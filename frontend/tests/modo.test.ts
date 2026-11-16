@@ -209,5 +209,5 @@ test('cambiar de modo cancela, descarta la lectura, reinicia los filtros y consu
 test('la reproducción consulta la ejecución en /api/salud y pide eventos y estadísticas con el mismo run y periodo', () => {
   const ts = fuente('app.component.ts');
   assert.match(ts, /this\.api!\.salud\(externa, parametrosModo\('replay'\)\)/);
-  assert.match(ts, /\.\.\.parametros\(filtros, ventana\), \.\.\.parametrosModo\('replay', ejec\.run_id\)/);
+  assert.match(ts, /parametros\(filtros, ventana\);.*\n\s+params = \{ \.\.\.paramsBase, \.\.\.parametrosModo\('replay', ejec\.run_id\) \}/); // F8: sin `fuente` en reproducción
 });

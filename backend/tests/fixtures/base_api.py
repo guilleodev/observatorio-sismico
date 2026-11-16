@@ -36,7 +36,7 @@ def base_temporal(base: str):
         admin.execute(f'CREATE DATABASE "{base}"')
     try:
         with psycopg.connect(conninfo(base), autocommit=True) as c:
-            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql"):
+            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql", "005_fuente_emsc.sql"):
                 c.execute((SQL_DIR / nombre).read_text(encoding="utf-8"))
             c.execute("INSERT INTO geo.catalogo (sha256, archivo, entidades) VALUES (%s, 'toy', 3)", (SHA,))
             for p in PAISES:

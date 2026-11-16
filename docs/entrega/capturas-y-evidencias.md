@@ -62,5 +62,9 @@
 3. **Con el sistema real y la persona estudiante**: C-12, C-12b, C-13, C-14.
 4. **Antes de entregar (T040(b), T024)**: repetir lo que haya cambiado; E-02, E-07 y el vídeo (E-10); verificar que README y memoria enlazan solo capturas **existentes**.
 
+### Evidencias de EMSC (segunda fuente, final de F8)
+- **Documento**: `docs/evidencias/f8/emsc-segunda-fuente.md` (arquitectura, regla de no duplicación, cifras reales del 2026-11-16, pruebas de fallo, cómo revertir) — **existe**.
+- **Capturas pendientes** (las hace la persona estudiante con el sistema real): selector «Fuente» con EMSC aplicado; ficha con «Fuente: EMSC»; pie con la atribución; (opcional) tabla de `live.estado_fuente` y consulta de los ocultos como duplicado. Hasta que existan, constan como **pendientes**, no como evidencia.
+
 ## 5. Qué NO puede presentarse como evidencia
 Nada de lo marcado «Pendiente» ni lo confirmado solo de palabra (**Pixel, túnel cerrado y reabierto en T036/T043, fallback sin WebGL**): consta como **comprobado sin captura**. SC-010 y el entorno limpio **no se declaran cumplidos** en F8.

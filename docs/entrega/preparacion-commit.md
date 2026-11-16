@@ -53,3 +53,13 @@ Después: abrir el repositorio en GitHub, comprobar que el README **renderiza lo
 
 ## 5. Mensaje final `[F8]` (T025)
 Al entregar, si prefieres un commit de cierre: «`docs: [F8] entrega final: vídeo, evidencias actualizadas y cierre dinámico`» (después de T040 y de publicar las mejoras en Netlify).
+
+---
+
+## EMSC como segunda fuente en vivo (última parte de F8, añadido 2026-11-16)
+Cambios: `sql/005_fuente_emsc.sql`, backend (`config.py`, `producer/{emsc,ingesta_emsc,repositorio_emsc,main}.py`, `api/{filtros,main,repositorio,comparacion}.py`), `compose.yaml`, `.env.example`, pruebas de `backend/tests/`, frontend (filtros, ficha, pie, comparación, función de Netlify, `tests/fuente-emsc.test.ts`) y `docs/evidencias/f8/emsc-segunda-fuente.md`.
+```bash
+git add sql/005_fuente_emsc.sql backend compose.yaml .env.example frontend docs/evidencias/f8 docs/entrega README.md
+git commit -m "feat: [F8] EMSC como segunda fuente en vivo sin duplicados"
+```
+Pruebas: backend 1 046, frontend 528. Publicar en Netlify es un paso aparte (requiere `netlify login` y autorización). Marcha atrás: `git revert` del commit o `EMSC_ACTIVO=false`.

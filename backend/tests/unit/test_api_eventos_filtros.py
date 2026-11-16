@@ -151,7 +151,7 @@ def test_sin_parametros_el_resultado_es_el_de_las_ultimas_24h_y_el_periodo_va_en
     r = cliente.get("/api/eventos").json()
     assert r["metadata"]["period"] == {"start": AHORA - 24 * H, "end": AHORA}
     assert r["metadata"]["mode"] == "live" and r["type"] == "FeatureCollection"
-    assert set(r["features"][0]["properties"]) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name"}  # contrato previo intacto
+    assert set(r["features"][0]["properties"]) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name", "source"}  # contrato previo intacto; F8 añade `source` (aditivo)
 
 
 def test_cobertura_es_la_primera_ingesta_menos_24h_y_last_ingestion_es_nulo_sin_consultas(cliente):

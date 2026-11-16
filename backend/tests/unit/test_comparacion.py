@@ -65,7 +65,7 @@ def conn():
         admin.execute(f'CREATE DATABASE "{BASE}"')
     try:
         with psycopg.connect(conninfo(BASE), autocommit=True) as c:
-            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql"):
+            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql", "005_fuente_emsc.sql"):
                 c.execute((SQL_DIR / nombre).read_text(encoding="utf-8"))
             c.execute("CREATE SCHEMA sintetico")
             c.execute("CREATE TABLE sintetico.evento_actual (LIKE live.evento_actual INCLUDING ALL)")

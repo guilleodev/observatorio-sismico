@@ -52,7 +52,8 @@ class ConfigPostgres:
 
 SOURCE_ADMITIDO = "usgs-all-day"
 SOURCE_RECUPERACION = "usgs-fdsn-recuperacion"  # solo lo publica la orden de recuperación de huecos (F4, paso 4.5)
-SOURCES_ADMITIDOS = (SOURCE_ADMITIDO, SOURCE_RECUPERACION)
+SOURCE_EMSC = "emsc-fdsn"  # F8: segunda fuente en vivo (EMSC, FDSN event); la publica solo la tarea de EMSC del productor
+SOURCES_ADMITIDOS = (SOURCE_ADMITIDO, SOURCE_RECUPERACION, SOURCE_EMSC)
 URL_USGS = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
 
 
@@ -117,6 +118,46 @@ class ConfigIngesta:
             retencion_consultas_dias=_entero("RETENCION_CONSULTAS_DIAS", 30),
             publicar=_booleano("INGESTA_PUBLICAR", False),
             hueco_margen_s=_entero("HUECO_MARGEN_S", 21600, minimo=0),
+        )
+
+
+URL_EMSC = "https://www.seismicportal.eu/fdsnws/event/1/query"
+
+
+@dataclass(frozen=True)
+class ConfigEmsc:
+    """Segunda fuente en vivo (F8): EMSC, consulta INCREMENTAL por `updatedafter`. Todas las variables son opcionales.
+
+    `activo` es False por defecto en el código (seguro) y True en compose.yaml; EMSC_ACTIVO=false lo apaga sin tocar nada más (el flujo de USGS no depende de esta fuente).
+    """
+
+    activo: bool
+    url: str
+    intervalo_s: int
+    timeout_s: int
+    max_reintentos: int
+    mag_min: float  # magnitud mínima que se pide a EMSC (por debajo de 2 hay mucho ruido: ver docs/evidencias/f8/)
+    ventana_inicial_h: int  # primera consulta (sin marca previa): últimas N horas por hora del EVENTO
+    ventana_max_dias: int  # tope de recuperación tras una parada: la marca no se retrasa más de N días
+    margen_s: int  # solape de seguridad de la consulta incremental (se vuelve a pedir lo actualizado en los últimos N segundos)
+    limite: int  # máximo de eventos por consulta
+
+    @classmethod
+    def desde_entorno(cls) -> "ConfigEmsc":
+        url = os.environ.get("EMSC_URL", "").strip() or URL_EMSC
+        if not url.startswith("https://"):
+            raise ConfigError(f"EMSC_URL debe empezar por https://, no {url!r}")
+        return cls(
+            activo=_booleano("EMSC_ACTIVO", False),
+            url=url,
+            intervalo_s=_entero("EMSC_INTERVAL_S", 60),
+            timeout_s=_entero("EMSC_TIMEOUT_S", 20),
+            max_reintentos=_entero("EMSC_MAX_REINTENTOS", 3, minimo=0),
+            mag_min=_decimal("EMSC_MAG_MIN", 2.0, 0.0, 10.0),
+            ventana_inicial_h=_entero("EMSC_VENTANA_INICIAL_H", 24),
+            ventana_max_dias=_entero("EMSC_VENTANA_MAX_DIAS", 7),
+            margen_s=_entero("EMSC_MARGEN_S", 120, minimo=0),
+            limite=_entero("EMSC_LIMITE", 20000, minimo=1),
         )
 
 

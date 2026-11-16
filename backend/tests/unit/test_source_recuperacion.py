@@ -16,8 +16,8 @@ def clasificar(source, **cambios):
     return clasificar_mensaje(json.dumps(msg).encode())
 
 
-def test_los_dos_source_autorizados_son_exactamente_estos():
-    assert SOURCES_ADMITIDOS == ("usgs-all-day", "usgs-fdsn-recuperacion") and SOURCE_ADMITIDO == "usgs-all-day"
+def test_los_source_autorizados_son_exactamente_estos():
+    assert SOURCES_ADMITIDOS == ("usgs-all-day", "usgs-fdsn-recuperacion", "emsc-fdsn") and SOURCE_ADMITIDO == "usgs-all-day"  # F8: + EMSC
 
 
 @pytest.mark.parametrize("source", SOURCES_ADMITIDOS)

@@ -18,7 +18,7 @@ import type { Comparacion } from '../modelos';
     <section class="banda" aria-labelledby="cmp-titulo">
       <header class="cab">
         <h2 id="cmp-titulo">Comparación con el histórico de 2025</h2>
-        <p class="ambito">Ámbito: {{ ambito() }} · Magnitud mínima efectiva: {{ datos().min_mag_efectiva }} · Mismo ámbito y misma magnitud en ambos periodos</p>
+        <p class="ambito">Ámbito: {{ ambito() }} · Magnitud mínima efectiva: {{ datos().min_mag_efectiva }} · Mismo ámbito y misma magnitud en ambos periodos · Solo datos de USGS (EMSC no entra en esta comparación)</p>
         <p class="fuentes">
           <span class="insignia vivo">Feed en vivo (USGS)</span>
           @if (datos().historico) { <span class="insignia hist">Histórico 2025 (catálogo FDSN)</span> }

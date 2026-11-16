@@ -9,7 +9,7 @@ const GENERATED = Date.UTC(2026, 10, 7, 17, 30, 0); // 2026-11-07T17:30:00Z seg�
 const DIA = 86_400_000;
 
 test('el estado inicial son las últimas 24 h sin magnitud ni país', () => {
-  assert.deepEqual(estadoInicial(), { preajuste: 'ultimas-24h', desde: '', hasta: '', magMin: '', pais: '' });
+  assert.deepEqual(estadoInicial(), { preajuste: 'ultimas-24h', desde: '', hasta: '', magMin: '', pais: '', fuente: '' });
   assert.deepEqual(validar(estadoInicial()), []);
 });
 

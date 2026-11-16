@@ -5,6 +5,12 @@ import type { FiltrosEstado, PaisCatalogo, Ventana } from './modelos';
 
 export const SIN_PAIS = 'sin_pais'; // valor reservado de country_id: «Sin país asignado» (nunca el país más cercano)
 export const NOMBRE_SIN_PAIS = 'Sin país asignado';
+/** F8: fuentes en vivo que se pueden filtrar. Un terremoto que informan ambas se muestra UNA sola vez (el de USGS). */
+export const FUENTES = [{ id: 'usgs', nombre: 'USGS' }, { id: 'emsc', nombre: 'EMSC' }] as const;
+export function fuenteValida(valor: string | undefined): 'usgs' | 'emsc' | '' {
+  const v = (valor ?? '').trim().toLowerCase();
+  return v === 'usgs' || v === 'emsc' ? v : '';
+}
 const HORA_MS = 3_600_000;
 const DIA_MS = 24 * HORA_MS;
 
@@ -14,7 +20,7 @@ export const AVISO_COBERTURA =
   'Por eso una diferencia con 2025 no demuestra un descenso real de la actividad; para comparar de forma más justa usa magnitud mínima 4,5.';
 
 export function estadoInicial(): FiltrosEstado {
-  return { preajuste: 'ultimas-24h', desde: '', hasta: '', magMin: '', pais: '' };
+  return { preajuste: 'ultimas-24h', desde: '', hasta: '', magMin: '', pais: '', fuente: '' };
 }
 
 /** «YYYY-MM-DDTHH:mm[:ss]» interpretado como UTC → milisegundos, o NaN si no es una fecha válida (sin el análisis permisivo de Date). */
@@ -76,6 +82,8 @@ export function parametros(estado: FiltrosEstado, ventana: Ventana): Record<stri
   if (typeof mag === 'number') p['min_mag'] = String(mag);
   const pais = estado.pais.trim();
   if (pais !== '') p['country_id'] = pais.toLowerCase() === SIN_PAIS ? SIN_PAIS : pais.toUpperCase();
+  const fuente = fuenteValida(estado.fuente);
+  if (fuente !== '') p['fuente'] = fuente;
   return p;
 }
 
@@ -87,6 +95,8 @@ export function resumen(estado: FiltrosEstado, nombresPais: Record<string, strin
   if (typeof mag === 'number') partes.push(`magnitud ≥ ${mag}`);
   const pais = estado.pais.trim();
   if (pais !== '') partes.push(pais.toLowerCase() === SIN_PAIS ? NOMBRE_SIN_PAIS : `país ${nombresPais[pais.toUpperCase()] ?? pais.toUpperCase()}`);
+  const fuente = fuenteValida(estado.fuente);
+  if (fuente !== '') partes.push(`fuente ${fuente.toUpperCase()}`);
   return partes.join(' · ');
 }
 

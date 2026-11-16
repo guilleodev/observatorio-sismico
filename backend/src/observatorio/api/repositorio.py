@@ -10,7 +10,7 @@ from psycopg import AsyncConnection
 from psycopg_pool import PoolTimeout
 
 from observatorio.api import estadisticas
-from observatorio.api.comparacion import SQL_COBERTURA, SQL_HUECOS_PENDIENTES, SQL_ULTIMA_INGESTION
+from observatorio.api.comparacion import SQL_COBERTURA, SQL_HUECOS_PENDIENTES, SQL_ULTIMA_INGESTION, SQL_ULTIMA_INGESTION_EMSC
 from observatorio.api.filtros import SIN_PAIS, ErrorParametro, Filtros, para_modo
 from observatorio.api.replay import SQL_EJECUCION_POR_ID, SQL_EJECUCION_ULTIMA, SQL_EVENTOS_REPLAY, a_ejecucion
 from observatorio.modos import MODO_LIVE, MODO_REPLAY, MODOS_CONTRACTUALES
@@ -20,7 +20,7 @@ SQL_EVENTOS = """
 SELECT event_id, longitude, latitude, depth_km, mag, mag_type, place,
        (extract(epoch FROM event_time) * 1000)::bigint,
        (extract(epoch FROM updated_at) * 1000)::bigint,
-       country_id, country_name
+       country_id, country_name, source
 FROM live.evento_actual
 WHERE {donde}
 ORDER BY event_time DESC, event_id ASC
@@ -63,6 +63,7 @@ class EstadoSalud:
     last_ingestion: int | None
     live_since: int | None
     gaps_pending: int
+    emsc_last_ingestion: int | None = None  # F8: última consulta correcta a EMSC (None = fuente apagada o sin consultas)
 
 
 def opciones_conexion(statement_timeout_s: int) -> str:
@@ -132,7 +133,7 @@ class RepositorioApi:
         eventos = [
             {"id": f[0], "lon": f[1], "lat": f[2], "depth": _numero(f[3]), "mag": _numero(f[4]),
              "mag_type": f[5], "place": f[6], "time": f[7], "updated": f[8],
-             "country_id": f[9], "country_name": f[10], **({"caso": f[11], "replayed_at": f[12]} if replay else {})}
+             "country_id": f[9], "country_name": f[10], **({"caso": f[11], "replayed_at": f[12]} if replay else {"source": f[11]})}
             for f in filas
         ]
         return PaginaEventos(eventos, total, sin_magnitud, ingestion[0] if ingestion else None, cobertura)
@@ -154,9 +155,10 @@ class RepositorioApi:
                 ingestion = await (await conn.execute(SQL_ULTIMA_INGESTION)).fetchone()
                 cobertura = (await (await conn.execute(SQL_COBERTURA)).fetchone())[0]
                 huecos = (await (await conn.execute(SQL_HUECOS_PENDIENTES)).fetchone())[0]
+                emsc = await (await conn.execute(SQL_ULTIMA_INGESTION_EMSC)).fetchone()
         except (psycopg.Error, PoolTimeout, OSError) as exc:
             raise BaseDatosNoDisponible(type(exc).__name__) from exc
-        return EstadoSalud(ingestion[0] if ingestion else None, cobertura, huecos)
+        return EstadoSalud(ingestion[0] if ingestion else None, cobertura, huecos, emsc[0] if emsc else None)
 
     async def comprobar_base(self) -> None:
         await self._consultar("SELECT 1")
@@ -203,7 +205,7 @@ def a_geojson(eventos: list[dict], generado_ms: int, ultima_ingestion_ms: int | 
                     "mag": e["mag"], "magType": e["mag_type"], "place": e["place"],
                     "time": e["time"], "updated": e["updated"],
                     "country_id": e["country_id"], "country_name": e["country_name"],
-                    **({"caso": e["caso"], "replayed_at": e["replayed_at"]} if es_replay else {}),
+                    **({"caso": e["caso"], "replayed_at": e["replayed_at"]} if es_replay else ({"source": e["source"]} if "source" in e else {})),
                 },
             }
             for e in eventos

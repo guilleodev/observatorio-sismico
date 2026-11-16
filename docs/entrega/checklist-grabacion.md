@@ -56,6 +56,7 @@ Versión: la estable actual de OBS Studio.
 **Sistema (5 min)**
 - [ ] Docker Desktop abierto: `docker compose ps` → **api, consumer, kafka, postgres y producer `healthy`**.
 - [ ] `bash scripts/f6/invariantes.sh grabacion` (solo lectura) → lag 0, 0 duplicados, **0 huecos pendientes**; ingesta con «hace < 60 s» en el panel.
+- [ ] **EMSC** activa (`fuentes.emsc.activa`) y, si se enseña, «Fuente = EMSC» en el panel con eventos de Europa/Mediterráneo; no mostrar la URL del túnel.
 - [ ] **ngrok abierto** (ventana no capturada) y la API local responde (401 sin clave).
 - [ ] La **web pública** `https://observatorio-sismico.netlify.app` carga **sin clave**, con «Datos al día» (y es la versión con función, no el modo mantenimiento ni la anterior con formulario).
 - [ ] **REPRODUCCIÓN** disponible: existe una ejecución terminada (35 eventos) para enseñar; no hace falta lanzar otra.

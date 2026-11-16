@@ -1,11 +1,13 @@
 # Observatorio de actividad sísmica
 
 **Un sistema de datos de extremo a extremo para responder una pregunta concreta: ¿dónde se está registrando actividad sísmica y cómo se compara con un periodo histórico equivalente?**
-Extrae terremotos de USGS, los transporta con Kafka, los valida y los integra con un catálogo geográfico en PostgreSQL, los sirve con una API FastAPI y los analiza en un panel Angular («Mission Control») con globo 3D, mapa 2D, estadísticas y comparación con 2025.
+Extrae terremotos de USGS (y, como segunda fuente en vivo, de EMSC), los transporta con Kafka, los valida y los integra con un catálogo geográfico en PostgreSQL, los sirve con una API FastAPI y los analiza en un panel Angular («Mission Control») con globo 3D, mapa 2D, estadísticas y comparación con 2025.
 
 Proyecto académico de **Sistemas de Big Data** (Máster en IA y Big Data). Cinco servicios de Docker Compose en el equipo del autor, túnel ngrok para la API y panel Angular en Netlify.
 
-> **No es una herramienta de predicción ni de evaluación de riesgo sísmico.** Describe lo observado en datos de USGS, con sus limitaciones de cobertura y de revisión.
+> **No es una herramienta de predicción ni de evaluación de riesgo sísmico.** Describe lo observado en datos de USGS y EMSC, con sus limitaciones de cobertura y de revisión.
+
+> **Fuentes en vivo (F8)**: además del feed de USGS, el sistema integra de forma aditiva el feed incremental de EMSC (Centro Sismológico Euro-Mediterráneo, CC BY 4.0) para cubrir mejor Europa y el Mediterráneo. Un terremoto informado por ambas fuentes se muestra **una sola vez** (el de USGS); la comparación con 2025 sigue siendo solo de USGS. Se apaga con `EMSC_ACTIVO=false`. Detalle y pruebas: `docs/evidencias/f8/emsc-segunda-fuente.md`.
 
 ## Estado del proyecto (a 2026-11-11)
 
@@ -54,6 +56,7 @@ Proyecto académico de **Sistemas de Big Data** (Máster en IA y Big Data). Cinc
 | Área | Qué hace |
 |---|---|
 | Extracción | El productor consulta USGS cada 60 s con reintentos, registra cada consulta, conserva la respuesta original y publica en Kafka solo versiones nuevas o revisadas |
+| Segunda fuente (EMSC) | Tarea independiente del productor: consulta incremental cada 60 s (M ≥ 2) por el mismo topic y consumidor. Un terremoto informado por USGS y EMSC se muestra **una sola vez** (el de USGS; regla en [`docs/evidencias/f8/emsc-segunda-fuente.md`](docs/evidencias/f8/emsc-segunda-fuente.md)). Se apaga con `EMSC_ACTIVO=false` |
 | Procesamiento | El consumidor valida, excluye lo no sísmico o inválido (cuarentena con motivo), asigna el país **por pertenencia al polígono** y guarda historial de versiones y estado actual de forma idempotente |
 | Almacenamiento | PostgreSQL con esquemas separados `live`, `geo`, `historico` y `replay`, claves únicas y `CHECK` que impiden mezclar modos |
 | API | FastAPI: `/api/eventos`, `/api/estadisticas`, `/api/salud`; filtros coherentes, paginación y errores explícitos |
@@ -77,6 +80,7 @@ Proyecto académico de **Sistemas de Big Data** (Máster en IA y Big Data). Cinc
 ```mermaid
 flowchart LR
   USGS[(USGS<br/>feed all_day.geojson<br/>cada 60 s)] --> P[Productor<br/>Python + aiokafka]
+  EMSC[(EMSC<br/>FDSN incremental<br/>cada 60 s, M ≥ 2)] --> P
   P -- "id, source, ingested_at, mode, evento original" --> K[[Kafka<br/>terremotos.live]]
   K --> C[Consumidor<br/>valida, excluye,<br/>asigna país]
   GEO[(Catálogo<br/>Natural Earth)] --> C
@@ -237,6 +241,7 @@ npm run start:local      # http://localhost:4200 (solo escucha en 127.0.0.1); pa
 |---|---|
 | PostgreSQL y Kafka | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_TOPIC`, `KAFKA_CONSUMER_GROUP` |
 | Ingesta (productor) | `USGS_URL`, `USGS_INTERVAL_S`, `USGS_TIMEOUT_S`, `USGS_MAX_REINTENTOS`, `INGESTA_PUBLICAR`, `CATALOGO_PATH`, `HUECO_MARGEN_S`, `RETENCION_RESPUESTAS_DIAS`, `RETENCION_CONSULTAS_DIAS` |
+| Segunda fuente (EMSC) | `EMSC_ACTIVO` (por defecto `true` en Compose), `EMSC_URL`, `EMSC_INTERVAL_S`, `EMSC_MAG_MIN`; avanzadas: `EMSC_TIMEOUT_S`, `EMSC_MAX_REINTENTOS`, `EMSC_VENTANA_INICIAL_H`, `EMSC_VENTANA_MAX_DIAS`, `EMSC_MARGEN_S`, `EMSC_LIMITE`. Solo se consulta con `INGESTA_PUBLICAR=true` |
 | Histórico | `HISTORICO_ANIO`, `HISTORICO_MAG_MIN`, `HISTORICO_LIMITE`, `HISTORICO_TIMEOUT_S`, `HISTORICO_MAX_REINTENTOS`, `HISTORICO_EXPORT_DIR` |
 | API | `API_MAX_EVENTOS`, `API_MAX_VENTANA_HORAS`, `INGESTA_OBSOLETA_S`, `API_STATEMENT_TIMEOUT_S`, `API_MARGEN_PUBLICACION_S`, `API_CORS_ORIGINS`, `API_DOCS`, `API_CLAVE_ACCESO`, `API_PUERTO` |
 | Reproducción | `KAFKA_TOPIC_REPLAY`, `KAFKA_CONSUMER_GROUP_REPLAY`, `REPLAY_EVENTOS`, `REPLAY_INTERVALO_S`, `REPLAY_ESPERA_FINAL_S`, `REPLAY_ESPERA_MAX_S` |
@@ -249,7 +254,7 @@ npm run start:local      # http://localhost:4200 (solo escucha en 127.0.0.1); pa
 |---|---|---|---|---|
 | `postgres` | `postgres:17.11` | Datos preparados, originales y estado; volumen `pgdata` | ninguno (interno) | `healthcheck`; `restart: unless-stopped` |
 | `kafka` | `apache/kafka:4.3.2` | Transporte; volumen `kafkadata`; retención de 24 h y 100 MiB por partición, segmentos de 6 h | ninguno (interno) | `healthcheck`; `restart: unless-stopped` |
-| `producer` | `observatorio-backend` | Consulta USGS, registra, publica y detecta huecos (`observatorio.producer.main`) | ninguno | `healthcheck`; depende de `postgres` y `kafka`; `restart: unless-stopped` |
+| `producer` | `observatorio-backend` | Consulta USGS (y EMSC, en una tarea aparte que nunca detiene la de USGS), registra, publica y detecta huecos (`observatorio.producer.main`) | ninguno | `healthcheck`; depende de `postgres` y `kafka`; `restart: unless-stopped` |
 | `consumer` | `observatorio-backend` | Valida, excluye, asigna país y guarda (`observatorio.consumer.main`); monta el catálogo de solo lectura | ninguno | `healthcheck` (espera el catálogo); depende de `postgres` y `kafka`; `restart: unless-stopped` |
 | `api` | `observatorio-backend` | FastAPI/Uvicorn en `0.0.0.0:8000` dentro del contenedor | `127.0.0.1:8000` (solo el anfitrión) | `healthcheck` (con clave si está activa); depende de `postgres`; `restart: unless-stopped` |
 
@@ -259,7 +264,7 @@ Los tres servicios Python comparten una imagen (`backend/Dockerfile`, `python:3.
 
 ### 7.1 Kafka
 - **Topics:** `terremotos.live` (`KAFKA_TOPIC`) y `terremotos.replay` (`KAFKA_TOPIC_REPLAY`); grupos `KAFKA_CONSUMER_GROUP` y `consumidor-replay`.
-- **Mensaje:** clave = `event.id`; valor JSON con `source` (`usgs-all-day`), `ingested_at` (ms Unix UTC), `mode` (`live`) y `event` (el Feature original de USGS **sin transformar**). Contrato: [`specs/002-ingesta-real-calidad/contracts/mensaje-kafka.md`](specs/002-ingesta-real-calidad/contracts/mensaje-kafka.md).
+- **Mensaje:** clave = `event.id`; valor JSON con `source` (`usgs-all-day`; `emsc-fdsn` para EMSC, cuyo Feature se adapta al formato de USGS y conserva el original en `emsc_original`), `ingested_at` (ms Unix UTC), `mode` (`live`) y `event` (el Feature original de USGS **sin transformar**). Contrato: [`specs/002-ingesta-real-calidad/contracts/mensaje-kafka.md`](specs/002-ingesta-real-calidad/contracts/mensaje-kafka.md).
 - **Garantías:** procesamiento «al menos una vez» con escritura idempotente (sin transacción distribuida); el offset se confirma **después** de guardar. La retención de Kafka solo afecta a los mensajes del broker, no a PostgreSQL ([§10.5](#105-retención)).
 
 ### 7.2 PostgreSQL
@@ -279,7 +284,7 @@ Solo `GET`/`OPTIONS`. Contrato mínimo del profesor: [`CONTRATO-API.md`](docs/re
 
 | Endpoint | Qué devuelve |
 |---|---|
-| `GET /api/eventos` | FeatureCollection de `live` (últimas 24 h por defecto). Filtros `start` (inclusivo), `end` (exclusivo), `min_mag` y `country_id` (`sin_pais` = «Sin país asignado»); paginación `limit`/`offset` (máximo 5 000) y `metadata` con `total`, `next_offset`, `truncated`, `period`, `coverage` y `sin_magnitud`. `mode=replay[&run=…]` selecciona una reproducción |
+| `GET /api/eventos` | FeatureCollection de `live` (últimas 24 h por defecto). Filtros `start` (inclusivo), `end` (exclusivo), `min_mag`, `country_id` (`sin_pais` = «Sin país asignado») y `fuente` (`usgs` | `emsc`; solo en vivo, 422 en reproducción); paginación `limit`/`offset` (máximo 5 000) y `metadata` con `total`, `next_offset`, `truncated`, `period`, `coverage` y `sin_magnitud`. `mode=replay[&run=…]` selecciona una reproducción |
 | `GET /api/estadisticas` | Con los mismos filtros: `por_hora` (horas UTC con ceros; se omite con su motivo si supera 744 casillas), `por_pais`, `magnitud`, `profundidad` y `comparacion` con la media diaria de 2025 |
 | `GET /api/salud` | `status`, `database`, `last_ingestion`, `generated`, `ingestion_age_s`, `stale` (umbral `INGESTA_OBSOLETA_S`), `gaps_pending` y `live_since` |
 
@@ -487,7 +492,8 @@ Cada cifra lleva su etiqueta: **[MEDIDO]**, **[ESTIMADO]**, **[PROYECTADO]**, **
 - **Versión publicada:** Netlify sirve **F7 con las mejoras de F8.6** (despliegue `6afa2ccf37d6b9bb717c44f4`, 2026-11-15, commit `2616aec`; respaldos: `6af4b81fa1d0a00d0cb33c59` —F7 anterior, 2026-11-11—, `6af4a52d…` y F6), con función de Netlify y sin formulario de clave, `refreshMs` 60 s con pausa si la pestaña está oculta; respaldo: `6af4a52d…` y F6). La estrategia de publicación está en [`estrategia-publicacion-f7.md`](docs/evidencias/f8/estrategia-publicacion-f7.md) y su verificación en [`verificacion-publicacion-f7.md`](docs/evidencias/f8/verificacion-publicacion-f7.md): funcionan el acceso sin clave, las tres vistas, el globo 3D, el mapa 2D, EN VIVO, REPRODUCCIÓN y el aviso y la recuperación tras cerrar y reabrir el túnel; **incidencias menores** (insignia «Powered by Netlify» inyectada por Netlify, errores 400 de algunas teselas de OpenStreetMap en el mapa 2D, estado transitorio al cambiar a REPRODUCCIÓN) y **pruebas pendientes** (otro navegador distinto de Chrome, el cierre del túnel desde el móvil y los contadores reales de ngrok y de Netlify; el caso sin WebGL se comprobó en una copia local con WebGL desactivado) `[ACTUALIZAR EN CIERRE]`. Netlify y ngrok solo se usan con autorización expresa.
 
 ### 14.3 Limitaciones y reservas conocidas
-| Reserva | Detalle |
+
+- **EMSC (segunda fuente)**: la no duplicación es una **heurística espacio-temporal** (≤ 90 s y ≤ 100 km; M ≥ 4,5: ≤ 300 s, ≤ 300 km, ΔM ≤ 0,6), no una identidad entre catálogos; un mismo sismo con localizaciones muy distintas entre agencias podría no emparejarse. La comparación con 2025 es **solo de USGS**. EMSC acumula datos solo desde su activación y asigna «sin país» más a menudo (más eventos en el mar). Ver [`docs/evidencias/f8/emsc-segunda-fuente.md`](docs/evidencias/f8/emsc-segunda-fuente.md).| Reserva | Detalle |
 |---|---|
 | R1 · ACE-08 | Falta la comprobación adicional del reinicio en mitad de una transacción |
 | R2 · ACE-09/10 y publicación | Túnel cerrado/reabierto verificado con F6 y con F7 publicada (navegador del propio equipo); Pixel con datos móviles confirmado por la persona estudiante (no se probó el cierre del túnel desde el móvil). Continuidad de la ventana: el PC se suspende tras 1 h inactivo si no se cambian los ajustes (`8.3-continuidad-ventana.md`) |
@@ -628,4 +634,4 @@ Los pasos 3 y 4 de la [§5.2](#52-arranque-desde-cero) se ejecutan igual antepon
 
 ---
 
-*Proyecto académico. Los datos sísmicos proceden de USGS y el catálogo geográfico de Natural Earth (ver `docs/referencias/FUENTES-Y-LICENCIAS.md`). No es una herramienta de predicción ni de evaluación de riesgo.*
+*Proyecto académico. Los datos sísmicos proceden de USGS y de EMSC (Centro Sismológico Euro-Mediterráneo, CC BY 4.0, https://www.seismicportal.eu) y el catálogo geográfico de Natural Earth (ver `docs/referencias/FUENTES-Y-LICENCIAS.md`). No es una herramienta de predicción ni de evaluación de riesgo.*

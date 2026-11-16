@@ -14,7 +14,7 @@ ESQUEMAS = r"(?:live|geo|historico|sintetico|mvp|public|pg_catalog|information_s
 LECTURAS = re.compile(rf"\b(?:FROM|JOIN)\s+({ESQUEMAS}\.[a-z_]+)", re.IGNORECASE)  # solo SQL: los imports de Python (from observatorio.x) no coinciden
 ESCRITURAS = re.compile(r"\b(INSERT INTO|UPDATE [a-z_]+\.|DELETE FROM|TRUNCATE\b|DROP |ALTER |CREATE |GRANT |COPY )")  # el SQL del proyecto va en mayúsculas
 BASE = {"live.evento_actual", "live.estado_ingesta", "geo.pais"}
-PERMITIDAS = {"comparacion.py": BASE | {"historico.evento", "live.hueco"}}  # DF6: única lectura del histórico, agregada y de solo lectura
+PERMITIDAS = {"comparacion.py": BASE | {"historico.evento", "live.hueco", "live.estado_fuente"}}  # DF6: única lectura del histórico, agregada y de solo lectura; F8: + estado de la segunda fuente (live.estado_fuente, solo lectura)
 
 
 def test_hay_modulos_que_analizar():

@@ -26,6 +26,7 @@ PARAMETROS_EVENTOS = (*PARAMETROS_FILTRO, "limit", "offset", *PARAMETROS_MODO)
 PARAMETROS_ESTADISTICAS = (*PARAMETROS_FILTRO, *PARAMETROS_MODO)
 DESCRIPCION_MODE = "live (por defecto) o replay (reproducción histórica aislada, F6)."
 DESCRIPCION_RUN = "Solo con mode=replay: run_id de la ejecución (por defecto, la más reciente)."
+DESCRIPCION_FUENTE = "Solo mode=live: usgs o emsc (por defecto, todas las fuentes sin duplicados; un terremoto informado por ambas se cuenta una vez)."
 
 
 _ORIGEN = re.compile(r"^https?://[A-Za-z0-9.-]+(:\d{1,5})?$")  # esquema + servidor [+ puerto]: sin ruta, sin barra final y sin comodines
@@ -96,12 +97,12 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
             raise ErrorParametro(f"run desconocido: no existe la ejecución {run_id!r}")
         return modo, ejecucion  # None = todavía no hay ninguna reproducción: respuesta vacía, no un error
 
-    def filtros_de(generado: int, modo: str, ejecucion: dict | None, start, end, min_mag, country_id) -> Filtros:
+    def filtros_de(generado: int, modo: str, ejecucion: dict | None, start, end, min_mag, country_id, fuente=None) -> Filtros:
         intervalo = None
         if ejecucion is not None and ejecucion["intervalo"]["desde"] is not None and ejecucion["intervalo"]["hasta"] is not None:
             intervalo = (ejecucion["intervalo"]["desde"], ejecucion["intervalo"]["hasta"])
         return Filtros.desde_parametros(generado, start, end, min_mag, country_id, modo=modo,
-                                        run_id=None if ejecucion is None else ejecucion["run_id"], intervalo=intervalo)
+                                        run_id=None if ejecucion is None else ejecucion["run_id"], intervalo=intervalo, fuente=fuente)
 
     @app.exception_handler(BaseDatosNoDisponible)
     async def base_no_disponible(_peticion, exc: BaseDatosNoDisponible):
@@ -127,6 +128,7 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
         end: str | None = Query(None, description="Fin exclusivo, ISO 8601 (sin zona = UTC). Por defecto el instante de la respuesta."),
         min_mag: str | None = Query(None, description="Magnitud mínima; la magnitud nula no la cumple y se cuenta en sin_magnitud."),
         country_id: str | None = Query(None, description="ADM0_A3 del catálogo o «sin_pais» (Sin país asignado)."),
+        fuente: str | None = Query(None, description=DESCRIPCION_FUENTE),
         limit: str | None = Query(None, description="Eventos por página (1 a API_MAX_EVENTOS)."),
         offset: str | None = Query(None, description="Eventos que se saltan (>= 0)."),
         mode: str | None = Query(None, description=DESCRIPCION_MODE),
@@ -135,7 +137,7 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
         comprobar_parametros(peticion, PARAMETROS_EVENTOS)
         generado = reloj()
         modo, ejecucion = await resolver_modo(mode, run)
-        filtros = filtros_de(generado, modo, ejecucion, start, end, min_mag, country_id)
+        filtros = filtros_de(generado, modo, ejecucion, start, end, min_mag, country_id, fuente)
         tamano, desplazamiento = paginacion(limit, offset, config.max_eventos)
         pagina = await repositorio.pagina_eventos(filtros, tamano, desplazamiento)
         if modo == MODO_LIVE:  # sin mode (o con mode=live) la respuesta es exactamente la de F5
@@ -151,16 +153,18 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
         end: str | None = Query(None, description="Fin exclusivo, ISO 8601 (sin zona = UTC). Por defecto el instante de la respuesta."),
         min_mag: str | None = Query(None, description="Magnitud mínima (mismos filtros que /api/eventos)."),
         country_id: str | None = Query(None, description="ADM0_A3 del catálogo o «sin_pais» (Sin país asignado)."),
+        fuente: str | None = Query(None, description=DESCRIPCION_FUENTE),
         mode: str | None = Query(None, description=DESCRIPCION_MODE),
         run: str | None = Query(None, description=DESCRIPCION_RUN),
     ):
         comprobar_parametros(peticion, PARAMETROS_ESTADISTICAS)
         generado = reloj()
         modo, ejecucion = await resolver_modo(mode, run)
-        filtros = filtros_de(generado, modo, ejecucion, start, end, min_mag, country_id)
+        filtros = filtros_de(generado, modo, ejecucion, start, end, min_mag, country_id, fuente)
         bloques = await repositorio.estadisticas(filtros, generado, config.max_ventana_horas, config.margen_publicacion_s)
         respuesta = {"generated": generado, "period": filtros.periodo,
-                     "filters": {"min_mag": None if filtros.min_mag is None else float(filtros.min_mag), "country_id": filtros.country_id},
+                     "filters": {"min_mag": None if filtros.min_mag is None else float(filtros.min_mag), "country_id": filtros.country_id,
+                                 **({"fuente": filtros.fuente} if modo == MODO_LIVE else {})},
                      **bloques}
         if modo == MODO_REPLAY:
             respuesta |= {"mode": modo, "replay": ejecucion}
@@ -181,6 +185,9 @@ def crear_app(repositorio, origenes: list[str], reloj=ahora_ms, config: ConfigAp
             "generated": generado, "ingestion_age_s": edad,
             "stale": edad is None or edad > config.obsoleta_s,  # sin ninguna ingesta correcta también es «desactualizado»
             "stale_after_s": config.obsoleta_s, "gaps_pending": estado.gaps_pending, "live_since": estado.live_since,
+            # F8 (aditivo): estado de las fuentes adicionales. `last_ingestion` y `stale` siguen siendo SOLO los del feed de USGS: que EMSC falle no marca el sistema como desactualizado.
+            "fuentes": {"emsc": {"activa": estado.emsc_last_ingestion is not None, "last_ingestion": estado.emsc_last_ingestion,
+                                 "ingestion_age_s": None if estado.emsc_last_ingestion is None else max(0, (generado - estado.emsc_last_ingestion) // 1000)}},
         }
         if modo == MODO_REPLAY:  # `last_ingestion` sigue siendo la ingesta EN VIVO; la reproducción va aparte
             respuesta["replay"] = ejecucion

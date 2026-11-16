@@ -232,7 +232,7 @@ test('pie: ya no aparece «Base proporcionada…»; sí el proyecto y las atribu
   assert.doesNotMatch(h, /Base proporcionada|conclusiones para completar el proyecto/);
   const pie = /<footer[^>]*>([\s\S]*?)<\/footer>/.exec(h)?.[1] ?? '';
   assert.match(pie, /Observatorio Sísmico · Proyecto académico de Big Data \(Máster en IA y Big Data\)/);
-  assert.match(pie, /Datos: USGS \(feed en vivo y catálogo FDSN\) · Fronteras: Natural Earth · Cartografía: © OpenStreetMap contributors/);
+  assert.match(pie, /Datos: USGS \(feed en vivo y catálogo FDSN\) · EMSC, Centro Sismológico Euro-Mediterráneo \(feed en vivo, CC BY 4\.0\) · Fronteras: Natural Earth · Cartografía: © OpenStreetMap contributors/);
   assert.equal((pie.match(/BIG DATA · PROYECTO DE AULA/g) ?? []).length, 1);                            // el eyebrow no se duplica en el pie
   assert.equal((h.match(/<footer/g) ?? []).length, 1);
   assert.doesNotMatch(pie, /<a |https?:\/\/|\d{4}-\d{2}-\d{2}|v\d+\.\d+/);                              // sin enlaces, fechas ni versiones inventadas

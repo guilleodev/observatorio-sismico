@@ -44,6 +44,8 @@ SQL_HUECO_PENDIENTE = "SELECT EXISTS (SELECT 1 FROM live.hueco WHERE estado = 'p
 # Inicio de la cobertura real de live (definición de F4): primera ingesta menos las 24 h que cubre el feed.
 SQL_COBERTURA = "SELECT (extract(epoch FROM min(ingested_at) - interval '24 hours') * 1000)::bigint FROM live.evento_actual"
 SQL_ULTIMA_INGESTION = "SELECT (extract(epoch FROM ultima_consulta_ok_at) * 1000)::bigint FROM live.estado_ingesta WHERE id = 1"
+# F8 (aditivo): última consulta correcta a EMSC (tabla propia; NO toca el estado de USGS)
+SQL_ULTIMA_INGESTION_EMSC = "SELECT (extract(epoch FROM ultima_consulta_ok_at) * 1000)::bigint FROM live.estado_fuente WHERE fuente = 'emsc-fdsn'"
 
 
 def _ambito(filtros: Filtros) -> tuple[str, str | None]:
@@ -56,7 +58,8 @@ async def calcular(conn, filtros: Filtros, generado_ms: int, margen_publicacion_
     """Bloque `comparacion` de /api/estadisticas para el periodo y el ámbito de `filtros`."""
     ambito, pais = _ambito(filtros)
     efectiva = max(filtros.min_mag if filtros.min_mag is not None else Decimal(MAG_MINIMA), Decimal(MAG_MINIMA))
-    reciente = replace(filtros, min_mag=efectiva)  # mismo periodo y ámbito, umbral efectivo (>= 4)
+    # F8: la comparación es SOLO con USGS (el histórico de 2025 es de USGS): mezclar EMSC inflaría el recuento reciente frente a un denominador de una sola fuente.
+    reciente = replace(filtros, min_mag=efectiva, fuente="usgs")  # mismo periodo y ámbito, umbral efectivo (>= 4) y fuente USGS
     donde, parametros = reciente.donde()
     sin_umbral, parametros_sin_umbral = reciente.donde(con_magnitud=False)
     dias_ventana = (filtros.end - filtros.start).total_seconds() / 86400
@@ -83,7 +86,7 @@ async def calcular(conn, filtros: Filtros, generado_ms: int, margen_publicacion_
         motivos.append("despues_de_ultima_lectura")
 
     resultado = {
-        "unit": "events", "comparacion_disponible": False, "ambito": ambito, "country_id": pais,
+        "unit": "events", "comparacion_disponible": False, "ambito": ambito, "country_id": pais, "fuente": "usgs",
         "min_mag_solicitada": None if filtros.min_mag is None else float(filtros.min_mag),
         "min_mag_efectiva": float(efectiva),
         "min_mag_elevada": filtros.min_mag is None or filtros.min_mag < MAG_MINIMA,

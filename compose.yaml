@@ -69,6 +69,11 @@ services:
       USGS_INTERVAL_S: ${USGS_INTERVAL_S:-60}
       USGS_TIMEOUT_S: ${USGS_TIMEOUT_S:-20}
       USGS_MAX_REINTENTOS: ${USGS_MAX_REINTENTOS:-3}
+      # F8: segunda fuente en vivo (EMSC, CC BY 4.0), consulta incremental. EMSC_ACTIVO=false la apaga sin tocar nada más: el flujo de USGS no depende de ella.
+      EMSC_ACTIVO: ${EMSC_ACTIVO:-true}
+      EMSC_URL: ${EMSC_URL:-https://www.seismicportal.eu/fdsnws/event/1/query}
+      EMSC_INTERVAL_S: ${EMSC_INTERVAL_S:-60}
+      EMSC_MAG_MIN: ${EMSC_MAG_MIN:-2}
       RETENCION_RESPUESTAS_DIAS: ${RETENCION_RESPUESTAS_DIAS:-3}
       RETENCION_CONSULTAS_DIAS: ${RETENCION_CONSULTAS_DIAS:-30}
       # true = publicación real en Kafka (activada en la tarea T026, con el consumidor definitivo desplegado);

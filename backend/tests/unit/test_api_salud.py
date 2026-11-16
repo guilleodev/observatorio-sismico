@@ -16,7 +16,7 @@ from observatorio.config import ConfigApi
 
 AHORA = 1_793_113_140_000
 ORIGEN = "http://localhost:4200"
-CAMPOS = {"status", "database", "last_ingestion", "generated", "ingestion_age_s", "stale", "stale_after_s", "gaps_pending", "live_since"}
+CAMPOS = {"status", "database", "last_ingestion", "generated", "ingestion_age_s", "stale", "stale_after_s", "gaps_pending", "live_since", "fuentes"}
 hay_pg = pytest.mark.skipif(not hay_entorno(), reason="sin PostgreSQL o sin /sql montado")
 
 

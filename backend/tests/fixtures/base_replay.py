@@ -28,7 +28,7 @@ def base_temporal_replay(base: str):
         admin.execute(f'CREATE DATABASE "{base}"')
     try:
         with psycopg.connect(conninfo(base), autocommit=True) as c:
-            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql", "004_esquema_f6.sql"):
+            for nombre in ("001_esquema_live.sql", "002_esquema_f3.sql", "003_esquema_f4.sql", "004_esquema_f6.sql", "005_fuente_emsc.sql"):
                 c.execute((Path(SQL_DIR) / nombre).read_text(encoding="utf-8"))
             c.execute("INSERT INTO geo.catalogo (sha256, archivo, entidades) VALUES (%s, 'toy', %s)", (SHA, len(CODIGOS)))
             for p in CODIGOS:

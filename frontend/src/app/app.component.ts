@@ -462,7 +462,8 @@ export class AppComponent implements OnDestroy {
     let eventos: Evento[] = []; let est: Estadisticas | null = null; let total: number | null = 0; let siguiente: number | null = null;
     let params: Record<string, string> | null = null; let periodo = 'Sin consulta'; let generado = fechaUtc(salud.generated);
     if (ejec !== null && ventana !== null) {
-      params = { ...parametros(filtros, ventana), ...parametrosModo('replay', ejec.run_id) };
+      const { fuente: _sinFuente, ...paramsBase } = parametros(filtros, ventana); // F8: la API rechaza `fuente` en reproducción (histórico de USGS)
+      params = { ...paramsBase, ...parametrosModo('replay', ejec.run_id) };
       const panel = await this.api!.panel(params, externa, 1);
       if (this.destroyed || !this.ultima.vigente(id)) return;
       eventos = panel.eventos.features; est = panel.estadisticas; total = panel.eventos.metadata.total; siguiente = panel.eventos.siguiente;
@@ -473,7 +474,7 @@ export class AppComponent implements OnDestroy {
     this.sinEjecuciones.set(ejec === null);
     this.aplicarEventos(eventos);
     this.estadisticas.set(est); this.total.set(total); this.siguienteOffset.set(siguiente); this.ventana.set(ventana); this.periodo.set(periodo);
-    this.ultimosFiltros = filtros; this.resumenFiltros.set(resumenReplay(filtros, resumen(filtros, this.nombresPais)));
+    this.ultimosFiltros = filtros; this.resumenFiltros.set(resumenReplay(filtros, resumen({ ...filtros, fuente: '' }, this.nombresPais)));
     this.nombrePaisActual.set(this.nombresPais[filtros.pais.trim().toUpperCase()]);
     this.paramsVigentes = params; this.versionLectura++;
     this.salud.set(salud); this.ultimoAcceso.set(new Date().toISOString()); this.lecturaPerf.set(performance.now());

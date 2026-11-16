@@ -14,7 +14,8 @@ from observatorio.modos import MODO_LIVE, MODO_REPLAY, MODOS_CONTRACTUALES
 
 SIN_PAIS = "sin_pais"  # valor reservado de country_id (DF7a): no puede coincidir con un ADM0_A3
 VENTANA_DEFECTO = timedelta(hours=24)
-PARAMETROS_FILTRO = ("start", "end", "min_mag", "country_id")
+PARAMETROS_FILTRO = ("start", "end", "min_mag", "country_id", "fuente")
+FUENTES = ("usgs", "emsc")  # F8: valores de `fuente`; sin el parámetro se ven TODAS las fuentes (sin duplicados)
 PARAMETROS_MODO = ("mode", "run")  # F6: consulta de la reproducción (aditivo; sin ellos todo es como en F5)
 _RUN_VALIDO = re.compile(r"^[A-Za-z0-9._-]{1,64}$")  # el mismo formato que admite replay.ejecucion.run_id
 _EPOCA = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -88,6 +89,13 @@ def para_modo(sql: str, modo: str) -> str:
     raise ValueError(f"modo no válido: {modo!r}")
 
 
+def _fuente(texto: str) -> str:
+    valor = texto.strip().lower()
+    if valor not in FUENTES:
+        raise ErrorParametro(f"fuente debe ser una de {', '.join(FUENTES)}; recibido {texto!r}")
+    return valor
+
+
 def _pais(texto: str) -> str:
     codigo = texto.strip()
     if not codigo:
@@ -105,11 +113,12 @@ class Filtros:
     country_id: str | None = None
     modo: str = MODO_LIVE
     run_id: str | None = None  # solo en replay: la ejecución consultada (None = no hay ninguna)
+    fuente: str | None = None  # F8: usgs | emsc | None (todas). Solo en live: el replay es de una sola fuente
 
     @classmethod
     def desde_parametros(cls, generado_ms: int, start: str | None = None, end: str | None = None,
                          min_mag: str | None = None, country_id: str | None = None, *, modo: str = MODO_LIVE,
-                         run_id: str | None = None, intervalo: tuple[int, int] | None = None) -> "Filtros":
+                         run_id: str | None = None, intervalo: tuple[int, int] | None = None, fuente: str | None = None) -> "Filtros":
         """Resuelve los valores por defecto con el instante `generated` de la API: `end = generated`, `start = end − 24 h`.
 
         En replay con ejecución, el periodo por defecto es el intervalo de la ejecución `[desde, hasta + 1 ms)`, no «últimas 24 h».
@@ -122,11 +131,13 @@ class Filtros:
             inicio = _fecha("start", start) if start is not None else fin - VENTANA_DEFECTO
         if inicio >= fin:
             raise ErrorParametro(f"start debe ser anterior a end (start={inicio.isoformat()}, end={fin.isoformat()})")
+        if fuente is not None and modo == MODO_REPLAY:
+            raise ErrorParametro("fuente no se admite con mode=replay (la reproducción histórica es de una sola fuente)")
         return cls(
             start=inicio, end=fin,
             min_mag=_magnitud(min_mag) if min_mag is not None else None,
             country_id=_pais(country_id) if country_id is not None else None,
-            modo=modo, run_id=run_id,
+            modo=modo, run_id=run_id, fuente=_fuente(fuente) if fuente is not None else None,
         )
 
     @property
@@ -146,6 +157,13 @@ class Filtros:
         if con_magnitud and self.min_mag is not None:
             condiciones.append("mag >= %(f_min_mag)s")  # la magnitud nula no cumple el umbral (NULL >= x no es verdadero)
             parametros["f_min_mag"] = self.min_mag
+        if self.modo == MODO_LIVE:
+            # F8: un terremoto que informan USGS y EMSC se ve UNA vez (el de USGS). Es la ÚNICA condición de duplicados: eventos, estadísticas y comparación comparten este WHERE.
+            condiciones.append("NOT live.emsc_duplicado(source, event_time, longitude, latitude, mag)")
+            if self.fuente == "usgs":
+                condiciones.append("left(source, 4) = 'usgs'")  # usgs-all-day y usgs-fdsn-recuperacion (sin «%»: psycopg lo leería como marcador de parámetro)
+            elif self.fuente == "emsc":
+                condiciones.append("source = 'emsc-fdsn'")
         if self.country_id == SIN_PAIS:
             condiciones.append("geo_resultado = 'sin_pais'")  # no basta country_id IS NULL: incluiría eventos aún sin asignar
         elif self.country_id is not None:

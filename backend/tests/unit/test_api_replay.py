@@ -88,7 +88,7 @@ def test_sin_mode_y_con_mode_live_son_identicas_y_sin_campos_de_replay(cliente):
     meta = base.json()["metadata"]
     assert meta["mode"] == "live" and "replay" not in meta and set(meta["coverage"]) == {"live_since"}
     assert sorted(ids(base)) == ["ev1", "live-solo"]
-    assert all(set(f["properties"]) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name"} for f in base.json()["features"])
+    assert all(set(f["properties"]) == {"mag", "magType", "place", "time", "updated", "country_id", "country_name", "source"} for f in base.json()["features"])  # F8: `source` en live; en replay NO hay `source` ni campos de otras fuentes
     assert "replay" not in cliente.get("/api/salud").json() and "mode" not in cliente.get("/api/estadisticas").json()
 
 

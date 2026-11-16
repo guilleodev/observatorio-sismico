@@ -19,7 +19,7 @@
 Orden de arranque (cada paso comprueba el anterior):
 1. Reiniciar el PC si hace falta y esperar a Docker Desktop. **No** ejecutar scripts que paren o recreen servicios.
 2. `docker compose up -d --wait` (no recrea lo que ya corre) y `docker compose ps`: **api, consumer, kafka, postgres y producer en `healthy`**.
-3. Ingesta al día: `/api/salud` local con la clave o el panel («Última ingesta correcta hace … s»); **0 huecos pendientes** (`docker compose run --rm --no-deps producer python -m observatorio.recuperacion.recuperar --listar`). Si hay huecos: `--simular` y después sin parámetro (README §10.4).
+3. EMSC (segunda fuente): `/api/salud` → `fuentes.emsc` con `activa: true` y `ingestion_age_s` bajo (< 120 s); si EMSC fallara, **USGS no se ve afectado** (tarea aislada) y el panel sigue «Datos al día». Ingesta al día: `/api/salud` local con la clave o el panel («Última ingesta correcta hace … s»); **0 huecos pendientes** (`docker compose run --rm --no-deps producer python -m observatorio.recuperacion.recuperar --listar`). Si hay huecos: `--simular` y después sin parámetro (README §10.4).
 4. Cerrar `npm run start:local` (puerto 4200) y cualquier pestaña innecesaria.
 5. Abrir el túnel **solo hacia la API**: `ngrok http --url=https://grandpa-bunkbed-spree.ngrok-free.dev 127.0.0.1:8000` y **dejar la terminal abierta**.
 6. Comprobar: `curl -s -o NUL -w "%{http_code}" -H "ngrok-skip-browser-warning: 1" https://grandpa-bunkbed-spree.ngrok-free.dev/api/salud` → **401** sin clave.

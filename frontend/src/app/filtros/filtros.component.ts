@@ -1,7 +1,7 @@
 // Componente de filtros (F5, paso 5.4): periodo (UTC), magnitud mínima y país, incluido «Sin país asignado». Solo EDITA un borrador y emite el estado
 // al pulsar «Aplicar»; toda la lógica (validación, conversión a parámetros de la API) está en `filtros.ts`, compartida con mapa, tabla y gráficas.
 import { Component, computed, effect, input, output, signal, untracked } from '@angular/core';
-import { AVISO_COBERTURA, NOMBRE_SIN_PAIS, SIN_PAIS, aCampoFecha, estadoInicial, validar } from '../filtros';
+import { AVISO_COBERTURA, FUENTES, NOMBRE_SIN_PAIS, SIN_PAIS, aCampoFecha, estadoInicial, validar } from '../filtros';
 import { AVISO_FILTROS_REPLAY } from '../modo';
 import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos';
 
@@ -31,6 +31,15 @@ import type { FiltrosEstado, PaisCatalogo, Preajuste, Ventana } from '../modelos
         <label>Magnitud mínima
           <input type="text" inputmode="decimal" autocomplete="off" placeholder="sin mínimo" aria-describedby="ayuda-magnitud" [value]="borrador().magMin" (input)="cambiar('magMin', $event)" />
         </label>
+        <!-- F8: fuente de los datos en vivo. No existe en reproducción (la API la rechaza: el replay es siempre histórico de USGS). -->
+        @if (!replay()) {
+          <label>Fuente
+            <select [value]="borrador().fuente ?? ''" (change)="cambiar('fuente', $event)">
+              <option value="">Todas (USGS + EMSC)</option>
+              @for (f of fuentes; track f.id) { <option [value]="f.id">{{ f.nombre }}</option> }
+            </select>
+          </label>
+        }
         <label>País
           <select [value]="borrador().pais" (change)="cambiar('pais', $event)">
             <option value="">Todos los países</option>
@@ -120,7 +129,9 @@ export class FiltrosComponent {
   readonly sinPais = SIN_PAIS;
   readonly nombreSinPais = NOMBRE_SIN_PAIS;
 
-  cambiar(campo: 'desde' | 'hasta' | 'magMin' | 'pais', evento: Event): void {
+  readonly fuentes = FUENTES;
+
+  cambiar(campo: 'desde' | 'hasta' | 'magMin' | 'pais' | 'fuente', evento: Event): void {
     const valor = (evento.target as HTMLInputElement | HTMLSelectElement).value;
     this.borrador.update((b) => ({ ...b, [campo]: valor }));
   }

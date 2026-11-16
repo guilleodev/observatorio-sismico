@@ -45,13 +45,14 @@ Esta memoria es el entregable técnico **independiente** (`docs/entrega/memoria.
 ## 1. Objetivo y funcionamiento general
 
 ### 1.1 La pregunta
-El observatorio responde a: **¿dónde se está registrando actividad sísmica y cómo se compara con un periodo histórico equivalente?** (`ENUNCIADO.md` §1). Combina tres fuentes: el feed reciente de USGS (últimas 24 h), un histórico de USGS y un catálogo geográfico de Natural Earth, y las integra en PostgreSQL para analizarlas en un panel. No se presenta como predicción de terremotos ni como evaluación de riesgo.
+El observatorio responde a: **¿dónde se está registrando actividad sísmica y cómo se compara con un periodo histórico equivalente?** (`ENUNCIADO.md` §1). Combina cuatro fuentes: el feed reciente de USGS (últimas 24 h), el feed reciente de EMSC (segunda fuente en vivo, añadida al final de F8 sin cambiar lo anterior), un histórico de USGS y un catálogo geográfico de Natural Earth, y las integra en PostgreSQL para analizarlas en un panel. No se presenta como predicción de terremotos ni como evaluación de riesgo.
 
 ### 1.2 Decisiones de alcance
 | Aspecto | Decisión | Fuente |
 |---|---|---|
 | Histórico | Año **2025**, ámbito **mundial**, magnitud **≥ 4**, tipo `earthquake`, en 12 tramos mensuales UTC (propuesta de partida del enunciado, §4.2) | `f4/resultados.md` |
 | Reciente | Feed `all_day.geojson`, consultado cada **60 s** (`USGS_INTERVAL_S`) | `backend/src/observatorio/config.py` |
+| Reciente adicional | Feed FDSN de EMSC, consulta incremental cada **60 s**, M ≥ 2 (`EMSC_INTERVAL_S`, `EMSC_MAG_MIN`); se apaga con `EMSC_ACTIVO=false` | `backend/src/observatorio/config.py` (`ConfigEmsc`) |
 | Geografía | Natural Earth Admin 0, escala 1:110 M, 177 entidades, identificadas por `ADM0_A3`; asignación por **punto dentro de polígono** | `f4/regla-geografica.md` |
 | Filtros del panel | Fecha (`start` inclusive, `end` exclusivo), magnitud mínima y país/región; los mismos para mapa, tabla y estadísticas | `CONTRATO-API.md` |
 | Modos | `live` (datos reales) y `replay` (reproducción acelerada aislada); el histórico se consulta solo para la comparación | `README.md`; `specs/005-…/data-model.md` |
@@ -63,6 +64,7 @@ Los cinco servicios obligatorios corren en Docker Compose en el equipo del alumn
 ```mermaid
 flowchart LR
   USGS[(USGS<br/>feed all_day.geojson<br/>cada 60 s)] --> P[Productor<br/>Python + aiokafka]
+  EMSC[(EMSC<br/>FDSN incremental<br/>cada 60 s, M ≥ 2)] --> P
   P -- "mensaje: id, source, ingested_at, mode, evento original" --> K[[Kafka<br/>terremotos.live]]
   K --> C[Consumidor<br/>valida, limpia,<br/>asigna país]
   GEO[(Catálogo<br/>Natural Earth)] --> C
@@ -163,7 +165,7 @@ Descripción de los campos principales. **No todas las tablas tienen todas las c
 | `replay.ejecucion` | Una reproducción | `run_id` (PK), `dia`, `tamano`, `mensajes`, `criterio`, `intervalo_desde/hasta`, `intervalo_s`, `velocidad`, `iniciada_at`, `terminada_at`, `estado` |
 
 ### 2.4 Contrato de la API (campos expuestos)
-`GET /api/eventos` devuelve un GeoJSON `FeatureCollection` con `metadata` (`generated`, `last_ingestion`, `mode`, `count`, `truncated`…) y, por evento, `geometry.coordinates` (`[lon, lat, profundidad km]`) y `properties` (`mag`, `magType`, `place`, `time`, `updated`, `country_id`, `country_name`); fechas en **ms Unix UTC** y `null` (nunca NaN) para lo ausente. `GET /api/estadisticas` devuelve conteos por hora UTC y país, distribuciones de magnitud y profundidad con «sin valor», y la comparación histórica; `GET /api/salud` el estado y la última ingesta. Definición normativa: `docs/referencias/CONTRATO-API.md`; verificación: `f5/resultados.md` (SC-001 a SC-004).
+`GET /api/eventos` devuelve un GeoJSON `FeatureCollection` con `metadata` (`generated`, `last_ingestion`, `mode`, `count`, `truncated`…) y, por evento, `geometry.coordinates` (`[lon, lat, profundidad km]`) y `properties` (`mag`, `magType`, `place`, `time`, `updated`, `country_id`, `country_name`, y `source` con el origen del evento en vivo); el filtro opcional `fuente=usgs|emsc` (solo en vivo; 422 en reproducción) y el bloque `fuentes.emsc` de `/api/salud` son **aditivos**; fechas en **ms Unix UTC** y `null` (nunca NaN) para lo ausente. `GET /api/estadisticas` devuelve conteos por hora UTC y país, distribuciones de magnitud y profundidad con «sin valor», y la comparación histórica; `GET /api/salud` el estado y la última ingesta. Definición normativa: `docs/referencias/CONTRATO-API.md`; verificación: `f5/resultados.md` (SC-001 a SC-004).
 
 ---
 
@@ -173,6 +175,7 @@ Descripción de los campos principales. **No todas las tablas tienen todas las c
 | Conjunto | Fuente | Periodo y filtros | Extracción y registro | Evidencia |
 |---|---|---|---|---|
 | **Reciente (feed)** | USGS `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson` | Ventana móvil de 24 h; solo `type == earthquake` pasa a las tablas válidas | HTTP GET cada 60 s; cada intento queda en `live.consulta_extraccion` (duración, estado HTTP, errores, eventos, publicadas/omitidas); la respuesta completa comprimida se guarda solo cuando cambia (`live.respuesta_original`; retención de 3 días y de 30 días para las consultas, **provisional**: §3.4) | `f3/3.2-ingesta.txt`, `f3/3.7-ejecucion-continua.txt` |
+| **Reciente adicional (EMSC, F8)** | EMSC FDSN `https://www.seismicportal.eu/fdsnws/event/1/query` (CC BY 4.0, se cita «EMSC») | Consulta incremental cada 60 s, magnitud ≥ 2, solo `evtype == ke` pasa a eventos; el resto va a cuarentena | Tarea independiente del productor; se registra cada consulta en `live.consulta_fuente`; mismo topic y consumidor; **sin duplicar** terremotos ya informados por USGS (regla ≤ 90 s y ≤ 100 km; M ≥ 4,5: ≤ 300 s, ≤ 300 km, ΔM ≤ 0,6; gana USGS) | `docs/evidencias/f8/emsc-segunda-fuente.md` |
 | **Histórico** | USGS FDSN `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=…&endtime=…&minmagnitude=4&eventtype=earthquake&orderby=time-asc` | 2025-01-01 … 2026-01-01, mundo, M ≥ 4, `earthquake`; 12 tramos mensuales | Extraído el **2026-11-07 ≈ 09:00 UTC**; **24 peticiones** (12 `count` + 12 `query`); **18 302 eventos**; 0 duplicados, 0 fuera de tramo, 0 cuarentena; 12 archivos comprimidos (1,35 MB) con huella `sha256` en `data/historico/SHA256SUMS` | `f4/4.4-carga-real.txt`, `f4/4.4-recuentos-usgs.txt`, `f4/resultados.md` §3 |
 | **Geografía** | Natural Earth, Admin 0 Countries 1:110 M (copia entregada): `frontend/public/datos/paises.geojson` | 177 entidades, `ADM0_A3` único; **descargado el 27-10-2026**; licencia dominio público | `sha256` `6866c877…c977f` (completo en `FUENTES-Y-LICENCIAS.md`); la huella queda en `geo.catalogo` | `docs/referencias/FUENTES-Y-LICENCIAS.md`, `f4/4.1-catalogo.txt` |
 | **Reproducción** | Selección de `historico.evento` (solo lectura) + 6 casos controlados | Por defecto, el día UTC de 2025 con más eventos; 30 eventos reales | Registrada en `replay.ejecucion` (criterio, intervalo, velocidad) | `f6/reproduccion-historica.md` |
@@ -364,6 +367,16 @@ La Guía y el enunciado piden «registros de ejemplo». Todos proceden de eviden
 **Límite**: en `live` **no hay registros reales de categoría `invalido`** archivados (todo lo real excluido es `excluido`); los ejemplos 10 y 11 son casos controlados derivados de eventos reales, solo en `replay` (constitución v1.0.4).
 
 ---
+
+### 4.8 Unicidad entre fuentes (EMSC, añadida al final de F8)
+
+**Problema.** Un mismo terremoto lo informan USGS y EMSC con identificadores, horas y localizaciones ligeramente distintos. Mostrarlo dos veces falsearía los recuentos (restricción expresa del profesor).
+
+**Regla (SQL `live.emsc_duplicado`, `sql/005_fuente_emsc.sql`).** El evento de EMSC es duplicado si existe un evento de USGS no retirado a ≤ 90 s y ≤ 100 km; para EMSC con M ≥ 4,5 se admite además ≤ 300 s, ≤ 300 km y |ΔM| ≤ 0,6 (con magnitud de USGS no nula). **Gana USGS.** Se evalúa **al leer**, dentro de la cláusula `WHERE` compartida por eventos, estadísticas y comparación: el orden de llegada es irrelevante, no se reescribe ningún dato y las cifras de las tres rutas coinciden. Las cifras de la regla salen de una validación con 7 días de datos reales (21,8 % de los eventos de EMSC eran duplicados).
+
+**Comprobación en el sistema real (2026-11-16, solo lectura).** 0 eventos de EMSC visibles que cumplan la regla; 55 ocultos, todos con pareja de USGS (diferencia media 0,6 s y 5,6 km, máxima 13 s y 89 km; ΔM máxima 0,33); 0 pares próximos sin fusionar; 12 combinaciones de ventana, magnitud y fuente con eventos = estadísticas = suma por país y «todas = USGS + EMSC».
+
+**Limitaciones.** Es una heurística espacio-temporal, no una identidad entre catálogos; la comparación con 2025 es solo de USGS; EMSC solo acumula datos desde su activación. Detalle y pruebas de fallo (Kafka cortado, EMSC bloqueado, productor matado): `docs/evidencias/f8/emsc-segunda-fuente.md`.
 
 ## 5. Modelo conceptual, lógico y físico
 
@@ -700,6 +713,7 @@ Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REP
 ### 10.1 Decisiones técnicas principales
 | Decisión | Motivo | Evidencia |
 |---|---|---|
+| **EMSC como tarea aislada y aditiva, con la no duplicación evaluada al leer** | EMSC no puede detener la ingesta de USGS (tarea propia, errores contenidos, marca de actualización que solo avanza si la publicación se completa); evaluar el duplicado al leer evita depender del orden de llegada y no reescribe datos; apagado con `EMSC_ACTIVO=false` | `f8/emsc-segunda-fuente.md`; pruebas `test_emsc*.py`, `test_ingesta_emsc.py` |
 | **El offset se confirma después de guardar en PostgreSQL**, con escritura idempotente (`ON CONFLICT`) y comparación de versiones | Si el proceso se interrumpe y Kafka reentrega, las restricciones evitan duplicar; «al menos una vez» sin transacción distribuida | `f3/3.4-*`; `f3/resultados.md` |
 | Guardar versión y estado actual en **una sola transacción**; el estado solo avanza con `updated` mayor | Una versión antigua tardía no sustituye a la más reciente | `specs/002-ingesta-real-calidad/data-model.md` §4 |
 | Esquemas **aislados** (`live`, `historico`, `replay`, `geo`) sin claves foráneas entre datos, con `CHECK` de modo y fuente | Imposible mezclar replay, histórico y live | `f6/aislamiento.txt` |
@@ -715,6 +729,7 @@ Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REP
 
 ### 10.2 Limitaciones conocidas
 - **Observación de más de 24 h (SC-010 de F3)**: **pendiente**; no se declara cumplida (`f3/resultados.md`). Exige autorización expresa (PA-10).
+- **EMSC**: la no duplicación es una heurística (§4.8); la comparación con 2025 es solo de USGS; EMSC acumula datos desde su activación y deja más eventos «sin país» (muchos están en el mar).
 - **Cobertura del feed**: el feed reciente no cubre M 4,0–4,5 fuera de EE. UU. como el histórico (conclusión 3); lo reciente es preliminar y la cobertura en vivo es corta.
 - **Catálogo geográfico**: escala 1:110 M; islas pequeñas ausentes y costas simplificadas; 78,4 % del histórico queda «sin país» (84,2 % de ellos a más de 50 km de cualquier polígono).
 - **Eventos eliminados o fusionados por USGS fuera del feed** no se detectan (ampliación fuera del alcance mínimo, `ENUNCIADO.md` §5).

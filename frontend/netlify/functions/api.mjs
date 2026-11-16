@@ -12,8 +12,8 @@
 //   API_CLAVE_ACCESO   la misma clave que exige FastAPI (>= 32 caracteres [A-Za-z0-9_-])
 
 const RUTAS = Object.freeze({
-  '/api/eventos': Object.freeze(['start', 'end', 'min_mag', 'country_id', 'limit', 'offset', 'mode', 'run']),
-  '/api/estadisticas': Object.freeze(['start', 'end', 'min_mag', 'country_id', 'mode', 'run']),
+  '/api/eventos': Object.freeze(['start', 'end', 'min_mag', 'country_id', 'fuente', 'limit', 'offset', 'mode', 'run']),
+  '/api/estadisticas': Object.freeze(['start', 'end', 'min_mag', 'country_id', 'fuente', 'mode', 'run']),
   '/api/salud': Object.freeze(['mode', 'run']),
 });
 const MAX_VALOR = 64;                 // caracteres por valor de parámetro (las fechas ISO miden 24)

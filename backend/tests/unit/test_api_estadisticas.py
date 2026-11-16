@@ -76,7 +76,7 @@ def stats(cliente, **params):
 def test_estructura_y_unidades_de_la_respuesta(cliente):
     r = stats(cliente)
     assert set(r) == {"generated", "period", "filters", "total", "sin_magnitud", "por_pais", "magnitud", "profundidad", "por_hora", "comparacion"}  # 5.3 añade por_hora y comparacion
-    assert r["generated"] == AHORA and r["period"] == {"start": AHORA - 24 * H, "end": AHORA} and r["filters"] == {"min_mag": None, "country_id": None}
+    assert r["generated"] == AHORA and r["period"] == {"start": AHORA - 24 * H, "end": AHORA} and r["filters"] == {"min_mag": None, "country_id": None, "fuente": None}
     assert (r["por_pais"]["unit"], r["magnitud"]["unit"], r["profundidad"]["unit"]) == ("events", "magnitude", "km")
     assert all(set(r[b]) == {"unit", "sin_valor", "items"} for b in ("por_pais", "magnitud", "profundidad"))
     texto = json.dumps(r)

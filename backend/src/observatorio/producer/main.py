@@ -11,8 +11,9 @@ from pathlib import Path
 import psycopg
 from aiokafka import AIOKafkaProducer
 
-from observatorio.config import ConfigIngesta, ConfigKafka, ConfigPostgres
+from observatorio.config import ConfigEmsc, ConfigIngesta, ConfigKafka, ConfigPostgres
 from observatorio.producer.ingesta import ejecutar_ciclo
+from observatorio.producer.ingesta_emsc import bucle_emsc
 from observatorio.producer.repositorio import RepositorioProductor
 
 MARCA_SALUD = Path("/tmp/healthy")
@@ -49,6 +50,25 @@ async def conectar_kafka(kafka: ConfigKafka) -> AIOKafkaProducer:
     return await con_reintentos(arrancar, "Kafka")
 
 
+def iniciar_emsc(pg: ConfigPostgres, config: ConfigIngesta, publicador) -> "asyncio.Task | None":
+    """Lanza la tarea de EMSC si está activa (EMSC_ACTIVO) y hay publicación real. Un fallo al leer su configuración NO impide que arranque la ingesta de USGS."""
+    try:
+        emsc = ConfigEmsc.desde_entorno()
+    except Exception as exc:  # noqa: BLE001 - configuración de EMSC no válida: se avisa y se sigue solo con USGS
+        log.error("Configuración de EMSC no válida (%s); se ingiere solo USGS", exc)
+        return None
+    if not emsc.activo:
+        log.info("EMSC apagada (EMSC_ACTIVO no es true): solo se ingiere USGS")
+        return None
+    if publicador is None:
+        log.warning("EMSC_ACTIVO=true pero INGESTA_PUBLICAR=false (modo seco): EMSC no se consulta")
+        return None
+    log.info("Ingesta EMSC cada %s s, magnitud mínima %g, consulta incremental (%s)", emsc.intervalo_s, emsc.mag_min, emsc.url)
+    tarea = asyncio.create_task(bucle_emsc(lambda: conectar_postgres(pg), emsc, config.retencion_consultas_dias, publicador), name="emsc")
+    tarea.add_done_callback(lambda t: None if t.cancelled() or t.exception() is None else log.error("La tarea de EMSC terminó con error: %r", t.exception()))
+    return tarea
+
+
 async def main() -> None:
     kafka, pg, config = ConfigKafka.desde_entorno(), ConfigPostgres.desde_entorno(), ConfigIngesta.desde_entorno()
     log.info("Ingesta USGS cada %s s en modo %s (%s)", config.intervalo_s,
@@ -64,6 +84,7 @@ async def main() -> None:
             return meta.partition, meta.offset
 
     MARCA_SALUD.touch()
+    tarea_emsc = iniciar_emsc(pg, config, publicador)  # F8: segunda fuente, tarea APARTE con su conexión, su estado y sus errores; None si está apagada
     try:
         while True:
             inicio = time.monotonic()
@@ -82,6 +103,9 @@ async def main() -> None:
             await asyncio.sleep(max(0.0, config.intervalo_s - (time.monotonic() - inicio)))
     finally:
         MARCA_SALUD.unlink(missing_ok=True)
+        if tarea_emsc is not None:
+            tarea_emsc.cancel()
+            await asyncio.gather(tarea_emsc, return_exceptions=True)
         if productor is not None:
             await productor.stop()
         await conexion.close()

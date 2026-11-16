@@ -104,7 +104,7 @@ def comp(cliente, **params):
 def test_estructura_fuentes_y_ventana_completa_sin_motivos(entorno):
     c, _ = entorno
     r = comp(c)
-    assert set(r) == {"unit", "comparacion_disponible", "ambito", "country_id", "min_mag_solicitada", "min_mag_efectiva", "min_mag_elevada", "reciente", "historico",
+    assert set(r) == {"unit", "comparacion_disponible", "ambito", "country_id", "fuente", "min_mag_solicitada", "min_mag_efectiva", "min_mag_elevada", "reciente", "historico",
                       "variacion", "variacion_definida", "periodo_reciente_incompleto", "motivos_incompleto"}
     assert r["comparacion_disponible"] is True and r["unit"] == "events" and r["ambito"] == "global" and r["country_id"] is None
     assert r["reciente"]["source"] == "live" and r["historico"]["source"] == "historico"             # cada cifra con su fuente: nunca mezcladas

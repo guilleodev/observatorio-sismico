@@ -9,6 +9,8 @@ export type Config = { mode: 'demo' | 'api'; apiUrl: string; refreshMs: number; 
 export type Propiedades = {
   mag: number | null; magType?: string | null; place: string; time: number; updated: number;
   country_id?: string | null; country_name?: string | null;
+  /** F8: fuente del evento en vivo (`usgs-all-day`, `usgs-fdsn-recuperacion` o `emsc-fdsn`). Ausente en replay y con una API anterior. */
+  source?: string | null;
   /** F6: solo en reproducción. `caso` = caso controlado (sintético); nulo en los eventos reales. */
   caso?: string | null; replayed_at?: number;
 };
@@ -45,7 +47,9 @@ export type ModoVista = 'live' | 'replay';
 export type Preajuste = 'ultimas-24h' | 'ultimos-7d' | 'personalizado';
 
 /** Estado de los filtros tal como lo edita la persona usuaria (cadenas de los campos del formulario). Fechas «YYYY-MM-DDTHH:mm» en UTC. */
-export type FiltrosEstado = { preajuste: Preajuste; desde: string; hasta: string; magMin: string; pais: string };
+export type FiltrosEstado = { preajuste: Preajuste; desde: string; hasta: string; magMin: string; pais: string;
+  /** F8: '' = todas las fuentes; 'usgs' | 'emsc'. Solo en vivo (la API lo rechaza en reproducción). Opcional para no romper estados anteriores. */
+  fuente?: string };
 
 /** Periodo resuelto en milisegundos Unix UTC a partir del instante `generated` de la API. */
 export type Ventana = { startMs: number; endMs: number };
@@ -76,7 +80,7 @@ export type Comparacion = {
 export type ComparacionNoAplica = { unit: string; comparacion_disponible: false; motivo: string; historico: null; variacion: null };
 
 export type Estadisticas = {
-  generated: number; period: { start: number; end: number }; filters: { min_mag: number | null; country_id: string | null };
+  generated: number; period: { start: number; end: number }; filters: { min_mag: number | null; country_id: string | null; fuente?: string | null };
   total: number; sin_magnitud: number; por_hora: BloqueHora; por_pais: BloquePais; magnitud: BloqueIntervalos; profundidad: BloqueIntervalos; comparacion: Comparacion | ComparacionNoAplica;
   mode?: string; replay?: EjecucionReplay | null;
 };
