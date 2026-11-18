@@ -2,6 +2,8 @@
 
 **Fecha**: 2026-11-11 (tarde-noche). **Sitio**: `https://observatorio-sismico.netlify.app`. **Despliegue vigente**: `6af4b81fa1d0a00d0cb33c59` («F7 con funcion (config literal)»), hecho con la CLI de Netlify (`--no-build --functions`), sin conectar GitHub ni compilar en Netlify. **Navegador**: el integrado de la aplicación de escritorio (Chrome 152) en el propio equipo; **no es otro dispositivo**. ngrok abierto solo para la prueba y cerrado al terminar; sesión de la CLI cerrada.
 
+> **Nota del 2026-11-17**: el contador de ngrok se leyó después (4,12 MB de 1 GB el 2026-11-16 y 5,18 MB el 2026-11-17) y el despliegue vigente es `6afb5599ce45e13699c428b8` (2026-11-16, con EMSC). Lo que sigue es el estado del 2026-11-11.
+
 Etiquetas: **[MEDIDO]** observado en esta sesión; **[ESTIMADO]** aritmética sobre lo medido; **[NO PROBADO]**; **[VERIFICAR]**.
 
 **Privacidad**: no se ha leído, impreso ni guardado ningún valor secreto. De las variables de Netlify solo se consultaron metadatos (nombre, ámbito, si es secreta). La clave local se comparó **en memoria** con lo servido para buscar coincidencias; solo se imprimieron recuentos.
@@ -74,15 +76,15 @@ ngrok abierto solo para esta sesión (cerrado al terminar; sesión de la CLI de 
 | **Pestaña realmente oculta** | **No reproducible en el navegador integrado**: las pestañas en segundo plano siguen reportando `visibilityState: visible`. Solo constaba la simulación con `visibilitychange` de T036; el punto 7 de la prueba del Pixel (cambiar de app o bloquear la pantalla) lo cubre |
 | **Prueba en el Google Pixel con datos móviles** | **«Todo correcto» según la persona estudiante** (8 puntos: carga sin clave, globo 3D, mapa 2D, Análisis, Eventos con búsqueda, filtros, REPRODUCCIÓN y volver a EN VIVO, segundo plano con aviso de pausa y actualización, rotación). **Es una confirmación verbal: no hay capturas ni detalle archivados** (modelo de móvil, versión de Chrome y datos concretos no registrados) |
 | Lo que llegó a ngrok en la sesión [MEDIDO, inspector] | **76 peticiones, todas `GET`, 0 `OPTIONS`**, todas del cliente `observatorio-netlify-function` (ni el navegador ni el móvil llamaron directamente al túnel) |
-| Registros de la función y contadores | **No revisados**: la persona estudiante los **dejó pendientes** (no se usó la CLI para no enlazar el proyecto) |
+| Registros de la función y contadores | **No revisados**: no se revisaron (no se usó la CLI para no enlazar el proyecto) |
 
-## 8. Pendiente
-1. Comprobar en la interfaz de Netlify que `API_CLAVE_ACCESO` aparece **oculta** (y decidir los contextos *dev/branch/preview*).
+## 8. Estado de las comprobaciones (a 2026-11-17)
+1. **No realizada**: comprobar en la interfaz de Netlify que `API_CLAVE_ACCESO` aparece **oculta** (y los contextos *dev/branch/preview*).
 2. ~~Prueba desde otro dispositivo~~ **Hecha**: Pixel con datos móviles, «todo correcto» según la persona estudiante (sección 8 bis); **no** se probó el cierre del túnel desde el móvil ni otro navegador distinto de Chrome.
-3. **Persona estudiante**: revisar los registros de la función en Netlify (¿algo sensible?), el número de invocaciones y, en el panel de ngrok (*Usage*), el consumo real, la fecha de reinicio y el plan; **siguen pendientes**.
+3. **No revisados**: los registros de la función en Netlify y el número de invocaciones. El consumo de ngrok (*Usage*) se leyó el 2026-11-16 y el 2026-11-17 (5,18 MB de 1 GB; el ciclo se reinicia el 1 de diciembre).
 4. ~~Fallback sin WebGL y búsqueda de la tabla~~ **Comprobados** (sección 8 bis). La pausa con una pestaña realmente oculta solo se cubre con el Pixel.
-5. Capturas definitivas (C-01…), actualización de README y memoria con el estado final, insignia de Netlify.
-6. Si se **rota la clave** de FastAPI: actualizar también la variable de Netlify y redesplegar **[VERIFICAR]** si hace falta.
+5. Capturas definitivas hechas el 2026-11-17 (`capturas/`); README y memoria actualizados; la insignia de Netlify se mantiene.
+6. Si se **rota la clave** de FastAPI, hay que actualizar también la variable de Netlify y redesplegar.
 
 ## 9. Vuelta atrás disponible
 `6af4a52d30a824e6ef9dead2` (F7 con formulario de clave; carpeta `frontend/dist/publico-netlify-f7/`) y `6af0cbc3bee7002e941af403` (F6; `data/respaldo/f6-publico-netlify-2026-11-08/`). Se restauran desde Netlify → Deploys → «Publish deploy» o con la CLI; no hace falta tocar credenciales.

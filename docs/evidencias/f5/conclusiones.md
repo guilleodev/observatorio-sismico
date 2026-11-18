@@ -1,4 +1,4 @@
-# Conclusiones fundamentadas (borrador para la memoria de F7) — F5, paso 5.7, T051
+# Conclusiones fundamentadas — F5, paso 5.7, T051 (base de la memoria §6.2)
 
 Todas las cifras salen de la API (`GET /api/estadisticas`, solo lectura) con periodo y filtros explícitos y se reproducen con `scripts/f5/conclusiones_57.py`
 (ejecutado dos veces el 2026-11-07: salida idéntica). El complemento SQL de la conclusión 2 es `scripts/f5/ventanas_2025.sql` (solo lectura).

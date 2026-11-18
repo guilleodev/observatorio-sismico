@@ -1,6 +1,8 @@
 # Fase 1 — Fuentes y frontend inicial
 
-**Fecha del trabajo:** 3 de noviembre de 2026 · **Pasos:** 1.1 a 1.5 · **Estado:** pasos completados, pendiente el commit manual `[F1]`
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](entrega/matriz-trazabilidad.md).
+
+**Fecha del trabajo:** 3 de noviembre de 2026 · **Pasos:** 1.1 a 1.5 · **Estado:** completada (commit `[F1]` `d0cb3af`)
 
 **Convención:** **[P]** = requisito del profesor (con su apartado) · **[R]** = recomendación propia aún por decidir · **[O]** = observación puntual de los datos, sin valor permanente.
 

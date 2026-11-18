@@ -1,0 +1,20 @@
+# C-16 · Cuarentena por motivo y recuentos (consultas de solo lectura, texto de terminal) · 2026-11-17T22:52:21Z
+Border style is 1.
+== live.cuarentena por categoria y motivo
+ categoria |                  motivo                   | count 
+-----------+-------------------------------------------+-------
+ excluido  | tipo de evento no sísmico: 'other event'  |    84
+ excluido  | tipo de evento no sísmico: 'quarry blast' |    32
+ excluido  | tipo de evento no sísmico: 'explosion'    |    21
+ excluido  | tipo de evento no sísmico: 'ue'           |     5
+ excluido  | tipo de evento no sísmico: 'landslide'    |     1
+ excluido  | tipo de evento no sísmico: 'ice quake'    |     1
+ excluido  | tipo de evento no sísmico: 'se'           |     1
+(7 rows)
+
+== recuentos
+ live_eventos_actuales | live_versiones | live_cuarentena | historico_eventos_2025 | geo_entidades | replay_actuales 
+-----------------------+----------------+-----------------+------------------------+---------------+-----------------
+                  3354 |           4501 |             145 |                  18302 |           177 |             105
+(1 row)
+

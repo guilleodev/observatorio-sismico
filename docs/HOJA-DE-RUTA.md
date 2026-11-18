@@ -71,7 +71,7 @@ USGS (feed reciente e histórico) + Natural Earth
 | **F5 — API y dashboard** | Filtros, estadísticas, ventanas, comparaciones y panel completo. | Observatorio analítico funcional, filtros coherentes y estado visible. |
 | **F6 — Replay, pruebas y despliegue** | Replay aislado, pruebas de aceptación, mediciones, ngrok y Netlify. | Demostración reproducible desde otro dispositivo y mediciones completas. |
 | **F7 — Mejoras y evolución** | Mejorar de forma progresiva la aplicación ya construida (diseño, UX, accesibilidad, filtros, mapas, gráficas, ajustes técnicos, comodidad de desarrollo) con mejoras que la persona estudiante propone y aprueba una a una. | Cada mejora aprobada verificada con evidencia; fase ampliable sin reescribir la planificación; se cierra cuando lo decide la persona estudiante. |
-| **F8 — Documentación, entrega académica y vídeo** | En **5 pasos**: auditoría de requisitos y rúbrica con matriz de trazabilidad; memoria técnica y README definitivo; evidencias y validación técnica final (incluida la observación de >24 h, SC-010 de F3, con PA-10); guion y vídeo explicativo grabado con OBS por la persona estudiante; auditoría final y entrega. | Entrega completa y comprobable (README + memoria + vídeo); rúbrica justificada; acceso concedido. |
+| **F8 — Documentación, entrega académica y vídeo** | En **5 pasos**: auditoría de requisitos y rúbrica con matriz de trazabilidad; memoria técnica y README definitivo; evidencias y validación técnica final (incluida la observación de >24 h, SC-010 de F3); guion y vídeo explicativo grabado con OBS por la persona estudiante; auditoría final y entrega. | Entrega completa y comprobable (README + memoria + vídeo); rúbrica justificada; acceso concedido. |
 
 > **Nota:** la documentación, las pruebas y el estudio del código se hacen **durante todas las fases**; no se posponen hasta F8.
 
@@ -106,7 +106,7 @@ Pasos originales de la hoja, conservados:
 | 1.4 | Analizar campos, coordenadas, valores nulos y calidad | ✅ ídem §5 y §6 |
 | 1.5 | Documentar resultados, verificar requisitos y preparar commit | ✅ ídem; incidencia de formato del frontend resuelta (§9) |
 
-### F2 — MVP funcional · ✅ pasos completados · ⬜ commit `[F2]` pendiente
+### F2 — MVP funcional · ✅ completada (commit `[F2]` `0a56f65`)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -136,7 +136,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además (SDD del MVP):** datos sintéticos aislados (topic y esquema propios) y etiquetados; `mode = "synthetic"` solo como excepción temporal; healthchecks y reintentos; retención base de Kafka (research R-004); CORS desde el origen de desarrollo; criterios SC-001 a SC-010 con evidencias reales.
 
-### F3 — Ingesta real y calidad · 🔄 en curso (cierre técnico: 3.1 a 3.7 y T048 completados; SC-010/T044 pendientes de observación >24 h; publicación real ACTIVA; falta revisión humana y commit `[F3]`)
+### F3 — Ingesta real y calidad · ✅ completada (3.1 a 3.7 y T048; SC-010/T044 observados el 2026-11-17; publicación real activa; commit `[F3]` `5a93860`)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -157,7 +157,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 | 3.4 | T017–T018 | Transacción atómica y offset tras guardar |
 | 3.5 | T019–T029 | Calidad y cuarentena; **T026 activa la publicación real** y T027–T028 verifican con datos reales los pasos 3.3 y 3.4 |
 | 3.6 | T030–T036 | Estado de ingesta, retención; T036 (volumen de Kafka) condicionada a la decisión D4 |
-| 3.7 | T037–T048 | Fallos y recuperación; SC-010 (24 h) pendiente de observación real |
+| 3.7 | T037–T048 | Fallos y recuperación; SC-010 (24 h) observado el 2026-11-17 |
 
 
 **Criterio obligatorio del paso 3.1:** retirada o aislamiento completo de `synthetic`, completado como máximo al cerrar el paso 3.1, es decir, **antes de conectar la ingesta real (paso 3.2)**. La API definitiva solo admite `mode` = `live` o `replay`; ninguna respuesta contiene `synthetic` y ninguna consulta de la API referencia el esquema `sintetico` (`specs/001-mvp-evento-sintetico/research.md`, R-001).
@@ -177,7 +177,7 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §4.2, §4.3, §5): comprobar la unicidad de `ADM0_A3`, usar WGS84 y documentar la regla para puntos en frontera o con varias coincidencias; conservar «Sin país asignado» sin atribuirlo al país más cercano; propuesta de histórico: 2025, ámbito mundial, magnitud ≥ 4, tipo `earthquake`, dividido por meses, subdividiendo si una consulta supera 20 000 resultados, deduplicando los extremos compartidos y guardando consultas, fecha de extracción y número de registros; descargar una vez y reutilizar los archivos.
 
-### F5 — API y dashboard · ✅ cerrada técnicamente (5.1–5.7 y cierre T054–T059; pendiente la revisión humana del panel y el commit `[F5]`; DF1–DF7 aprobadas, umbrales de SC-010 confirmados el 2026-11-08 tras medir)
+### F5 — API y dashboard · ✅ cerrada técnicamente (5.1–5.7 y cierre T054–T059; commit `[F5]` `6f11d5b`; DF1–DF7 aprobadas, umbrales de SC-010 confirmados el 2026-11-08 tras medir)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
@@ -191,20 +191,20 @@ Total: las 47 tareas T001–T047, cada una asignada a un solo paso.
 
 **Se mantiene además** (`ENUNCIADO.md` §8, `CONTRATO-API.md`): filtros `start`, `end`, `min_mag` y `country_id` coherentes entre mapa y gráficos; la magnitud nula no cumple `min_mag` y se cuenta aparte; `truncated` con paginación y sin estadísticas globales sobre una muestra truncada; estadísticas con periodo, filtros, unidad y registros sin valor; comparación histórica con el mismo filtro y días con cero eventos en el denominador; agregaciones calculadas desde el estado actual, no con contadores por mensaje; error explícito si la base falla; panel de estado con último acceso a la API, última ingesta y aviso de datos desactualizados; tabla consultable como alternativa al mapa; primeras mediciones de consultas con y sin índice.
 
-### F6 — Replay, pruebas y despliegue · ✅ cerrada técnicamente el 2026-11-09 (6.1–6.9; revisión humana del panel, prueba desde móvil, pestaña oculta y limpieza PA-11 hechas el 2026-11-09; pendientes: commit `[F6]`, 6.10/SC-010 de F3 (>24 h), T063 y F7) · SDD aprobado el 2026-11-08 (`specs/005-replay-despliegue-final/`); preparación T001–T002 hecha; DG10 aprobada y constitución v1.0.4 aplicada; 6.1, 6.2 y 6.3 hechos (6.3 aprobada); 6.4 aprobada; 6.5 hecha (a falta de la revisión humana y de los datos de costes); 6.6 hecha (publicada y verificada; ngrok cerrado); 6.7 hecha (T053 superada con limitaciones: Narrador en Edge 157, 14 pasos; Chrome real informado)
+### F6 — Replay, pruebas y despliegue · ✅ cerrada técnicamente el 2026-11-09 (6.1–6.9; revisión humana del panel, prueba desde móvil, pestaña oculta y limpieza de recursos temporales hechas el 2026-11-09; commit `[F6]` `fd9e1a7`; SC-010 de F3 observado el 2026-11-17 en F8; T063 (`down`/`up`) no ejecutada por decisión del autor) · SDD aprobado el 2026-11-08 (`specs/005-replay-despliegue-final/`); preparación T001–T002 hecha; DG10 aprobada y constitución v1.0.4 aplicada; 6.1, 6.2 y 6.3 hechos (6.3 aprobada); 6.4 aprobada; 6.5 hecha (con costes supuestos); 6.6 hecha (publicada y verificada; ngrok cerrado); 6.7 hecha (T053 superada con limitaciones: Narrador en Edge 157, 14 pasos; Chrome real informado)
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
 | 6.1 | Implementar replay histórico aislado | ✅ (esquema `replay` con `CHECK` de modo y fuente y clave `(run_id, event_id)`; topic `terremotos.replay`; consumidor reutilizado con destino parametrizado —SQL de `live` idéntico carácter a carácter—; productor bajo demanda con seis casos controlados `replay-ctl-…`; 105 pruebas nuevas, 39/39 mutaciones detectadas; replay real: 39 mensajes → 35 filas / 37 versiones / 1 en cuarentena, repetible e interrumpible sin duplicados; `live`, `historico` y `sintetico` intactos) |
 | 6.2 | Replay en la API y el panel; comprobar velocidad, identidad y separación de eventos reproducidos | ✅ (revisión humana del panel confirmada el 2026-11-09) |
 | 6.3 | Ejecutar pruebas integradas y de aceptación del profesor | ✅ (a falta de la revisión humana) |
-| 6.4 | Medir tiempo y memoria con tres tamaños de datos | ✅ mediciones hechas; umbrales propuestos pendientes de confirmar |
-| 6.5 | Comparar búsqueda secuencial/diccionario y SQL con/sin índice | ✅ análisis hecho; datos de costes pendientes de la persona estudiante |
+| 6.4 | Medir tiempo y memoria con tres tamaños de datos | ✅ mediciones hechas y aprobadas |
+| 6.5 | Comparar búsqueda secuencial/diccionario y SQL con/sin índice | ✅ análisis hecho; costes con supuestos (no hay datos reales) |
 | 6.6 | Configurar ngrok, desplegar Angular en Netlify y verificar acceso (preparación local primero; publicar solo tras autorización) | ✅ publicado y verificado (Netlify + ngrok + clave de acceso); ngrok cerrado; probado desde un móvil Android con datos móviles el 2026-11-09 (`6.9-movil.md`) |
 | 6.7 | Accesibilidad, diseño responsive y compatibilidad del panel | ✅ hecho y corregido; T053 superada con limitaciones (Narrador+Edge, 14 pasos; Chrome real informado) |
 | 6.8 | Estabilidad, recuperación y persistencia sin operaciones destructivas | ✅ (T060 con reinicio natural del PC, no controlado de Docker Desktop; T063 down/up no realizada por decisión; SC-010 >24 h aplazada) |
 | 6.9 | Entregables, reproducibilidad y cierre de F6 | ✅ cerrada técnicamente (entorno limpio verificado tras corregir el README; regresión 964 + 130; aislamiento OK; Architect y QA «aprobado con reservas»); reservas en `docs/evidencias/f6/resultados.md` |
-| 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ⬜ pendiente (no se ejecutó en F6; **se realiza en F8, paso 8.5**, con PA-10 expresa; T075–T077 de `specs/005-…` se reutilizan allí) |
+| 6.10 | SC-010 de F3: conservación tras más de 24 h (condicionado a autorización expresa; fuera de la ruta crítica) | ✅ observado en F8 el 2026-11-17 (solo lectura; `scripts/f8/sc010_f3.sql`; `docs/evidencias/f3/sc-010-observacion-24h.txt`); no se ejecutó en F6 |
 
 **Se mantiene además** (`ENUNCIADO.md` §9, §10, §11): replay por Kafka con topic y tablas separados, tiempo original y de reproducción, etiqueta «REPRODUCCIÓN» y casos controlados de duplicado y revisión; las pruebas de aceptación del enunciado §11 (incluido cerrar y reabrir el túnel); mediciones también de la integración geográfica y de la agregación por ventanas, con datos sintéticos marcados y fuera del análisis real, y razonamiento para 100 millones de registros; CORS con el origen exacto de Netlify; authtoken de ngrok fuera de Git y de Angular; solo la API expuesta.
 
@@ -214,31 +214,31 @@ Fase **abierta**: no hay secuencia de pasos, ni número previsto de ellos, ni pa
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| — | Marco SDD abierto: spec, plan, tareas, backlog y plantilla ligera | ✅ creado (pendiente del commit de la reorganización) |
-| C-01 | *(candidata)* Entrar en `localhost:4200` sin teclear la clave de la API cada vez, sin debilitar FastAPI ni Netlify | ⬜ candidata, **sin aprobar** |
-| C-02 | *(candidata)* Mostrar de forma más perceptible cuándo el dashboard se ha actualizado correctamente (observación f de `docs/evidencias/f6/6.9-revision-humana.md`) | ⬜ candidata, **sin aprobar** |
-| C-03 | Subagente **Frontend Engineer** (Angular, TypeScript, diseño, accesibilidad y responsive) | ✅ creado el 2026-11-09 (`.claude/agents/frontend-engineer.md`); uso solo con autorización expresa |
+| — | Marco SDD abierto: spec, plan, tareas, backlog y plantilla ligera | ✅ creado y commiteado |
+| C-01 | *(candidata)* Entrar en `localhost:4200` sin teclear la clave de la API cada vez, sin debilitar FastAPI ni Netlify | ✅ hecha en F7: `npm run start:local` (proxy de desarrollo que añade la clave en el servidor) |
+| C-02 | *(candidata)* Mostrar de forma más perceptible cuándo el dashboard se ha actualizado correctamente (observación f de `docs/evidencias/f6/6.9-revision-humana.md`) | ✅ hecha en F7: indicador de refresco y estado del sistema en el panel |
+| C-03 | Subagente **Frontend Engineer** (Angular, TypeScript, diseño, accesibilidad y responsive) | ✅ creado el 2026-11-09 (`.claude/agents/frontend-engineer.md`); |
 | C-04 | Skills de diseño: se creó una skill propia `observatorio-design` (`.claude/skills/observatorio-design/`) a partir de reglas revisadas; nada externo instalado | ✅ creada el 2026-11-09 |
-| I-01…I-04 | *(ideas)* Data Engineer y MCP como posibilidades futuras solo si aportan valor concreto; investigar APIs sísmicas regionales y valorar Streamlit (opcionales, solo si aportan algo distinto al dashboard Angular) | 💡 anotadas, sin plan |
-| C-05…C-11 | *(candidatas de la propuesta de rediseño, 2026-11-09)* Fundación visual y tokens oscuros (C-05), layout y jerarquía (C-06), componentes (C-07), mapa 2D mejorado (C-08), cierre de accesibilidad y responsive (C-09), estudio del globo 3D (C-10) y globo como segundo modo (C-11, condicionada). Material de referencia (no un plan): `specs/006-mejoras-evolucion/propuesta-rediseno-dashboard.md` | ⬜ candidatas, **sin aprobar ni ordenar** |
+| I-01…I-04 | *(ideas)* Data Engineer y MCP como posibilidades futuras solo si aportan valor concreto; investigar APIs sísmicas regionales y valorar Streamlit (opcionales, solo si aportan algo distinto al dashboard Angular) | 💡 ideas no desarrolladas |
+| C-05…C-11 | *(candidatas de la propuesta de rediseño, 2026-11-09)* Fundación visual y tokens oscuros (C-05), layout y jerarquía (C-06), componentes (C-07), mapa 2D mejorado (C-08), cierre de accesibilidad y responsive (C-09), estudio del globo 3D (C-10) y globo como segundo modo (C-11, condicionada). Material de referencia (no un plan): `specs/006-mejoras-evolucion/propuesta-rediseno-dashboard.md` | ✅ realizadas en F7 (commit `9008772`); el globo 3D es el modo por defecto, con alternativa Leaflet 2D |
 | F7.n | Se asigna al decidir empezar un trabajo concreto (puede agrupar varias candidatas) | — |
 
-**Política de trabajo de F7:** se desarrolla y prueba en `localhost:4200`; commits y push manuales al repositorio privado; **Netlify se mantiene con la versión de F6** (sin despliegues automáticos ni publicación de las mejoras); sin ngrok ni despliegues públicos sin autorización expresa; sin secretos en Git ni en bundles; **no se instalan skills, agentes, MCP ni dependencias** sin aprobación (las skills se revisan antes: procedencia y contenido). Las notas de clase del 2026-11-09 son orientaciones del profesor, **no requisitos obligatorios**.
+**Política de trabajo de F7 (durante la fase):** se desarrolla y prueba en `localhost:4200`; commits y push manuales al repositorio privado; **Netlify se mantiene con la versión de F6** (sin despliegues automáticos ni publicación de las mejoras); sin ngrok ni despliegues públicos sin autorización expresa; sin secretos en Git ni en bundles; **no se instalan skills, agentes, MCP ni dependencias** sin aprobación (las skills se revisan antes: procedencia y contenido). Las notas de clase del 2026-11-09 son orientaciones del profesor, **no requisitos obligatorios**.
 
 **Alcance posible** (cada punto, solo mediante una mejora aprobada): mejoras visuales y rediseño de Angular; experiencia de usuario y accesibilidad; filtros, navegación, mapas, estadísticas y gráficas; optimización y ajustes técnicos pequeños; funcionalidades nuevas propuestas por la persona estudiante; comodidad del entorno de desarrollo local.
 
 ### F8 — Documentación, entrega académica y vídeo · 🟡 en curso: planificación definitiva en 5 pasos **aprobada** (2026-11-11; `specs/007-documentacion-entrega-video/`); **8.1 terminado**, memoria redactada (8.2 en curso); entrega prevista **jue 19 / vie 20 de noviembre** y evaluación prevista **sáb 21 / dom 22** (sin confirmar)
 
-Sustituye a la antigua «F7 — Memoria y defensa». **Nuevo formato de evaluación (comunicado en clase; fuente escrita pendiente de archivar si existe, CA-01):** sin defensa presencial, presentación oral ni preguntas. El profesor evaluará por **tres vías**: (A) un **vídeo explicativo grabado por la persona estudiante con OBS**, (B) la **aplicación web publicada**, que revisará por su cuenta durante una **ventana de ~2 días** con los ordenadores encendidos (fechas pendientes, CA-06), y (C) el **repositorio privado de GitHub**. Entregables: **`docs/entrega/memoria.md`** (CA-07 resuelta, independiente), **README definitivo** y el vídeo. Los materiales de `docs/referencias/` siguen hablando de defensa y **no se modifican**. **Se conservan todos los requisitos técnicos, académicos y documentales**; solo cambia cómo se explican y demuestran. La **memoria sigue siendo un entregable independiente** (el README no la sustituye). Condiciones desconocidas (duración, formato y plataforma del vídeo, fechas, usuario de GitHub, URL definitiva y estrategia de publicación) constan como **pendientes de confirmar** (CA-01…CA-08 en la especificación). **Asunto pendiente:** la web publicada en Netlify es **F6** y el local es **F7**; hay que definir, aprobar, autorizar, ejecutar y verificar la publicación segura de F7 antes de la entrega, y entregar la credencial al profesor por un canal privado. Reglas: sin avance automático entre pasos, sin subagentes, PA-10 (SC-010) y PA-11 (volúmenes) vigentes, Netlify en la versión de F6 salvo autorización, sin ngrok sin permiso, commits y push manuales (uno por fase, `[F8]`).
+Sustituye a la antigua «F7 — Memoria y defensa». **Nuevo formato de evaluación (comunicado en clase, CA-01):** sin defensa presencial, presentación oral ni preguntas. El profesor evaluará por **tres vías**: (A) un **vídeo explicativo grabado por el autor con OBS**, (B) la **aplicación web publicada**, que revisará por su cuenta durante una **ventana de ~2 días** con los ordenadores encendidos (prevista el 21–22 de noviembre de 2026), y (C) el **repositorio privado de GitHub**. Entregables: **`docs/entrega/memoria.md`** (CA-07 resuelta, independiente), **README definitivo** y el vídeo. Los materiales de `docs/referencias/` siguen hablando de defensa y **no se modifican**. **Se conservan todos los requisitos técnicos, académicos y documentales**; solo cambia cómo se explican y demuestran. La **memoria sigue siendo un entregable independiente** (el README no la sustituye). Las aclaraciones sobre el formato de entrega (CA-01…CA-08) y su estado final están en `docs/entrega/requisitos-fuente.md` §8. La web publicada en Netlify es F7 con función de Netlify (el visitante no introduce clave) y con la segunda fuente EMSC. Los commits y el push son manuales (uno por fase, `[F8]`).
 
 | Paso | Qué haremos | Estado |
 |---|---|---|
-| 8.1 — Auditoría de requisitos y rúbrica | Revisión literal de enunciado, guía, FAQ y contrato; contraste con la implementación real; matriz de trazabilidad (`docs/entrega/requisitos-fuente.md`, `matriz-trazabilidad.md`); aclaraciones pendientes | 🟨 Primera pasada [E] hecha (2026-11-11): `auditoria-final.md`, `checklist-entrega-final.md`, `preparacion-commit.md`; **pendiente la parte [D]** (T040, vídeo, entrega manual) |
-| 8.2 — Memoria técnica y README definitivo | Memoria (Guía 2.1–2.9, con tabla de cobertura exacta), README profesional con sección de cumplimiento de la rúbrica y capturas reales de F7 | 🟨 Primera pasada [E] hecha (2026-11-11): `auditoria-final.md`, `checklist-entrega-final.md`, `preparacion-commit.md`; **pendiente la parte [D]** (T040, vídeo, entrega manual) |
-| 8.3 — Evidencias y validación técnica final | Pruebas y criterios de aceptación, Docker/Kafka/PostgreSQL/API/dashboard, EN VIVO y REPRODUCCIÓN, README en entorno limpio (PA-11), secretos, **acceso autónomo del profesor a la web y diferencias con el local**, estrategia de publicación de F7, funcionamiento continuado y recuperación, SC-010 como prueba independiente (PA-10) | 🟨 Primera pasada [E] hecha (2026-11-11): `auditoria-final.md`, `checklist-entrega-final.md`, `preparacion-commit.md`; **pendiente la parte [D]** (T040, vídeo, entrega manual) |
-| 8.4 — Guion, preparación y grabación del vídeo | guion personal fuera de Git (5 min, orden de la rúbrica), `checklist-grabacion.md` (OBS, privacidad), ensayo en seco; **graba la persona estudiante**, la grabación definitiva **después de publicar y congelar F7** | 🟨 Guion, checklist de OBS y lista de capturas **preparados** (2026-11-11); **vídeo sin grabar** |
-| 8.6 — EMSC como segunda fuente en vivo (última parte de F8) | Segunda fuente aditiva con permiso del profesor: tarea independiente del productor, mismo topic y consumidor, **sin duplicar** terremotos ya informados por USGS (regla evaluada al leer), filtro `fuente`, atribución CC BY 4.0, comparación con 2025 solo de USGS; reversible con `EMSC_ACTIVO=false` | ✅ Implementada y verificada en local (2026-11-16): backend 1046 y frontend 528 pruebas; cortes de Kafka, EMSC bloqueado y productor matado sin pérdidas ni duplicados; evidencia `docs/evidencias/f8/emsc-segunda-fuente.md`. Pendiente: commit manual y publicación en Netlify |
-| 8.5 — Auditoría final y entrega | Requisitos originales, matriz cerrada, enlaces, instalación, secretos, acceso a GitHub y a la web, **checklist de activación de la ventana de evaluación**, condiciones de entrega, **T040 (cierre dinámico)**; commit `[F8]`, push, credenciales y envío manuales | 🟨 Primera pasada [E] hecha (2026-11-11): `auditoria-final.md`, `checklist-entrega-final.md`, `preparacion-commit.md`; **pendiente la parte [D]** (T040, vídeo, entrega manual) |
+| 8.1 — Auditoría de requisitos y rúbrica | Revisión literal de enunciado, guía, FAQ y contrato; contraste con la implementación real; matriz de trazabilidad (`docs/entrega/requisitos-fuente.md`, `matriz-trazabilidad.md`); aclaraciones pendientes | ✅ Hecha (2026-11-17): requisitos y matriz de trazabilidad actualizados; el estado de cada criterio está en `matriz-trazabilidad.md` |
+| 8.2 — Memoria técnica y README definitivo | Memoria (Guía 2.1–2.9, con tabla de cobertura exacta), README profesional con sección de cumplimiento de la rúbrica y capturas reales de F7 | ✅ Hecha y revisada el 2026-11-17 (README y memoria; enlaces, tablas y anclas comprobados) |
+| 8.3 — Evidencias y validación técnica final | Pruebas y criterios de aceptación, Docker/Kafka/PostgreSQL/API/dashboard, EN VIVO y REPRODUCCIÓN, README en entorno limpio, secretos, **acceso autónomo del profesor a la web y diferencias con el local**, estrategia de publicación de F7, funcionamiento continuado y recuperación, SC-010 como prueba independiente | ✅ Con reservas (2026-11-17): pruebas repetidas (1 046 y 528), SC-010 observado (`docs/evidencias/f3/sc-010-observacion-24h.txt`), 24 h continuas en local y secretos limpios; README verificado en un entorno limpio paralelo (`docs/evidencias/f8/entorno-limpio-readme-final.txt`); no incluidos en ese entorno limpio: la ingesta real y el panel Angular |
+| 8.4 — Guion, preparación y grabación del vídeo | guion personal fuera de Git (5 min, orden de la rúbrica), notas de grabación con OBS y privacidad, ensayo en seco; graba el autor, con la versión publicada ya congelada | ✅ Guion y notas de grabación (material personal); capturas de la web publicada del 2026-11-17 (`docs/evidencias/f8/capturas/`); el vídeo se entrega aparte |
+| 8.6 — EMSC como segunda fuente en vivo (última parte de F8) | Segunda fuente aditiva con permiso del profesor: tarea independiente del productor, mismo topic y consumidor, **sin duplicar** terremotos ya informados por USGS (regla evaluada al leer), filtro `fuente`, atribución CC BY 4.0, comparación con 2025 solo de USGS; reversible con `EMSC_ACTIVO=false` | ✅ Implementada y verificada en local (2026-11-16): backend 1046 y frontend 528 pruebas; cortes de Kafka, EMSC bloqueado y productor matado sin pérdidas ni duplicados; evidencia `docs/evidencias/f8/emsc-segunda-fuente.md`. Publicada en Netlify el 2026-11-16 (despliegue `6afb5599…`) y probada 24 h seguidas en local el 2026-11-16/17 (§9 de la evidencia) |
+| 8.5 — Auditoría final y entrega | Requisitos originales, matriz cerrada, enlaces, instalación, secretos, acceso a GitHub y a la web, **checklist de activación de la ventana de evaluación**, condiciones de entrega, **T040 (cierre dinámico)**; commit `[F8]`, push, credenciales y envío manuales | ✅ Auditoría y documentación cerradas el 2026-11-17; la entrega (repositorio, enlace de la web y vídeo) la realiza el autor |
 
 **Calendario y criterio temporal** (fechas sin confirmar: CA-02 y CA-06): hoy 2026-11-11; entrega jue 19 o vie 20; evaluación previsible sáb 21 y dom 22, con la posibilidad de que la ventana empiece en la entrega (de ~2 a ~4 días con PC y servicios operativos). Los datos de USGS seguirán cambiando: el contenido **estable [E]** (arquitectura, diccionario, procedencia, modelo SQL, calidad, análisis históricos con su fecha, estructura de memoria y README) se cierra ahora; lo **dinámico [D]** (capturas EN VIVO, cifras actuales, estado de la última ingesta, comprobaciones finales de conectividad y acceso, grabación definitiva) se cierra cerca de la entrega en la tarea **T040**. Las conclusiones históricas no se recalculan. **Orden de cierre: publicación de F7 → congelación → capturas → vídeo → auditoría final → entrega.**
 
@@ -326,11 +326,11 @@ Spec Kit y la metodología SDD son **decisiones nuestras de desarrollo**, no req
 
 ## 9. Criterios para cerrar una fase
 
-- [ ] Requisitos y criterios de aceptación cubiertos.
-- [ ] Código implementado y pruebas pertinentes ejecutadas.
-- [ ] Evidencias y decisiones técnicas documentadas.
-- [ ] Código comprendido y explicable por bloques.
-- [ ] Cambios revisados (`git status`, `git diff --check`); commit manual `[F<n>]` del hito.
+- Requisitos y criterios de aceptación cubiertos.
+- Código implementado y pruebas pertinentes ejecutadas.
+- Evidencias y decisiones técnicas documentadas.
+- Código comprendido y explicable por bloques.
+- Cambios revisados (`git status`, `git diff --check`); commit manual `[F<n>]` del hito.
 
 **Método de aprendizaje:** explicación por bloques de código, ejercicios cortos y preguntas de defensa. No marcar pruebas ni pasos como superados si no se han ejecutado o no hay evidencia; no inventar mediciones o resultados.
 
@@ -354,21 +354,15 @@ La rúbrica contempla **extracción, calidad, modelado, análisis y reflexión**
 
 ## 11. Estado actual y próximo paso
 
-### Estado actual (2026-11-09)
-- **F0–F6 completadas** (commits `[F0.1]`, `[F1]`…`[F6]`; el último, `fd9e1a7`). Detalle por fase en sus `specs/` y `docs/evidencias/`. F6 cerrada técnicamente con reservas documentadas (`docs/evidencias/f6/resultados.md` §5): SC-010 de F3 (>24 h, 6.10), T063 (no autorizada), recuperación de un hueco real de USGS, otros navegadores y lector de pantalla, mediciones de una sola máquina.
-- **F7 — Mejoras y evolución**: **cerrada** con el commit manual `9008772` (rediseño Mission Control, globo 3D, vista previa de Eventos, acceso local seguro).
-- **F8 — Documentación, entrega y vídeo**: planificación definitiva en **5 pasos aprobada** (2026-11-11; `specs/007-documentacion-entrega-video/`); evaluación por vídeo (OBS) + web publicada + repositorio; entregables memoria Markdown + README + vídeo; ventana de evaluación de ~2 días; pendientes: publicación segura de F7 (Netlify sirve F6), credenciales del profesor, condiciones del vídeo y fechas; PA-10 sin conceder.
-- Codex queda aparcado hasta terminar la versión Claude.
+### Estado final (2026-11-17)
+- **F0–F7 completadas** (commits `[F0.1]`, `[F1]`…`[F7]`; F7 en `9008772`: rediseño Mission Control, globo 3D, vista previa de Eventos, acceso local seguro). Detalle por fase en sus `specs/` y `docs/evidencias/`. Reservas documentadas: ACE-08 (un *kill* en mitad de una transacción), T063 (`down`/`up`, no ejecutada por decisión del autor), otros navegadores y lector de pantalla real, mediciones de una sola máquina.
+- **F8 — Documentación, entrega y vídeo**: cerrada documentalmente el 2026-11-17. Publicación de F7 con función de Netlify (sin clave para el visitante) y de la segunda fuente EMSC (despliegue `6afb5599…`, 2026-11-16); SC-010 observado; prueba de 24 h en local; README verificado en un entorno limpio; capturas de la web publicada. Evaluación por vídeo (OBS, que se entrega aparte) + web publicada + repositorio; ventana de evaluación de ~2 días prevista el 21–22 de noviembre de 2026.
+- Codex queda aparcado: no se ha desarrollado la segunda versión independiente.
 
 ### Decisiones técnicas
 - **Python 3.13** en las imágenes Docker; `.claude/settings.local.json` no se versiona; los subagentes y skills del proyecto sí.
 - `mode = "synthetic"` fue una excepción temporal del MVP, retirada en el paso 3.1 (esquema `sintetico` archivado).
 - Reorganización 2026-11-09: antigua F7 (memoria y defensa) → F8; nueva F7 evolutiva. Constitución v1.0.5 (PATCH: fases F0–F8).
-
-### Próximos pasos
-1. Revisión humana y commit manual de la reorganización (documentación únicamente).
-2. **F7**: cerrada (commit `9008772`).
-3. **F8**: planificación aprobada; **empezar por 8.1 cuando la persona estudiante lo autorice** (auditoría de requisitos y matriz). SC-010 (PA-10) se decide en 8.3; la publicación de F7 y la checklist de la ventana de evaluación requieren aprobación y autorizaciones expresas.
 
 ### Reglas
 - No implementar funcionalidades sin una especificación aprobada.

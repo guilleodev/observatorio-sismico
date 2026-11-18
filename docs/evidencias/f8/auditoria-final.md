@@ -1,6 +1,8 @@
 # Auditoría final (F8.5 · T024) — primera pasada, parte estable [E]
 
-**Fecha**: 2026-11-11 (noche). **Alcance**: comprobaciones de solo lectura y correcciones documentales. **No se ha publicado nada, no se ha abierto ngrok, no se ha tocado Angular, FastAPI, SQL de producción, Docker ni volúmenes, no se han ejecutado SC-010 ni el entorno limpio y no hay commit.** La parte dinámica [D] (vídeo, capturas EN VIVO, sistema real justo antes de entregar) queda **pendiente** (T040, `checklist-entrega-final.md`).
+**Fecha**: 2026-11-11 (noche). **Alcance**: comprobaciones de solo lectura y correcciones documentales. **No se ha publicado nada, no se ha abierto ngrok, no se ha tocado Angular, FastAPI, SQL de producción, Docker ni volúmenes, no se han ejecutado SC-010 ni el entorno limpio y no hay commit.** La parte dinámica [D] (capturas EN VIVO y sistema real) se completó el 2026-11-17 (ver la nota siguiente).
+
+> **Nota del 2026-11-17**: SC-010 se observó (`f3/sc-010-observacion-24h.txt`), las pruebas se repitieron (backend 1 046, frontend 528), el contador de ngrok se leyó (5,18 MB de 1 GB) y el escaneo de secretos se repitió. Lo que sigue es el estado del 2026-11-11.
 
 Etiquetas: **[MEDIDO]** comprobado ahora; **[ESTIMADO]**; **[NO COMPROBADO]**.
 
@@ -21,7 +23,7 @@ Etiquetas: **[MEDIDO]** comprobado ahora; **[ESTIMADO]**; **[NO COMPROBADO]**.
 | Valor de `API_CLAVE_ACCESO` en árbol, historial, salidas de la sesión y transcripciones | **0 coincidencias** [MEDIDO] |
 | Rastreados indebidos (`.env`, `node_modules`, `dist`, vídeos, zips) / archivos nuevos > 500 KB | **Ninguno** [MEDIDO] |
 | `git diff --check` | Sin errores (solo avisos de fin de línea CRLF de Windows) |
-| Estado de Git | `main` = `origin/main` (`4f5580e`); todo el trabajo de F8 está **sin commitear** (`preparacion-commit.md`) |
+| Estado de Git | `main` = `origin/main` (`4f5580e`); el trabajo de F8 estaba entonces sin commitear (los commits posteriores constan en el historial de Git) |
 
 ## 3. Documentación
 | Comprobación | Resultado |
@@ -30,7 +32,7 @@ Etiquetas: **[MEDIDO]** comprobado ahora; **[ESTIMADO]**; **[NO COMPROBADO]**.
 | Rutas entre comillas | Solo faltan las de **evidencias futuras** (`auditoria-final.md` se crea ahora, `sc-010-observacion-24h.txt`, capturas) y el fragmento `sql/001`–`004` |
 | Frases obsoletas | **Corregidas**: «F7 no publicada»/«versión F6» en matriz (LF-12, D2, WEB-01, resumen G) y requisitos; «6 peticiones por ciclo» (ahora **3 con la función** y 6 con la llamada directa); estado del README |
 | Afirmaciones frente a evidencias archivadas | **24 contrastadas** (18 302 eventos y 12 tramos; 964 pruebas; conclusiones 17 de 22, 7 079, 23,45, 53,2 %, 29,0 %; 30/30 consultas; exactitud 40/40; replay 39/37/35; hueco #475; mediciones; cuota de ngrok; aislamiento; entorno limpio de F6; ráfaga 63/37; 0 coincidencias de la clave): **todas respaldadas** (2 requirieron lectura manual por el texto exacto) |
-| Marcas `[ACTUALIZAR EN CIERRE]` | README 10 y memoria 6: **dinámicas, a resolver en T040** |
+| Marcas `[ACTUALIZAR EN CIERRE]` | Resueltas el 2026-11-17 |
 | Lectura «como profesor» | El README se entiende de arriba abajo (estado, cómo revisar, arquitectura, instalación, modos EN VIVO/REPRODUCCIÓN, pruebas, rúbrica, limitaciones); la memoria sigue la Guía 2.1–2.9. Observaciones **no bloqueantes**: ambos son largos (la tabla de rúbrica y la sección 14 son lo esencial); varias evidencias son de fases anteriores y llevan su fecha |
 
 ## 4. Reservas (estado tras F8.5)
@@ -68,5 +70,3 @@ Vídeo y capturas (los hace la persona estudiante), SC-010 (PA-10), entorno limp
 3. **Evidencias confirmadas solo de palabra**: Pixel, túnel cerrado/reabierto con F7 y fallback sin WebGL (sin capturas).
 4. **Contadores y secretos de Netlify/ngrok** sin revisar.
 5. **Acceso del profesor al repositorio** y condiciones de entrega sin confirmar.
-
-Ver `docs/entrega/checklist-entrega-final.md` para el reparto de acciones.

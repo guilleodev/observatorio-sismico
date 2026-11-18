@@ -1,5 +1,7 @@
 # Lista final de comprobación de la Guía (T068) · estado a 2026-11-09
 
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](../../entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](../../entrega/matriz-trazabilidad.md).
+
 Solo se marca «Verificado» lo comprobado con evidencia guardada. «Pendiente» = depende de F7 (memoria) o de una acción de la persona estudiante. Ningún punto figura como superado sin haberse ejecutado.
 
 | # | Punto de la Guía | Estado | Evidencia / reserva |

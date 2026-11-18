@@ -1,6 +1,6 @@
-# Complejidad, escalado y costes (borrador para la memoria de F7)
+# Complejidad, escalado y costes (base de la memoria §7)
 
-Borrador de F6 · paso 6.5 (T039–T040) · 2026-11-08. Responde a `ENUNCIADO.md` §10 y alimenta el paso 7.2; no lo sustituye.
+Documento de F6 · paso 6.5 (T039–T040) · 2026-11-08. Responde a `ENUNCIADO.md` §10; la memoria §7 lo resume y lo enlaza.
 Todo lo calculado sale de `scripts/f6/modelo_costes.py` (se regenera con `py -3.13 -X utf8 scripts/f6/modelo_costes.py`); las medidas, de `6.4-mediciones.txt` y `6.5-comparaciones.txt`.
 
 **Cómo leer las cifras.** `[MEDIDO]` = medición de este proyecto en el equipo descrito en `6.4-mediciones.txt`. `[PUBLICADO]` = cuota de una página oficial en la fecha indicada. `[SUPUESTO]` = valor

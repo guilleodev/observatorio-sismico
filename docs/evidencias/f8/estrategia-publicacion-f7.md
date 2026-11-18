@@ -1,6 +1,6 @@
 # Estrategia segura de publicación de F7 (F8 · T034)
 
-**Estado**: BORRADOR para revisión y aprobación por escrito de la persona estudiante · **Redactado**: 2026-11-11 · **No se ha ejecutado nada**: ni build, ni Docker, ni ngrok, ni Netlify. Este documento **no concede ninguna autorización**: cada acción de la sección 10 se autoriza por separado y, para las que tocan servicios externos, **cada vez**.
+**Estado (2026-11-17)**: estrategia **ejecutada con la autorización expresa de la persona estudiante** (F7 publicada el 2026-11-11 y despliegues posteriores el 2026-11-15 y el 2026-11-16; ver `verificacion-publicacion-f7.md` y `emsc-segunda-fuente.md`). **El texto que sigue es el documento original de planificación**, escrito el 2026-11-11 antes de ejecutar nada, y se conserva sin reescribir. Este documento **no concede ninguna autorización**: cada acción de la sección 10 se autoriza por separado y, para las que tocan servicios externos, **cada vez**.
 
 Etiquetas: **[MEDIDO]** observado y archivado; **[ESTIMADO]** aritmética sobre datos medidos o documentados; **[HIPÓTESIS]** razonamiento sin medición; **[PROPUESTA]** decisión que corresponde a la persona estudiante; **[VERIFICAR]** dato que hay que confirmar al ejecutar; **[ACTUALIZAR EN CIERRE]** valor que puede cambiar hasta la entrega.
 

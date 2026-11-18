@@ -1,0 +1,8 @@
+# C-15 · docker compose ps (texto de terminal, no imagen) · 2026-11-17T22:52:20Z
+# Solo la API está publicada en el equipo (127.0.0.1:8000); Kafka y PostgreSQL no tienen puertos publicados.
+SERVICE    IMAGE                  STATUS                  PORTS
+api        observatorio-backend   Up 29 hours (healthy)   127.0.0.1:8000->8000/tcp
+consumer   observatorio-backend   Up 29 hours (healthy)   
+kafka      apache/kafka:4.3.2     Up 29 hours (healthy)   9092/tcp
+postgres   postgres:17.11         Up 29 hours (healthy)   5432/tcp
+producer   observatorio-backend   Up 28 hours (healthy)   

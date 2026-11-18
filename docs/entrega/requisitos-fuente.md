@@ -1,6 +1,6 @@
 # Requisitos de origen — Observatorio Sísmico (F8.1)
 
-**Fecha de la auditoría**: 2026-11-11 · **Paso**: F8.1 (tareas T003–T005 y T032 de `specs/007-documentacion-entrega-video/tasks.md`) · **Estado**: documento de trabajo, pendiente de revisión por la persona estudiante.
+**Fecha de la auditoría**: 2026-11-11 · **Paso**: F8.1 (tareas T003–T005 y T032 de `specs/007-documentacion-entrega-video/tasks.md`) · **Estado**: referencia de requisitos, revisada el 2026-11-17.
 
 Este documento recoge **qué exigen las fuentes**, con documento y apartado exactos. **No** dice si se cumple: eso está en [`matriz-trazabilidad.md`](matriz-trazabilidad.md). No se han modificado los materiales del profesor.
 
@@ -26,26 +26,26 @@ Este documento recoge **qué exigen las fuentes**, con documento y apartado exac
 | **[A]** | Ampliación opcional, **no exigida** | «es una ampliación», «no se exige», «opcional» |
 | **[D]** | Derivado | No literal: se deduce del comunicado en clase o de una combinación de fuentes (marcado para no atribuirlo al profesor) |
 
-Los identificadores (`ARQ-01`, `EXT-03`, …) son propios de esta auditoría y los usa la matriz. **Estados** usados en la matriz: **VERIFICADO** (evidencia guardada), **IMPLEMENTADO, PENDIENTE DE COMPROBACIÓN**, **CON RESERVAS**, **PENDIENTE / NO CUMPLIDO**.
+Los identificadores (`ARQ-01`, `EXT-03`, …) son propios de esta auditoría y los usa la matriz. **Estados** usados en la matriz: **VERIFICADO** (evidencia guardada) y **CON RESERVAS** (cumplido, con una limitación indicada).
 
 ## 1. Formato de evaluación vigente y adaptación de la defensa
 
 ### 1.1 Lo comunicado (en clase; sin fuente escrita archivada — CA-01)
 - Sin defensa presencial, presentación oral ni preguntas del profesor.
-- Evaluación por **tres vías**: (A) **vídeo** explicativo que grabará la persona estudiante con OBS; (B) **aplicación web publicada**, que el profesor revisará por su cuenta; (C) **repositorio privado de GitHub**, que también revisará por su cuenta.
-- El profesor pedirá mantener los ordenadores **encendidos unos dos días** («ventana de evaluación», fechas sin confirmar) para corregir cuando tenga disponibilidad.
+- Evaluación por **tres vías**: (A) **vídeo** explicativo grabado por el autor con OBS; (B) **aplicación web publicada**, que el profesor revisará por su cuenta; (C) **repositorio privado de GitHub**, que también revisará por su cuenta.
+- El profesor pedirá mantener los ordenadores **encendidos unos dos días** («ventana de evaluación», prevista el 21–22 de noviembre de 2026) para corregir cuando tenga disponibilidad.
 - Entregables: memoria técnica independiente (`docs/entrega/memoria.md`), README definitivo y vídeo.
 
 ### 1.2 Cómo se adapta cada mención a la defensa (los materiales originales siguen diciendo «defensa»)
 
 | Mención original | Fuente | Adaptación | Estado |
 |---|---|---|---|
-| «URL del panel y procedimiento para activar el backend/túnel durante la defensa» [E] | ENUNCIADO §12 | Procedimiento de activación documentado + **checklist de la ventana de evaluación** (T039). La URL la usa el profesor por su cuenta. | Pendiente de URL definitiva y publicación segura de F7 (CA-06) |
+| «URL del panel y procedimiento para activar el backend/túnel durante la defensa» [E] | ENUNCIADO §12 | Procedimiento de activación documentado en el README (§15). La URL la usa el profesor por su cuenta. | Resuelto: URL publicada con F7 y función de Netlify |
 | «Explicación individual del flujo completo y de una decisión técnica propia» [E] | ENUNCIADO §12; Guía 3.3 («explicación oral»); lista final punto 13; FAQ 35 último punto | Bloque del **vídeo** (escena G): recorrido de un evento desde USGS hasta el panel y una decisión técnica propia. | Resuelta en lo práctico (CA-08) |
-| «La URL de Netlify funciona y sé activar el backend y el túnel durante la defensa» [E] | Guía, lista final punto 12 | Ídem: URL funcional, abierta desde otro dispositivo, y procedimiento/checklist de activación. | Verificado con reservas: F7 publicada con función de Netlify y comprobada en un navegador del propio equipo y en un Pixel (confirmación sin evidencia archivada) |
-| «Demostrar actividad si no aparece un nuevo terremoto durante la defensa» [E] | FAQ 32; Guía 2.9 | REPRODUCCIÓN: debe haber una ejecución de replay almacenada y visible cuando el túnel esté activo; escena propia del vídeo. | Implementado y verificado (F6); asegurar su presencia en la ventana |
-| «Procedimiento para activar el sistema durante la defensa» (5 pasos) [E] | Guía 3.2 | Se convierte en la checklist de activación previa a la ventana y en la escena de arranque del vídeo. | Pendiente (T039, T020) |
-| «Equipo, contenedores y túnel deben permanecer activos durante la demostración» [E] | ENUNCIADO §9 (último párrafo) | La «demostración» pasa a ser la ventana de evaluación (~2 días) y la grabación del vídeo. | Pendiente de fechas (CA-06/CA-02) |
+| «La URL de Netlify funciona y sé activar el backend y el túnel durante la defensa» [E] | Guía, lista final punto 12 | Ídem: URL funcional, abierta desde otro dispositivo, y procedimiento/checklist de activación. | Verificado con reservas: F7 publicada con función de Netlify y comprobada en un navegador del propio equipo y, por el autor, en un móvil real (sin captura) |
+| «Demostrar actividad si no aparece un nuevo terremoto durante la defensa» [E] | FAQ 32; Guía 2.9 | REPRODUCCIÓN: debe haber una ejecución de replay almacenada y visible cuando el túnel esté activo; escena propia del vídeo. | Implementado y verificado (F6); hay una ejecución de replay almacenada (`r-f6-estab-11082023`, 35 eventos) |
+| «Procedimiento para activar el sistema durante la defensa» (5 pasos) [E] | Guía 3.2 | Se convierte en el procedimiento de arranque del README (§15) y en la escena de arranque del vídeo. | Resuelto |
+| «Equipo, contenedores y túnel deben permanecer activos durante la demostración» [E] | ENUNCIADO §9 (último párrafo) | La «demostración» pasa a ser la ventana de evaluación (~2 días) y la grabación del vídeo. | Ventana prevista el 21–22 de noviembre de 2026 |
 
 ## 2. Requisitos técnicos y de entrega por apartado
 
@@ -195,7 +195,7 @@ No figuran en los materiales; se derivan de lo comunicado en clase y de Guía 1 
 |---|---|---|
 | WEB-01 | D | El profesor puede abrir la **aplicación publicada** desde el enlace de entrega, navegar por las secciones, usar las funcionalidades, ver datos y resultados y comprobar que funciona **sin depender del ordenador del alumno más allá de la API y el túnel** (arquitectura obligatoria §2/§9). |
 | WEB-02 | D | La web publicada debe corresponder a la **versión que se entrega** (hoy: local = Netlify = F7 + mejoras 8.6 del 2026-11-15, despliegue `6afa2ccf…`, commit `2616aec`). |
-| WEB-03 | D | **Ventana de evaluación** (~2 días): PC encendido y sin suspensión, Docker, Kafka, PostgreSQL, productor, consumidor y API operativos, túnel activo, frontend publicado y **credencial** entregada al profesor por un canal privado (T037–T039). Mantener el PC encendido **no** equivale a SC-010. |
+| WEB-03 | D | **Ventana de evaluación** (~2 días): PC encendido y sin suspensión, Docker, Kafka, PostgreSQL, productor, consumidor y API operativos, túnel activo, frontend publicado y acceso del profesor a la web sin clave (función de Netlify). Mantener el PC encendido **no** equivale a SC-010. |
 | WEB-04 | E+D | La API publicada debe tratar el fallo de conexión con claridad (ACE-09/10, FAQ 31/35). |
 | REPO-01 | D | El profesor revisa el **repositorio privado** por su cuenta: código completo y organizado, README definitivo, memoria independiente, arquitectura y decisiones técnicas, pruebas y resultados, evidencias verificables, instrucciones, correspondencia con la rúbrica y limitaciones explicadas. |
 | REPO-02 | E+D | Sin secretos ni `.env` en el repositorio ni en su historial (ENT-03; reglas de seguridad de `CLAUDE.md`); permisos del profesor verificados **antes** de entregar, sin modificarlos ni hacer público el repositorio sin decisión expresa (CA-05). |
@@ -206,20 +206,20 @@ Según los propios textos: informe de calidad automático, archivo de calidad se
 
 ## 7. Reglas propias del proyecto que condicionan la entrega (no son del profesor)
 
-`CLAUDE.md`: tecnologías obligatorias (Python, aiokafka, Kafka, PostgreSQL, FastAPI, Angular, Leaflet, Docker Compose, ngrok, Netlify); sin Spark/Flink/Kubernetes/ML; datos reales/históricos/replay separados; no inventar datos ni resultados; commits y push **solo con autorización**; no exponer Kafka ni PostgreSQL; no subir credenciales. Autorizaciones vigentes de F8: **PA-10** (SC-010), **PA-11** (volúmenes temporales), Netlify y ngrok solo con permiso expreso. El proyecto añadió el modo local seguro (proxy de desarrollo con clave en servidor), que no forma parte de los requisitos del profesor.
+`CLAUDE.md`: tecnologías obligatorias (Python, aiokafka, Kafka, PostgreSQL, FastAPI, Angular, Leaflet, Docker Compose, ngrok, Netlify); sin Spark/Flink/Kubernetes/ML; datos reales/históricos/replay separados; no inventar datos ni resultados; commits y push **solo con autorización**; no exponer Kafka ni PostgreSQL; no subir credenciales. El proyecto añadió el modo local seguro (proxy de desarrollo con clave en servidor), que no forma parte de los requisitos del profesor.
 
-## 8. Aclaraciones CA-01 a CA-08 (estado a 2026-11-11)
+## 8. Aclaraciones CA-01 a CA-08 (estado a 2026-11-17)
 
-| CA | Asunto | Estado | Qué falta |
+| CA | Asunto | Estado | Observación |
 |---|---|---|---|
-| CA-01 | Formato: vídeo + web + repositorio, sin defensa ni preguntas | **Confirmada en clase** | Archivar una fuente escrita si existe (texto, medio y fecha). Los documentos originales siguen mencionando la defensa. |
-| CA-02 | Fecha límite y canal de entrega | **Pendiente** | Fecha, hora y vía. |
-| CA-03 | Requisitos del vídeo (duración, formato, resolución, idioma, cámara/pantalla, plataforma, archivo/enlace) | **Parcial**: el profesor indicó (apuntes de la persona estudiante, sin confirmar por escrito) **máximo 5 min**, siguiendo el orden de la rúbrica y mostrando evidencias del nivel más alto; resto pendiente (formato, cámara, plataforma) | Confirmación; el guion es personal y no asume cifras. |
-| CA-04 | Rúbrica específica del vídeo | **Pendiente** | Mientras tanto se usa la rúbrica de ENUNCIADO §13. |
-| CA-05 | Acceso al repositorio privado | **Pendiente** | Usuario/correo del profesor y verificación de permisos antes de entregar. |
-| CA-06 | Acceso a la web y ventana de evaluación | **Parcialmente resuelta** | Fechas de la ventana, URL definitiva, estrategia segura de publicación de F7, entrega privada de credenciales. |
+| CA-01 | Formato: vídeo + web + repositorio, sin defensa ni preguntas | **Confirmada en clase** | Los documentos originales siguen mencionando la defensa. |
+| CA-02 | Fecha límite y canal de entrega | Entrega el 19 o 20 de noviembre de 2026 (indicado en clase) | El canal de entrega lo fija el profesor. |
+| CA-03 | Requisitos del vídeo (duración, formato, resolución, idioma, cámara/pantalla, plataforma, archivo/enlace) | **Máximo 5 min**, siguiendo el orden de la rúbrica y mostrando evidencias del nivel más alto (indicado por el profesor en clase) | Formato, cámara y plataforma, según indique el profesor. El guion es personal y no asume cifras. |
+| CA-04 | Rúbrica específica del vídeo | Se usa la rúbrica de ENUNCIADO §13 | — |
+| CA-05 | Acceso al repositorio privado | Se entrega al profesor el enlace del repositorio privado | — |
+| CA-06 | Acceso a la web y ventana de evaluación | **Resuelta**: URL publicada, publicación de F7 con función de Netlify (sin clave para el visitante) | Ventana prevista el 21–22 de noviembre de 2026. |
 | CA-07 | Formato de la memoria | **Resuelta**: `docs/entrega/memoria.md` | — |
-| CA-08 | Sustituto de la explicación individual | **Resuelta en lo práctico**: bloque del vídeo | Solo confirmación formal adicional. |
+| CA-08 | Sustituto de la explicación individual | **Resuelta en lo práctico**: bloque del vídeo | — |
 
 ## 9. Observaciones de la auditoría de fuentes
 1. **La Guía llama «README.md» al bloque de instrucciones reproducibles** (1.4), mientras la «organización sugerida» lo define como presentación y pasos; el README definitivo cubre ambos y **enlaza** a la memoria para el detalle técnico (sin duplicar).

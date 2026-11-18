@@ -5,12 +5,12 @@ Mapa entre **fases** (`docs/HOJA-DE-RUTA.md`) y **carpetas SDD** (`specs/`). Se 
 | Fase | Carpeta | Estado |
 |---|---|---|
 | F2 (MVP) | `001-mvp-evento-sintetico/` | Histórica (solo lectura) |
-| F3 | `002-ingesta-real-calidad/` | Cerrada; SC-010 de F3 (>24 h) pendiente → ahora en **F8** |
+| F3 | `002-ingesta-real-calidad/` | Cerrada; SC-010 de F3 (>24 h) observado el 2026-11-17 en **F8** |
 | F4 | `003-geografia-historico/` | Cerrada |
 | F5 | `004-api-dashboard/` | Cerrada |
-| F6 | `005-replay-despliegue-final/` | Cerrada técnicamente (commit `fd9e1a7`); F6.10 (SC-010 de F3) pendiente → **F8** |
+| F6 | `005-replay-despliegue-final/` | Cerrada técnicamente (commit `fd9e1a7`); F6.10 (SC-010 de F3) observado el 2026-11-17 en **F8** |
 | **F7 — Mejoras y evolución** | `006-mejoras-evolucion/` | **Cerrada** (commit `9008772`, rediseño Mission Control); estado técnico en `estado-tecnico-f7.md` |
-| **F8 — Documentación, entrega y vídeo** | `007-documentacion-entrega-video/` | Planificación **definitiva en 5 pasos, aprobada** (2026-11-11); **8.1 terminado**, memoria redactada (8.2 en curso). **Entrega prevista 19 o 20 de noviembre y evaluación prevista 21–22 de noviembre (fechas sin confirmar)**; tareas [E] estables y [D] dinámicas (T040, cierre dinámico). Evaluación: vídeo (OBS) + web publicada + repositorio; entregables: `memoria.md` + README + vídeo; pendiente publicar F7 de forma segura |
+| **F8 — Documentación, entrega y vídeo** | `007-documentacion-entrega-video/` | **Cerrada documentalmente el 2026-11-18**: memoria, README, matriz y evidencias (SC-010, 24 h continuas, entorno limpio, capturas, recuperación tras apagado); web publicada con función de Netlify y EMSC. Evaluación: vídeo (OBS, que se entrega aparte) + web publicada + repositorio; ventana de evaluación prevista el 21–22 de noviembre. Lo que sigue abierto (vídeo y entrega) lo hace el autor fuera del repositorio |
 
 ## Nota sobre `.specify/feature.json`
 Es el **puntero local de Spec Kit** a la funcionalidad activa (`feature_directory`); los scripts de `.specify/scripts/` lo leen para saber con qué carpeta de `specs/` trabajan. Está **ignorado a propósito** por `.specify/.gitignore` (línea `feature.json`): es estado de cada copia de trabajo, no se versiona ni forma parte de la entrega. Apunta ahora a `specs/006-mejoras-evolucion` (F7); no condiciona el contenido del repositorio.

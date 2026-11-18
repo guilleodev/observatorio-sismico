@@ -1,5 +1,7 @@
 # Resultados de la fase F4 — Geografía e histórico (T061)
 
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](../../entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](../../entrega/matriz-trazabilidad.md).
+
 Resultado **observado** de cada criterio de `specs/003-geografia-historico/spec.md`. Solo se marca «cumplido» lo comprobado con evidencia guardada en esta carpeta
 (`docs/evidencias/f4/`). Las reservas figuran junto a cada criterio. Estado del sistema al cerrar: 5 servicios `healthy`, lag 0, reconciliación 0, **419 pruebas** pasan.
 

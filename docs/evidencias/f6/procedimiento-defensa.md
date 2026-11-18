@@ -1,4 +1,4 @@
-# Procedimiento para activar el sistema durante la defensa (Guía 3.2) · borrador para F7
+# Procedimiento para activar el sistema durante la evaluación (Guía 3.2; el nombre del archivo conserva la antigua «defensa»)
 
 Cinco pasos, de unos 5 minutos. El ensayo en seco (sin abrir ngrok ni publicar nada) está en `6.9-defensa-seco.txt`. **Nada de esto borra datos.** Variable: `<dominio>` = tu dominio de ngrok (`grandpa-bunkbed-spree.ngrok-free.dev`); sitio = `https://observatorio-sismico.netlify.app`.
 

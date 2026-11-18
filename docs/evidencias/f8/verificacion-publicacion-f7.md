@@ -2,6 +2,8 @@
 
 **Fecha**: 2026-11-11 (tarde) · **Sitio**: `https://observatorio-sismico.netlify.app` · **Despliegue**: `6af4a52d30a824e6ef9dead2` («F7 Mission Control») · **Túnel**: dominio ngrok estático → `127.0.0.1:8000`, abierto solo durante la prueba y cerrado al terminar · **Navegador**: el navegador integrado de la aplicación de escritorio (Chromium/Chrome 152) sobre el propio equipo; **no es otro dispositivo** (ver «Pendiente»).
 
+> **Nota del 2026-11-17**: el contador de ngrok se leyó después (4,12 MB de 1 GB el 2026-11-16 y 5,18 MB el 2026-11-17) y el despliegue vigente es `6afb5599ce45e13699c428b8` (2026-11-16, con EMSC). Lo que sigue es el estado del 2026-11-11.
+
 Etiquetas: **[MEDIDO]** observado en esta sesión; **[ESTIMADO]** aritmética sobre lo medido; **[HIPÓTESIS]** sin comprobar; **[NO PROBADO]** pendiente.
 
 **Privacidad de la evidencia**: la clave real la escribió la persona estudiante en el navegador; no se ha leído, impreso ni guardado. De las peticiones solo se han usado método, ruta (sin parámetros), estado, instante y producto del navegador; ni cabeceras sensibles ni cuerpos. Antes de la clave real se probó un valor incorrecto de ejemplo, no una credencial.
@@ -48,7 +50,7 @@ Etiquetas: **[MEDIDO]** observado en esta sesión; **[ESTIMADO]** aritmética so
 
 **Observaciones**
 - **O1** Otro cliente (**Firefox**) con el mismo origen y sin clave hizo `OPTIONS` + `GET 401` cada varios minutos durante la sesión: parece otra pestaña abierta por la persona estudiante. No es una intrusión probada.
-- **O2** La búsqueda de texto de la tabla de Eventos **no quedó comprobada**: el valor introducido por automatización no filtró; hay que probarla a mano.
+- **O2** La búsqueda de texto de la tabla de Eventos **no quedó comprobada** entonces: el valor introducido por automatización no filtró; se comprobó después a mano (`verificacion-funcion-netlify.md` §8 bis).
 - **O3** El indicador «Actualización automática cada 1 min» no se localizó en el texto extraído; sí el aviso de pausa. Comprobar a mano.
 
 ## 4. Autenticación, conexión con FastAPI y peticiones reales
@@ -103,17 +105,17 @@ Con ngrok abierto y Docker sano, y **escribiendo ella la clave**:
 8. Cerrar ngrok (con tu autorización) y comprobar «Sin conexión»; reabrir y ver la recuperación.
 9. Apuntar el navegador, el sistema y cualquier fallo; **no** hacer capturas con la clave visible.
 
-## 7. Pendiente para considerar F7 preparada para el profesor
-1. ~~Decidir el intervalo~~ **Cerrado: 60 s** (sección 8 ter). **Pendiente (persona estudiante)**: leer el contador de ngrok (Usage) y comprobar si cuenta los `OPTIONS`.
-2. **Decidir qué hacer con la insignia «Powered by Netlify»** (aceptarla o investigar su origen).
-3. Prueba desde un **móvil real con datos móviles** y en otro navegador.
-4. **Fallback 2D sin WebGL** con evidencia archivada.
-5. **Pausa con una pestaña realmente oculta** durante varios minutos.
-6. Probar a mano la búsqueda de la tabla, el filtro por país, 7 días y periodo personalizado, y el detalle de evento.
-7. **Capturas definitivas** (EN VIVO, 2D, globo, REPRODUCCIÓN) y, si procede, la columna de la matriz y los marcadores `[ACTUALIZAR EN CIERRE]`.
-8. T037–T039: continuidad, suspensión del PC, límite de sesión del túnel, checklist de la ventana y credencial privada.
-9. Comprobar créditos y condiciones vigentes de Netlify y ngrok.
-10. T031 (secretos e historial de Git) y T030 (consolidar pruebas).
+## 7. Comprobaciones planteadas para dar F7 por preparada (estado a 2026-11-17)
+1. ~~Decidir el intervalo~~ **Cerrado: 60 s** (sección 8 ter). El contador de ngrok se leyó el 2026-11-16 y el 2026-11-17 (5,18 MB de 1 GB); no se comprobó si cuenta los `OPTIONS` (con la función de Netlify no los hay).
+2. **Insignia «Powered by Netlify»**: se acepta (la inyecta Netlify).
+3. Prueba desde un **móvil real con datos móviles**: hecha por el autor (2026-11-11 y 2026-11-17, sin captura); otro navegador distinto de Chrome: no realizada.
+4. **Fallback 2D sin WebGL**: hecho, con evidencia archivada (`capturas/C-03b`, 2026-11-17).
+5. **Pausa con una pestaña realmente oculta**: cubierta solo por la prueba en móvil real (sin evidencia archivada).
+6. Búsqueda de la tabla, filtro por país, 7 días y periodo personalizado, y detalle de evento: comprobados a mano después (`verificacion-funcion-netlify.md` §8 bis).
+7. **Capturas definitivas** (EN VIVO, 2D, globo, REPRODUCCIÓN): hechas el 2026-11-17 (`capturas/`); los marcadores de cierre están resueltos.
+8. Continuidad y suspensión del PC: suspensión comprobada (2026-11-16) y 24 h continuas en local (2026-11-16/17); la ventana de evaluación no se ha medido; no se necesita credencial (función de Netlify).
+9. Créditos y condiciones de Netlify y ngrok: el consumo de ngrok se leyó; los créditos de Netlify no se consultaron.
+10. Secretos e historial de Git, y pruebas: hechos (pruebas repetidas el 2026-11-16 y el 2026-11-17).
 11. Mantenimiento (T041): opcional; no bloquea.
 
 ## 8 ter. Decisión sobre el refresco público (2026-11-11)
@@ -125,7 +127,7 @@ Con ngrok abierto y Docker sano, y **escribiendo ella la clave**:
 
 ### Cuota de ngrok
 - **[DOCUMENTADO, ngrok.com/docs, consultado el 2026-11-11]** Plan gratuito: **20 000 peticiones HTTP/S al mes**, 1 GB/mes de salida, límite de **4 000 peticiones por minuto**, hasta 3 endpoints en línea; las cuotas «se reinician al comienzo de cada ciclo de facturación mensual». **«Los endpoints gratuitos no tienen límite de tiempo»**: queda resuelta la duda sobre la duración de la sesión del túnel. El dominio usado es el **dominio de desarrollo** único de la cuenta gratuita y no cambia al reiniciar.
-- **¿Cuentan los `OPTIONS`? [NO CONFIRMADO]**: la documentación define la métrica como «HTTP/S requests to your account's endpoints per month» y **no menciona ninguna exclusión**, por lo que lo prudente es **suponer que sí cuentan**. Ninguna página consultada lo afirma ni lo niega. La confirmación solo puede hacerse comparando el contador del panel de ngrok (página **Usage**) antes y después de enviar un número conocido de `OPTIONS` (ver `checklist-prueba-movil-pixel.md`, sección 5).
+- **¿Cuentan los `OPTIONS`? [NO CONFIRMADO]**: la documentación define la métrica como «HTTP/S requests to your account's endpoints per month» y **no menciona ninguna exclusión**, por lo que lo prudente es **suponer que sí cuentan**. Ninguna página consultada lo afirma ni lo niega. La confirmación solo puede hacerse comparando el contador del panel de ngrok (página **Usage**) antes y después de enviar un número conocido de `OPTIONS`.
 - **Límites reales de nuestra cuenta [NO LEÍDOS]**: no se pueden consultar sin iniciar sesión en el panel de ngrok (o usar una clave de la API de ngrok, que no se ha usado ni solicitado). Lo documentado es el plan gratuito; el uso actual, la fecha de reinicio del ciclo y el tipo de plan hay que leerlos en la página Usage.
 - **Evaluación con las mediciones [ESTIMADO, `U = 6`]** para **una pestaña visible durante 4 días**: 60 s → 34 560 (1,7× la cuota); **5 min → 6 912 (35 %)**; **10 min → 3 456 (17 %)**. Con tres pestañas visibles 24/7 a 5 min se superaría la cuota (20 736); a 10 min quedaría al 52 %. Esas pestañas en paralelo son un escenario extremo, no una previsión.
 - **Qué pasa si se agota**: el túnel deja de responder hasta el siguiente ciclo y el panel muestra «Sin conexión» con los últimos datos: sería lo peor que podría ver el profesor.
@@ -137,18 +139,18 @@ Con ngrok abierto y Docker sano, y **escribiendo ella la clave**:
 - **No se ha cambiado ningún ajuste.** La opción puede no estar visible aún en el panel por el despliegue gradual **[VERIFICAR]**.
 
 ### Prueba en móvil
-Checklist preparado en `docs/evidencias/f8/checklist-prueba-movil-pixel.md`. **No se ha abierto ngrok.**
+La prueba en un móvil real se hizo después (2026-11-11 y 2026-11-17), sin captura.
 
 ### Estado de las incidencias de T036
 | Incidencia | Estado |
 |---|---|
-| M1 · Cuota con 60 s (6 peticiones por ciclo) | **Demostrada** (6 por ciclo medidas); **decisión cerrada: 60 s**; el consumo real de la cuenta **sigue sin leerse** |
+| M1 · Cuota con 60 s (6 peticiones por ciclo) | **Demostrada** (6 por ciclo medidas); **decisión cerrada: 60 s**; el consumo de la cuenta se leyó después (5,18 MB de 1 GB el 2026-11-17) |
 | M2 · Insignia de Netlify | **Causa documentada**; ocultarla requiere un ajuste manual en el panel de Netlify, **no realizado** |
 | B1 · Teselas OSM 400 en 2D | Observada; causa sin comprobar; cosmética |
 | B2 · Estado transitorio al cambiar a REPRODUCCIÓN | Observada; baja |
 | O1 · Otro cliente (Firefox) sin clave | Observada; probablemente una pestaña de la persona estudiante |
-| O2/O3 · Búsqueda de la tabla e indicador de intervalo | **Pendientes** de comprobar a mano |
-| Prueba en móvil real, fallback sin WebGL, pausa con pestaña realmente oculta, contador de ngrok y OPTIONS | **Pendientes** |
+| O2/O3 · Búsqueda de la tabla e indicador de intervalo | Comprobadas a mano después |
+| Prueba en móvil real, fallback sin WebGL, pausa con pestaña realmente oculta, contador de ngrok y OPTIONS | Móvil real y fallback sin WebGL: hechos después; contador de ngrok: leído; pausa con pestaña oculta y `OPTIONS`: no verificados |
 
 ## 8. Estado al terminar
 ngrok cerrado (solo el proceso abierto para esta prueba; el túnel público responde 404 de ngrok); Docker con los cinco servicios `healthy`; la web sigue publicada con F7; no se ha cambiado código, configuración, Netlify ni backend; sin commit ni push.

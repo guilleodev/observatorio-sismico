@@ -1,5 +1,7 @@
 # Resultados de la fase F6 — Replay, pruebas, mediciones y despliegue (T070)
 
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](../../entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](../../entrega/matriz-trazabilidad.md).
+
 Resultado **observado** de cada criterio de `specs/005-replay-despliegue-final/spec.md`. Solo se marca «cumplido» lo comprobado con evidencia guardada en esta carpeta (`docs/evidencias/f6/`); las reservas figuran junto a cada criterio.
 Estado al cerrar (2026-11-09): cinco servicios `healthy` con los mismos contenedores y volúmenes desde 2026-11-08, lag 0, reconciliación 0, **964 pruebas de backend y 130 de frontend** (`6.9-regresion-final.txt`), aislamiento OK en 56 comprobaciones (`aislamiento.txt`), ngrok cerrado, dashboard publicado, API protegida con clave (401 sin ella).
 

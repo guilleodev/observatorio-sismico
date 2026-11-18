@@ -1,5 +1,7 @@
 # Resultados de la fase F3 por criterio de éxito (T045)
 
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](../../entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](../../entrega/matriz-trazabilidad.md).
+
 Resultado **observado** de cada criterio de `specs/002-ingesta-real-calidad/spec.md`. Solo se marca «cumplido» lo comprobado con evidencia.
 
 | SC | Criterio | Resultado | Evidencia |
@@ -13,7 +15,7 @@ Resultado **observado** de cada criterio de `specs/002-ingesta-real-calidad/spec
 | SC-007 | Reinicio del consumidor: 0 duplicados, 0 perdidas, desfase a 0 | **Cumplido por reinicio real + pruebas de atomicidad**: el kill real se hizo entre mensajes (desfase 1 → 0, invariante cumplido); NO se capturó un kill en mitad de una transacción. La atomicidad guardar+offset se acredita con las pruebas transaccionales y `3.4-atomicidad-real.txt` (fallo de la 2.ª sentencia, no SIGKILL) | `verificacion-f3.txt` (T037), `3.4-atomicidad-real.txt`, `test_consumidor_transaccional.py` |
 | SC-008 | Fallo del origen: estado conservado y recuperación ≤ 3 ciclos | **Cumplido** con un fallo **inyectado** (redirección en `/etc/hosts`, «connection refused»): recuperación en 1 ciclo. Las ramas HTTP 429/`Retry-After`, 5xx y timeout solo están cubiertas por pruebas unitarias (`test_usgs.py`, `test_ingesta.py`) | `3.6-estado-ingesta.txt` |
 | SC-009 | `last_ingestion` = última consulta correcta | **Cumplido** (con el fallo inyectado anterior: no avanzó; recuperación: avanzó; `null` antes de la primera consulta, por pruebas) | `3.6-estado-ingesta.txt` |
-| SC-010 | Conservación tras 24 h | **PENDIENTE DE OBSERVACIÓN**. No se declara cumplido (ver T044) | — |
+| SC-010 | Conservación tras 24 h | **OBSERVADO el 2026-11-17** (solo lectura, desde F8): 1 905 eventos y 2 695 versiones con más de 24 h conservados (el más antiguo, del 2026-11-05), reconciliación 0; 4 huecos de ingesta recuperados anotados (ver T044) | `sc-010-observacion-24h.txt` |
 | SC-011 | Retención de Kafka = política documentada | **Cumplido** (24 h / 100 MiB / 6 h) | `3.6-indices-y-retencion.txt` |
 | SC-012 | 0 filas de modo ≠ `live` y 0 escrituras de pruebas | **Cumplido** | `3.7-aislamiento.txt` |
 
@@ -55,4 +57,4 @@ Invariante tras cada prueba: publicadas = versiones guardadas + cuarentena (235 
 3. **T039**: el consumidor arrancó con la base parada y esperó a la conexión (9 avisos «no disponible») en lugar de fallar al guardar; el reintento del mismo registro tras un fallo al guardar está cubierto por pruebas unitarias (`test_consumidor_reintentos`).
 4. **Incidencia de 3.6**: se perdieron mensajes ya procesados de pruebas y del MVP al recrear Kafka porque no escribía en el volumen (`3.6-kafka-persistencia.txt`). Corregido con `KAFKA_LOG_DIRS`; en 3.7 Kafka se paró y arrancó sin pérdida.
 5. Los eventos que USGS elimina o fusiona fuera del feed no se detectan (FR-022); hueco > 24 h: `hueco-24h.md` (no ejecutado).
-6. **SC-010 y T044** requieren funcionamiento real continuo de más de 24 h desde la activación (T026, 2026-11-06 16:54 UTC; la primera comprobación posible es a partir del 2026-11-07 16:55 UTC, con el sistema sin interrupciones prolongadas); se comprobará con las consultas de `quickstart.md` §8 y se anotará en `sc-010-observacion-24h.txt`.
+6. **SC-010 y T044** requieren funcionamiento real continuo de más de 24 h desde la activación (T026, 2026-11-06 16:54 UTC; la primera comprobación posible es a partir del 2026-11-07 16:55 UTC, con el sistema sin interrupciones prolongadas); se comprobó el 2026-11-17 (T044, desde F8) con `scripts/f8/sc010_f3.sql` y se anotó en `sc-010-observacion-24h.txt`; el sistema tuvo interrupciones (4 huecos recuperados), anotadas allí.

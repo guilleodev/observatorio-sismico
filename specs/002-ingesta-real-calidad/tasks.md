@@ -224,7 +224,7 @@ quedan en T027 y T028 (tras la activación).
 - [x] T042 [US5] Ejecución continua de 30 minutos (SC-001) **en una ventana sin paradas ni inyecciones de fallos** (se ejecuta antes de T037 o en un periodo posterior sin incidencias): al menos 28 de las 30 consultas esperadas registradas; guardar el recuento real
 - [x] T043 [US5] `scripts/verificar-f3.ps1` (solo ASCII, repetible, sin `down -v`): encadena las comprobaciones de T037 a T040 y el invariante, y guarda la salida en
   `docs/evidencias/f3/verificacion-f3.txt`; ejecutarlo completo
-- [ ] T044 [US5] **SC-010 — pendiente de observación real.** Con el sistema activo **más de 24 horas seguidas**, registrar el instante de activación (T026) como referencia y, pasadas 24 h, comprobar que hay eventos con `event_time` anterior a 24 h en `evento_actual` y `evento_version` (> 0) y que la
+- [x] T044 [US5] **SC-010 — observado el 2026-11-17 desde F8 (resultado en `docs/evidencias/f3/sc-010-observacion-24h.txt`); texto original de la tarea:** Con el sistema activo **más de 24 horas seguidas**, registrar el instante de activación (T026) como referencia y, pasadas 24 h, comprobar que hay eventos con `event_time` anterior a 24 h en `evento_actual` y `evento_version` (> 0) y que la
   consulta de reconciliación sigue vacía (ninguna versión publicada desapareció por salir de la ventana); las pruebas de fallos T034–T040 no borran datos y respetan ese reloj; guardar en `docs/evidencias/f3/sc-010-observacion-24h.txt`. **Hasta ejecutarla, SC-010 figura como «pendiente de
   observación» y no se declara cumplido**; el commit `[F3]` puede hacerse con esa anotación
 

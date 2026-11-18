@@ -1,9 +1,9 @@
 # Observatorio de actividad sísmica — Memoria técnica
 
 **Proyecto académico de Sistemas de Big Data (Máster en IA y Big Data) · RA1**
-**Versión del sistema descrita**: commit `9008772` (`[F7]`, rediseño Mission Control) sobre la base de F3–F6, **más las mejoras visuales y de uso del 2026-11-15** (`docs/evidencias/f8/8.6-mejoras-interfaz.md`: paleta grafito, cabecera, pie, mejoras del globo; sin cambios de datos ni de backend) · **Redacción**: 2026-11-11 · **Estado**: **técnicamente corregida y prácticamente cerrada** (F8.2, primera parte; revisión del 2026-11-11), pendiente de tu aprobación documental. Solo quedan las **reservas** (Anexo C), las **capturas** (Anexo D) y lo que depende de la fecha de entrega (Anexo E).
+**Versión del sistema descrita**: commit `9008772` (`[F7]`, rediseño Mission Control) sobre la base de F3–F6, **más las mejoras visuales y de uso del 2026-11-15 y la segunda fuente EMSC del 2026-11-16 (commit `bd6877b`)** (`docs/evidencias/f8/8.6-mejoras-interfaz.md`: paleta grafito, cabecera, pie, mejoras del globo; sin cambios de datos ni de backend) · **Redacción**: 2026-11-11 · **Última revisión**: 2026-11-18 · **Estado**: **versión final**. Las reservas están en el Anexo C y las capturas de la web publicada, en el Anexo D (`docs/evidencias/f8/capturas/`).
 
-Esta memoria es el entregable técnico **independiente** (`docs/entrega/memoria.md`). Sigue el índice de la Guía de entregables (apartados 2.1–2.9) y enlaza las evidencias del repositorio en lugar de copiarlas. El README (que se redactará después) es la puerta de entrada y enlaza aquí para el detalle.
+Esta memoria es el entregable técnico **independiente** (`docs/entrega/memoria.md`). Sigue el índice de la Guía de entregables (apartados 2.1–2.9) y enlaza las evidencias del repositorio en lugar de copiarlas. El README es la puerta de entrada y enlaza aquí para el detalle.
 
 ## Cómo leer esta memoria
 
@@ -17,9 +17,9 @@ Esta memoria es el entregable técnico **independiente** (`docs/entrega/memoria.
 | **[NO DISPONIBLE]** | Dato que no existe o no se ha obtenido; se indica como tal y no se sustituye por un valor inventado. |
 | **[SUPUESTO]** | Valor hipotético de ejemplo (solo en costes), identificado como tal. |
 
-**Estado de las pruebas.** Las cifras de pruebas automatizadas (**964** del backend al cierre de F6 y **476** del frontend al cierre de F7) son **evidencias de fases anteriores**: no se han vuelto a ejecutar al redactar esta memoria. Su re-verificación selectiva corresponde al paso 8.3. Lo mismo vale para el estado actual de los servicios, la publicación en Netlify y la observación de más de 24 h (SC-010), que están **pendientes** y no se dan por comprobados.
+**Estado de las pruebas.** Las cifras de pruebas automatizadas de fases anteriores (**964** del backend al cierre de F6 y **476** del frontend al cierre de F7) se **repitieron el 2026-11-16 tras añadir EMSC** (backend **1 046** y frontend **528**; §8). El estado de los servicios se comprobó el 2026-11-17, la publicación en Netlify se verificó el 2026-11-16 (§10.3) y SC-010 se observó el 2026-11-17 (§10.2).
 
-**Fechas de referencia y datos dinámicos.** Los datos de USGS siguen cambiando hasta la entrega (previstamente el 19 o 20 de noviembre de 2026, sin confirmar). Por eso: (1) toda cifra de EN VIVO o de la ingesta lleva su **fecha de referencia** y no debe leerse como permanente; (2) los **resultados históricos** (conclusiones de F5, calidad del histórico 2025, mediciones de F6) se conservan con la fecha en que se obtuvieron y **no se recalculan** porque lleguen nuevos terremotos; (3) la marca **`[ACTUALIZAR EN CIERRE]`** señala solo lo que hay que refrescar antes de la entrega, y el **Anexo E** es la checklist de esa actualización.
+**Fechas de referencia y datos dinámicos.** Los datos de USGS y de EMSC cambian cada minuto. Por eso: (1) toda cifra de EN VIVO o de la ingesta lleva su **fecha de referencia** y no debe leerse como permanente; (2) los **resultados históricos** (conclusiones de F5, calidad del histórico 2025, mediciones de F6) se conservan con la fecha en que se obtuvieron y **no se recalculan** porque lleguen nuevos terremotos; (3) las cifras de este documento están revisadas a 2026-11-17 (Anexo E).
 
 **Rutas de evidencia.** `f3/…`, `f4/…`, `f5/…`, `f6/…` son carpetas de [`docs/evidencias/`](../evidencias/). `sql/` contiene los esquemas. Los documentos del profesor están en [`docs/referencias/`](../referencias/) y no se han modificado.
 
@@ -33,12 +33,12 @@ Esta memoria es el entregable técnico **independiente** (`docs/entrega/memoria.
 7. [Complejidad, mediciones, costes y mejoras](#7-complejidad-mediciones-costes-y-mejoras) (2.7)
 8. [Evidencias de las pruebas de aceptación](#8-evidencias-de-las-pruebas-de-aceptación) (2.8)
 9. [Reproducción histórica](#9-reproducción-histórica) (2.9)
-10. [Decisiones técnicas, limitaciones y trabajo pendiente](#10-decisiones-técnicas-limitaciones-y-trabajo-pendiente)
+10. [Decisiones técnicas, limitaciones y trabajo futuro](#10-decisiones-técnicas-limitaciones-y-trabajo-futuro)
 - [Anexo A — Mapa de evidencias reutilizadas](#anexo-a--mapa-de-evidencias-reutilizadas)
 - [Anexo B — Cobertura frente al enunciado y la Guía](#anexo-b--cobertura-frente-al-enunciado-y-la-guía)
-- [Anexo C — Reservas y pendientes](#anexo-c--reservas-y-pendientes-de-esta-memoria)
-- [Anexo D — Capturas pendientes](#anexo-d--capturas-pendientes-lista-no-se-ha-tomado-ninguna)
-- [Anexo E — Checklist de actualización final](#anexo-e--checklist-de-actualización-final-de-la-memoria-cerca-del-1920-de-noviembre)
+- [Anexo C — Reservas](#anexo-c--reservas-de-esta-memoria)
+- [Anexo D — Capturas](#anexo-d--capturas-estado-a-2026-11-17)
+- [Anexo E — Verificaciones finales](#anexo-e--verificaciones-finales-de-la-memoria)
 
 ---
 
@@ -76,10 +76,10 @@ flowchart LR
 ```
 *Figura 1. Flujo de datos. El flujo de reproducción reutiliza el procesamiento del consumidor con otro topic, grupo y esquema (§9).*
 
-**Recorrido de un evento** (base de la explicación del flujo): el productor consulta USGS, compara `id` y `updated` con `live.version_publicada` y publica solo novedades y revisiones, con el `id` como clave de Kafka; espera la confirmación de Kafka antes de anotar la versión como publicada. El consumidor valida el mensaje, descarta lo que no es `live` o no es un terremoto (cuarentena con motivo), asigna el país por punto-en-polígono y, **en una sola transacción**, guarda la versión en `live.evento_version` (clave `(event_id, updated_at)`) y actualiza `live.evento_actual` solo si la versión es más reciente; el offset se confirma **después** de guardar. La API lee solo `live.evento_actual` y `live.estado_ingesta` (y, para la comparación, agrega `historico`). **Intervalo de actualización del panel (decisión definitiva del 2026-11-11: 60 s).** El panel consulta la API con el `refreshMs` de su `config.json`: **60 s** en la configuración del repositorio, en el modo local (`frontend/config-local/config.json`) **y en la versión F7 publicada en Netlify** (despliegue `6af4b81fa1d0a00d0cb33c59` con función de Netlify, `refreshMs: 60000` más pausa si la pestaña está oculta). Se mantiene 60 s por ser un **requisito explícito del enunciado** (§9: «el mapa consultará la API cada 60 segundos»; FAQ 21: «aproximadamente cada 60 segundos»), aunque la cuota gratuita de ngrok (20 000 peticiones HTTP al mes) pueda condicionarlo. La compilación pública de F6 usó 10 min (`refreshMs: 600000`) para limitar esas peticiones: fue una decisión propia, no un requisito, y se descartó para F7. **[MEDIDO el 2026-11-11, navegador integrado Chrome 152, `f8/verificacion-publicacion-f7.md`]** con la llamada directa del navegador al túnel (T036, despliegue anterior) cada ciclo hacía **6 peticiones (3 GET + 3 OPTIONS)**; con la **función de Netlify publicada** (T043) el túnel recibe **3 `GET` por ciclo y 0 `OPTIONS`** (4 ciclos consecutivos cada 62–63 s; `f8/verificacion-funcion-netlify.md`). Las proyecciones de cuota son **[ESTIMADO]** (§7.4). **No se ha leído el contador real de la cuenta de ngrok.**
+**Recorrido de un evento** (base de la explicación del flujo): el productor consulta USGS, compara `id` y `updated` con `live.version_publicada` y publica solo novedades y revisiones, con el `id` como clave de Kafka; espera la confirmación de Kafka antes de anotar la versión como publicada. El consumidor valida el mensaje, descarta lo que no es `live` o no es un terremoto (cuarentena con motivo), asigna el país por punto-en-polígono y, **en una sola transacción**, guarda la versión en `live.evento_version` (clave `(event_id, updated_at)`) y actualiza `live.evento_actual` solo si la versión es más reciente; el offset se confirma **después** de guardar. La API lee solo `live.evento_actual` y `live.estado_ingesta` (y, para la comparación, agrega `historico`). **Intervalo de actualización del panel (decisión definitiva del 2026-11-11: 60 s).** El panel consulta la API con el `refreshMs` de su `config.json`: **60 s** en la configuración del repositorio, en el modo local (`frontend/config-local/config.json`) **y en la versión publicada en Netlify** (despliegue vigente `6afb5599ce45e13699c428b8`; desde el `6af4b81fa1d0a00d0cb33c59` con función de Netlify, `refreshMs: 60000` más pausa si la pestaña está oculta). Se mantiene 60 s por ser un **requisito explícito del enunciado** (§9: «el mapa consultará la API cada 60 segundos»; FAQ 21: «aproximadamente cada 60 segundos»), aunque la cuota gratuita de ngrok (20 000 peticiones HTTP al mes) pueda condicionarlo. La compilación pública de F6 usó 10 min (`refreshMs: 600000`) para limitar esas peticiones: fue una decisión propia, no un requisito, y se descartó para F7. **[MEDIDO el 2026-11-11, navegador integrado Chrome 152, `f8/verificacion-publicacion-f7.md`]** con la llamada directa del navegador al túnel (T036, despliegue anterior) cada ciclo hacía **6 peticiones (3 GET + 3 OPTIONS)**; con la **función de Netlify publicada** (T043) el túnel recibe **3 `GET` por ciclo y 0 `OPTIONS`** (4 ciclos consecutivos cada 62–63 s; `f8/verificacion-funcion-netlify.md`). Las proyecciones de cuota son **[ESTIMADO]** (§7.4). **Contador de ngrok (panel *Usage*, plan gratuito, ciclo que se reinicia el 1 de diciembre): 867 peticiones HTTP/S y 4,12 MB de 1 GB el 2026-11-16, y 5,18 MB de 1 GB el 2026-11-17 (lectura de la persona estudiante).**
 
 ### 1.4 El panel (versión final, F7)
-El frontend (Angular 20, standalone, sin dependencias nuevas de datos) tiene **tres vistas** con navegación por hash, siempre montadas: **Panel** (globo 3D por defecto con alternativa Leaflet 2D, filtros, selección de evento, leyenda de profundidad, KPI y estado), **Análisis** (gráficas SVG propias: horas UTC, países, magnitud, profundidad; comparación con 2025; metodología y estado del sistema) y **Eventos** (tabla con búsqueda, orden, paginación, densidad, selección y vista previa 3D). El modo **REPRODUCCIÓN** se identifica con una etiqueta y un tratamiento violeta en toda la interfaz. Descripción técnica: `specs/006-mejoras-evolucion/estado-tecnico-f7.md`. *(Capturas C-01 a C-04 y C-08 y C-13: pendientes, Anexo D. `[ACTUALIZAR EN CIERRE]`)*
+El frontend (Angular 20, standalone, sin dependencias nuevas de datos) tiene **tres vistas** con navegación por hash, siempre montadas: **Panel** (globo 3D por defecto con alternativa Leaflet 2D, filtros, selección de evento, leyenda de profundidad, KPI y estado), **Análisis** (gráficas SVG propias: horas UTC, países, magnitud, profundidad; comparación con 2025; metodología y estado del sistema) y **Eventos** (tabla con búsqueda, orden, paginación, densidad, selección y vista previa 3D). El modo **REPRODUCCIÓN** se identifica con una etiqueta y un tratamiento violeta en toda la interfaz. Descripción técnica: `specs/006-mejoras-evolucion/estado-tecnico-f7.md`. *(Capturas C-01 a C-04, C-08 y C-13 en `docs/evidencias/f8/capturas/`; Anexo D)*
 
 ### 1.5 Material reutilizado y desarrollado
 Según `ENUNCIADO.md` §3 se entregaron: el proyecto Angular de apoyo con el mapa, el catálogo `paises.geojson`, cuatro eventos ficticios y la configuración de publicación. **Desarrollado en este proyecto**: productor, consumidor, API, esquemas SQL, carga histórica, recuperación de huecos, reproducción, filtros, estadísticas, comparación, tabla, gráficas, estado del sistema y el rediseño de F7 (incluido el globo 3D). El archivo de cuatro eventos ficticios (`mode: "demo"`) solo prueba el mapa; no sustituye ningún dato real.
@@ -159,6 +159,8 @@ Descripción de los campos principales. **No todas las tablas tienen todas las c
 | `live.respuesta_original` | Copia comprimida de una respuesta, solo si cambia el contenido | `consulta_id`, `hash_features`, `contenido_gz`, `tamano_bytes` |
 | `live.cuarentena`, `historico.cuarentena`, `replay.cuarentena` | Un registro excluido o inválido | `categoria` (`excluido`/`invalido`), `motivo`, `event_id`, `updated_ms`, `payload` (original), `huella` (idempotencia; única por `(run_id, huella)` en `replay`); la referencia al original es la posición Kafka (`kafka_topic`, `kafka_partition`, `kafka_offset`) en `live` y `replay`, y `consulta_id` en `historico`; `replay.cuarentena` añade `run_id` |
 | `live.estado_ingesta` | El estado de la ingesta (una sola fila) | `ultima_consulta_ok_at`, `ultimo_error_at`, `ultimo_error`, `consultas_ok`, `consultas_error` |
+| `live.consulta_fuente` | Un intento de leer una fuente adicional (EMSC) | `fuente`, `iniciada_at`, `duracion_ms`, `resultado` (`ok`/`error`), `http_status`, `error`, `bytes`, `eventos`, `intentos`, `publicadas`, `omitidas`, `parametro` (ventana pedida: `start=…` o `updatedafter=…`) |
+| `live.estado_fuente` | El estado de cada fuente adicional (una fila por fuente) | `fuente` (PK), `ultima_consulta_ok_at`, `ultimo_error_at`, `ultimo_error`, `marca_actualizacion` (el `updatedafter` de la siguiente consulta incremental; solo avanza si la publicación se completó), `consultas_ok`, `consultas_error` |
 | `live.hueco` | Un intervalo sin cobertura del feed (> 24 h − margen) | `inicio`, `fin`, `detectado_at`, `estado` (`pendiente`/`recuperado`), `recuperado_at`, `eventos_publicados` |
 | `historico.consulta` | Un tramo consultado a USGS (mes o subtramo) | `inicio`, `fin`, `filtros`, `url`, `extraida_at`, `resultado`, `esperado`, `obtenidos`, `duplicados`, `fuera_de_tramo`, `peticiones_http` |
 | `historico.archivo` | La respuesta original de un tramo | `contenido_gz`, `sha256`, `tamano_bytes` |
@@ -234,7 +236,7 @@ Por cada hueco pendiente la recuperación: (1) consulta el **catálogo históric
 | Qué eran las 9 versiones | 8 versiones guardadas (3 eventos nuevos sísmicos y 5 eventos que avanzaron a su versión más reciente) y **1 explosión** (`uw714136791`) que el consumidor excluyó a cuarentena |
 | Invariantes (2026-11-10 23:09 UTC) | reconciliación 0, offsets duplicados 0, estado actual desfasado 0, lag 0, geo incoherentes 0; histórico y sintético idénticos; cinco servicios `healthy`; `gaps_pending: 0` en `/api/salud` |
 
-**Limitaciones** (según la propia evidencia): solo se ha recuperado **este** hueco real; hubo **dos interrupciones anteriores** (de unas 19 h 51 min entre el 5 y el 6 de noviembre y de 16 h 37 min entre el 8 y el 9) para las que **no consta ningún hueco registrado y no se ha investigado el motivo**; la recuperación añade versiones como histórico y no detecta eventos que USGS elimine o fusione fuera del feed (ampliación fuera del alcance mínimo, `ENUNCIADO.md` §5).
+**Limitaciones** (según la propia evidencia): este es el único hueco con documento propio (después se recuperaron también el #476, el #477 y el #478, registrados en `f3/sc-010-observacion-24h.txt` §5; del #478, el 2026-11-16: 55 encontrados, 52 ya guardados y 3 publicados); hubo **dos interrupciones anteriores** (de unas 19 h 51 min entre el 5 y el 6 de noviembre y de 16 h 37 min entre el 8 y el 9) para las que **no consta ningún hueco registrado y no se ha investigado el motivo**; la recuperación añade versiones como histórico y no detecta eventos que USGS elimine o fusione fuera del feed (ampliación fuera del alcance mínimo, `ENUNCIADO.md` §5).
 
 ---
 
@@ -476,7 +478,7 @@ erDiagram
   historico_consulta |o--o{ historico_consulta : "tramo_padre"
   live_consulta_extraccion ||--o| live_respuesta_original : "consulta_id"
 ```
-*Figura 3. Claves y claves foráneas **tal como están en los cuatro scripts de `sql/` (§5.3)** (se omiten las tablas sin relaciones: `live.version_publicada`, `live.cuarentena`, `live.estado_ingesta`, `live.hueco`, `replay.cuarentena`). **`geo.pais` no referencia al catálogo**: la versión del catálogo se registra en cada evento (`geo_catalogo`). `live_evento_version`, `replay_evento_version` y `replay_ejecucion` no tienen claves foráneas. No existe ninguna clave foránea entre `live`, `historico` y `replay`.*
+*Figura 3. Claves y claves foráneas **tal como están en los scripts de `sql/` (§5.3)** (se omiten las tablas sin relaciones: `live.consulta_fuente`, `live.estado_fuente`, `live.version_publicada`, `live.cuarentena`, `live.estado_ingesta`, `live.hueco`, `replay.cuarentena`). **`geo.pais` no referencia al catálogo**: la versión del catálogo se registra en cada evento (`geo_catalogo`). `live_evento_version`, `replay_evento_version` y `replay_ejecucion` no tienen claves foráneas. No existe ninguna clave foránea entre `live`, `historico` y `replay`.*
 
 **Claves foráneas reales** (de los scripts SQL):
 
@@ -508,7 +510,7 @@ erDiagram
 | `replay.ejecucion` / `evento_actual` / `evento_version` / `cuarentena` | Una reproducción y sus eventos | `run_id` / `(run_id, event_id)` / `(run_id, event_id, updated_at)` / `id`, `(run_id, huella)` única | `evento_actual` → `geo.pais` y `geo.catalogo`; **ninguna** hacia `live`, `historico` ni entre las tablas de `replay` |
 
 ### 5.3 Nivel físico (PostgreSQL)
-Tipos, restricciones e índices están en [`sql/001_esquema_live.sql`](../../sql/001_esquema_live.sql), [`002_esquema_f3.sql`](../../sql/002_esquema_f3.sql), [`003_esquema_f4.sql`](../../sql/003_esquema_f4.sql) y [`004_esquema_f6.sql`](../../sql/004_esquema_f6.sql) (aplicables de forma idempotente; no se repite todo el SQL aquí). Resumen de las decisiones físicas:
+Tipos, restricciones e índices están en [`sql/001_esquema_live.sql`](../../sql/001_esquema_live.sql), [`002_esquema_f3.sql`](../../sql/002_esquema_f3.sql), [`003_esquema_f4.sql`](../../sql/003_esquema_f4.sql), [`004_esquema_f6.sql`](../../sql/004_esquema_f6.sql) y [`005_fuente_emsc.sql`](../../sql/005_fuente_emsc.sql) (segunda fuente EMSC: tablas de consultas y estado por fuente y funciones de no duplicación) (aplicables de forma idempotente; no se repite todo el SQL aquí). Resumen de las decisiones físicas:
 
 - **Tipos**: `timestamptz` para todo instante (UTC); `numeric` para magnitud y profundidad (sin ruido de coma flotante; el valor exacto de USGS queda en `raw`); `double precision` para coordenadas con `CHECK` de rango; `jsonb` para el original; `bytea` para respuestas y cuarentena comprimidas.
 - **Restricciones que impiden errores a nivel de base**: `CHECK (mode = 'live')` en `live`, `CHECK (mode = 'replay')` y `CHECK (source = 'replay-historico')` en `replay` (no se puede mezclar un dato de replay con uno en vivo); `CHECK ((country_id IS NULL) = (geo_resultado = 'sin_pais'))`; claves únicas `(event_id, updated_at)` y `huella` para que el reenvío tras un fallo no aumente el recuento.
@@ -530,7 +532,7 @@ Se une cada terremoto al catálogo por **pertenencia del epicentro al polígono*
 Cuando una medición mostró que un índice previsto no aportaba (índice parcial `WHERE NOT retirado`), **se retiró**: no se afirma que «los índices mejoran el rendimiento» sin medirlo.
 
 ### 5.6 Qué no queda documentado con la información existente
-- No existía un diagrama conceptual/lógico/físico dibujado en los artefactos previos; las Figuras 2 y 3 se han **derivado en esta memoria** de los cuatro scripts SQL y de los `data-model.md` (sin diseño nuevo) y se **contrastaron con el SQL el 2026-11-11**. **No se ha comprobado que Mermaid las renderice** (Anexo C, R9).
+- No existía un diagrama conceptual/lógico/físico dibujado en los artefactos previos; las Figuras 2 y 3 se han **derivado en esta memoria** de los cuatro scripts SQL entonces existentes (001–004; el 005 de EMSC solo añade dos tablas sin relaciones) y de los `data-model.md` (sin diseño nuevo) y se **contrastaron con el SQL el 2026-11-11**. **No se ha comprobado que Mermaid las renderice** (Anexo C, R9).
 - No hay diagrama entidad-relación de la API ni modelo de datos del frontend (no son parte del modelo de la base).
 
 ---
@@ -547,7 +549,7 @@ Todas las agregaciones se calculan **en SQL sobre el estado actual** (`live.even
 | Distribución de magnitud y de profundidad | Intervalos `[desde, hasta)` con «sin valor» aparte; profundidad coloreada con la misma escala que la leyenda | ídem |
 | Comparación histórica | Recuento reciente frente a **media diaria de 2025** (total / días, **incluyendo los días sin eventos**) con los mismos filtros de tipo, magnitud y país; también mediana diaria, «esperado para el periodo», variación (**«no definida»** si la media es 0) y marca de **periodo reciente incompleto** (hueco pendiente, ventana fuera de la cobertura en vivo o aún abierta) | `sql/consultas/comparacion.sql`; `f4/4.6-comparaciones.txt`; `f5/5.3-comparacion-real.txt` (12 comparaciones = oráculo independiente) |
 
-*(Captura C-04: pendiente, Anexo D.)*
+*(Captura C-04 en `docs/evidencias/f8/capturas/`.)*
 
 ### 6.2 Tres conclusiones fundamentadas
 Cifras y texto de `f5/conclusiones.md` (reproducidas dos veces con `scripts/f5/conclusiones_57.py` el 2026-11-07 con salida idéntica). **Periodo reciente fijo**: `[2026-11-05T17:00:00Z, 2026-11-07T18:00:00Z)` ≈ 2,04 días, dentro de la cobertura real del feed (empieza 2026-11-05T16:54Z), sin huecos pendientes ni motivos de «periodo incompleto». **Línea base**: los 18 302 terremotos de 2025 (M ≥ 4, `earthquake`) que devuelve la propia API.
@@ -563,7 +565,7 @@ Cifras y texto de `f5/conclusiones.md` (reproducidas dos veces con `scripts/f5/c
 **Dato descriptivo adicional** (solo feed en vivo, sin comparación): de los 22 terremotos de M ≥ 4,5 recientes, 12 de 22 a menos de 70 km (7 a menos de 30 km), 6 entre 70 y 150 km, 1 entre 150 y 300 km y 3 a 500 km o más; países con evento de M ≥ 4,5: Chile, Indonesia, Japón, Namibia y Papúa Nueva Guinea (1 cada uno); EE. UU. 0 (frente a 23 en 2025).
 
 ### 6.3 Capturas de los filtros
-Cada conclusión debe acompañarse de una captura del panel donde se reconozcan los filtros (`ENUNCIADO.md` §12; Guía 2.6). **PENDIENTE**: las capturas de la versión final F7 (**C-05, C-06 y C-07** del Anexo D: clase [E], periodo fijo, se pueden tomar ya y llevarán su fecha de captura). Hasta entonces la reproducibilidad se apoya en las consultas a la API indicadas y en `scripts/f5/conclusiones_57.py`. Para las conclusiones 1–3 hará falta fijar en el panel el periodo del 5 al 7 de noviembre de 2026, que **debe estar dentro de los datos conservados** (`live` no se purga, pero el periodo debe seguir cubierto por la ingesta).
+Cada conclusión debe acompañarse de una captura del panel donde se reconozcan los filtros (`ENUNCIADO.md` §12; Guía 2.6). Capturas de la versión final F7 tomadas el 2026-11-17 (**C-05a/b, C-06 y C-07a** de `docs/evidencias/f8/capturas/`). **Importante**: muestran las cifras actuales del periodo fijo (23 terremotos de M ≥ 4,5 y 33 de M ≥ 4), no las del cálculo del 2026-11-07 (22 y 31): de esos eventos, 22 y 31 ya estaban guardados antes de las 19:00 UTC del 2026-11-07 (17 «Sin país asignado» en M ≥ 4,5 y 9 en la banda 4,0–4,5, como en el texto) y el resto llegó después al feed (p. ej. `us7000twsy`, M 4,5, primera versión guardada a las 19:54 UTC). Las cifras de las conclusiones **no se recalculan**. La reproducibilidad se apoya en las consultas a la API indicadas y en `scripts/f5/conclusiones_57.py`. Para las conclusiones 1–3 hará falta fijar en el panel el periodo del 5 al 7 de noviembre de 2026, que **debe estar dentro de los datos conservados** (`live` no se purga, pero el periodo debe seguir cubierto por la ingesta).
 
 ---
 
@@ -612,7 +614,7 @@ Qué cambiaría (razonado, no medido): las estructuras en memoria del proceso de
 
 | Variable | Valor | Categoría |
 |---|---|---|
-| Precio del equipo | 900 € | **[SUPUESTO]** hipotético (dato pendiente de la persona estudiante) |
+| Precio del equipo | 900 € | **[SUPUESTO]** hipotético (no hay dato real) |
 | Vida útil | 4 años | **[SUPUESTO]** |
 | Fracción del equipo atribuida al proyecto | 25 % | **[SUPUESTO]** |
 | Potencia media con la pila en marcha | 65 W | **[SUPUESTO]** valor de partida del modelo: **no medido** con vatímetro ni derivado de una ficha técnica del equipo completo; se sustituiría por una medición o por una estimación documentada si se obtiene |
@@ -637,7 +639,7 @@ Qué cambiaría (razonado, no medido): las estructuras en memoria del proceso de
 
 El documento de trabajo `f6/complejidad-costes.md` conserva además un cálculo con 15 €/h hipotéticos (totales de 2 301,77 € y 2 244,83 € en el primer año); **esta memoria no lo utiliza** porque el valor de la hora no se monetiza por decisión expresa. **No se calcula ROI**: el observatorio no genera ingresos medibles y el enunciado solo lo permite con un beneficio medible y justificable. Referencia comparativa (**[SUPUESTO]**, no forma parte del sistema): una máquina virtual equivalente costaría ≈ 720,81 €/año de infraestructura con precios hipotéticos genéricos.
 
-**Cuotas gratuitas y transferencia.** *Medido/documentado en F6 [MEDIDO] + [PUBLICADO]*: cada refresco del panel (frontend F6) consume 3 peticiones GET y 58,7 KB (F6 no midió los preflight `OPTIONS`, que sí se midieron en F7); con el refresco de **60 s** (local y versión F7 publicada), por **ngrok** cada ciclo son **3 peticiones `GET`** con la función de Netlify **[MEDIDO]** (6, con 3 `OPTIONS`, con la llamada directa del navegador, versión anterior): 180 peticiones/h por pestaña visible; **[ESTIMADO]** ≈ 4 320 al día y ≈ 17 280 en 4 días (≈ 86 % de la cuota mensual de 20 000) con **una** pestaña visible sin interrupción, un caso extremo; una revisión normal de 1–3 h al día serían ≈ 180–540 peticiones diarias. La función de Netlify hace además 3 invocaciones por ciclo (125 000 al mes incluidas en la cuenta; ≈ 17 280 en 4 días **[ESTIMADO]**). Con los 10 min que usó F6 habrían sido ≈ 18 peticiones/h [ESTIMADO sobre las 3 medidas]. **Decisión: 60 s** (enunciado §9; §1.3); el panel conserva los últimos datos con el aviso «Sin conexión» si la cuota se agotara (el enunciado dice que se evalúa ese tratamiento del error, no la disponibilidad 24/7). Las cuotas se consultaron el **2026-11-08** (ngrok: 20 000 peticiones HTTP y 1,0 GB de datos salientes al mes; Netlify: 300 créditos) y cambian con frecuencia. **PENDIENTE**: leer el contador real de la cuenta (página *Usage* del panel de ngrok), la fecha de reinicio del ciclo y si cuenta los `OPTIONS`, tarea de la persona estudiante; **no se afirma** que se supere ningún límite ni se conoce el consumo real de la cuenta. Condiciones vigentes consultadas en la documentación pública de ngrok el 2026-11-11: 20 000 peticiones HTTP/S, 1 GB de salida y 4 000 peticiones/min al mes, sin límite de duración de los endpoints gratuitos. **Todos los importes en euros de §7.4 son ejemplos hipotéticos del modelo, no gastos reales.** Entrada desde USGS: **[MEDIDO]** ≈ 133 KB por consulta (`f6/complejidad-costes.md` §3C, 2026-11-08; la muestra del 2026-11-06 fue de ≈ 144 KB, §3.1); **[ESTIMADO]** × 1 440 consultas/día ≈ 187 MB/día, sin coste marginal con tarifa plana pero no cero. `[ACTUALIZAR EN CIERRE]` (cuotas y peticiones reales de F7).
+**Cuotas gratuitas y transferencia.** *Medido/documentado en F6 [MEDIDO] + [PUBLICADO]*: cada refresco del panel (frontend F6) consume 3 peticiones GET y 58,7 KB (F6 no midió los preflight `OPTIONS`, que sí se midieron en F7); con el refresco de **60 s** (local y versión F7 publicada), por **ngrok** cada ciclo son **3 peticiones `GET`** con la función de Netlify **[MEDIDO]** (6, con 3 `OPTIONS`, con la llamada directa del navegador, versión anterior): 180 peticiones/h por pestaña visible; **[ESTIMADO]** ≈ 4 320 al día y ≈ 17 280 en 4 días (≈ 86 % de la cuota mensual de 20 000) con **una** pestaña visible sin interrupción, un caso extremo; una revisión normal de 1–3 h al día serían ≈ 180–540 peticiones diarias. La función de Netlify hace además 3 invocaciones por ciclo (125 000 al mes incluidas en la cuenta; ≈ 17 280 en 4 días **[ESTIMADO]**). Con los 10 min que usó F6 habrían sido ≈ 18 peticiones/h [ESTIMADO sobre las 3 medidas]. **Decisión: 60 s** (enunciado §9; §1.3); el panel conserva los últimos datos con el aviso «Sin conexión» si la cuota se agotara (el enunciado dice que se evalúa ese tratamiento del error, no la disponibilidad 24/7). Las cuotas se consultaron el **2026-11-08** (ngrok: 20 000 peticiones HTTP y 1,0 GB de datos salientes al mes; Netlify: 300 créditos) y cambian con frecuencia. **Contador leído** (página *Usage*, plan gratuito, ciclo que se reinicia el 1 de diciembre): 867 peticiones HTTP/S y 4,12 MB de 1 GB el 2026-11-16, y 5,18 MB de 1 GB el 2026-11-17 (≈ 0,5 % de la transferencia mensual; +1,06 MB en un día, ritmo con el que sobra margen para la ventana de evaluación); no se ha comprobado si el contador cuenta los `OPTIONS` (con la función de Netlify no los hay); **no se afirma** que se supere ningún límite. Condiciones vigentes consultadas en la documentación pública de ngrok el 2026-11-11: 20 000 peticiones HTTP/S, 1 GB de salida y 4 000 peticiones/min al mes, sin límite de duración de los endpoints gratuitos. **Todos los importes en euros de §7.4 son ejemplos hipotéticos del modelo, no gastos reales.** Entrada desde USGS: **[MEDIDO]** ≈ 133 KB por consulta (`f6/complejidad-costes.md` §3C, 2026-11-08; la muestra del 2026-11-06 fue de ≈ 144 KB, §3.1); **[ESTIMADO]** × 1 440 consultas/día ≈ 187 MB/día, sin coste marginal con tarifa plana pero no cero. (cuotas de ngrok consultadas en su documentación pública el 2026-11-08 y el 2026-11-11, y consumo leído en su panel el 2026-11-17; las de Netlify, solo en documentación).
 
 ### 7.5 Mejoras propuestas (ligadas a problemas concretos, por orden de beneficio/coste)
 1. **Mantener el índice B-tree `(event_id, updated_at)` y no añadir cachés propias en el proceso**: cumple O(log n) a esta escala y a la siguiente.
@@ -664,17 +666,17 @@ Ejecución observada de las ocho primeras filas: **`r-f6-prueba-b`** (terminada,
 | Reenviar la misma versión | No aumenta el número de terremotos | `replay-ctl-duplicado`: 1 versión y 1 fila actual; 39 mensajes = 37 versiones + 1 cuarentena + 1 reenvío descartado; 35 terremotos. Live (2026-11-08): 1 244 consultas, 597 actuales y 875 versiones | §2; `f3/3.4-idempotencia.txt` |
 | Recibir una versión posterior | Cambian los datos actuales y las agregaciones afectadas | Versiones 4,7 → 4,8; fila actual y API con 4,8; el total sigue en 35. Live (2026-11-08): 117 eventos reales con más de una versión | §3 |
 | Recibir después una versión antigua | No sustituye a la más reciente | Historial con las dos versiones; la actual conserva 5,2 (la antigua, 5,1, solo queda en el historial). Live: 0 casos de versión publicada tras otra más reciente | §4 |
-| Magnitud nula | Se conserva y se visualiza como ND | `mag = null` (no 0), `sin_magnitud = 1`; ficha «Magnitud: ND», tabla «sin valor» *(captura C-11 pendiente)* | §5; pruebas `formato.test.ts` |
+| Magnitud nula | Se conserva y se visualiza como ND | `mag = null` (no 0), `sin_magnitud = 1`; ficha «Magnitud: ND», tabla «sin valor» *(captura C-11)* | §5; pruebas `formato.test.ts` |
 | Coordenadas inválidas | Cuarentena y motivo; sin puntos inventados | Cuarentena «coordenadas fuera de rango»; 0 filas en actual y versión; 35 y no 36 en la API | §6 |
 | Evento marítimo | «Sin país asignado»; permanece en el análisis | (−140, 0): `country_id` nulo; dibujado y contado en «Sin país asignado» | §7 |
 | Reiniciar consumidor | Reanuda sin duplicar efectos persistidos | Lag 0 → 7 → 0 en ≈ 10 s sin duplicados; en F3 el reinicio real y las pruebas de atomicidad (SC-007). **Reserva (ACE-08): no se capturó un *kill* en mitad de una transacción**; la atomicidad guardar+offset se acredita con pruebas transaccionales | `f6/6.8-consumidor.txt`; `f3/3.4-atomicidad*.txt`; `f3/resultados.md` |
-| Cerrar el túnel | El panel muestra el fallo y conserva/identifica la última lectura | «Sin conexión con el backend · última lectura…»; no se presentan datos antiguos como actuales. **Reserva**: comprobado con F6 (2026-11-08) y con **F7 publicada con la función de Netlify** («Sin conexión con la API», HTTP 502, datos conservados; 2026-11-11, navegador integrado) **sin captura** *(C-12 pendiente)*; no se probó cerrar el túnel desde el móvil | `f6/6.6-tunel.md`; `f8/verificacion-funcion-netlify.md` |
+| Cerrar el túnel | El panel muestra el fallo y conserva/identifica la última lectura | «Sin conexión con el backend · última lectura…»; no se presentan datos antiguos como actuales. **Reserva**: comprobado con F6 (2026-11-08) y con **F7 publicada con la función de Netlify** («Sin conexión con la API», HTTP 502, datos conservados; 2026-11-11, navegador integrado) **sin captura entonces**; capturas C-12 y C-12b del 2026-11-17 (versión con EMSC); no se probó cerrar el túnel desde el móvil | `f6/6.6-tunel.md`; `f8/verificacion-funcion-netlify.md` |
 | Volver a abrir el túnel | Se recuperan las consultas automáticamente | Recuperación automática ≤ 5 s tras reabrir (F6); con F7 y la función, ≈ 20 s (reintento mínimo de 30 s tras el fallo). **Misma reserva** | `f6/6.6-tunel.md`; `f8/verificacion-funcion-netlify.md` |
 | Reproducción histórica | Procesa por Kafka sin mezclarla con datos live | Ejecución terminada; mapa = tabla = estadísticas = API = 35; 0 ids de replay en `live`; velocidad registrada ×127,611 y duración ×1,003 de la prevista | `f6/6.3-aceptacion.md` §8; `f6/6.2-panel.txt`; `f6/6.2-velocidad-identidad.txt` |
 
-**Otras evidencias de robustez** (F3, `f3/resultados.md`): reinicio del productor sin republicar; PostgreSQL parado ~3 min (el consumidor no confirma, la API queda `unhealthy`, todo se recupera solo); Kafka parado ~3 min (fallo al publicar, reenvío de 1 versión al volver, offset conservado); fallo del origen **inyectado** (recuperación en 1 ciclo; las ramas 429/5xx/timeout están cubiertas por pruebas unitarias). **Recuperación de un hueco real de ingesta**: ocurrió el 2026-11-10 (apagado del PC ≈ 19,6 h; hueco #475), se recuperó con el procedimiento documentado: 9 publicados, 8 guardados y 1 explosión en cuarentena, con los invariantes cumplidos — `f4/recuperacion-hueco-475.md`; antes solo se había probado con un catálogo simulado (`f4/4.5-recuperacion.txt`).
+**Otras evidencias de robustez** (F3, `f3/resultados.md`): reinicio del productor sin republicar; PostgreSQL parado ~3 min (el consumidor no confirma, la API queda `unhealthy`, todo se recupera solo); Kafka parado ~3 min (fallo al publicar, reenvío de 1 versión al volver, offset conservado); fallo del origen **inyectado** (recuperación en 1 ciclo; las ramas 429/5xx/timeout están cubiertas por pruebas unitarias). **Recuperación de un hueco real de ingesta**: ocurrió el 2026-11-10 (apagado del PC ≈ 19,6 h; hueco #475), se recuperó con el procedimiento documentado: 9 publicados, 8 guardados y 1 explosión en cuarentena, con los invariantes cumplidos — `f4/recuperacion-hueco-475.md`; antes solo se había probado con un catálogo simulado (`f4/4.5-recuperacion.txt`). **Recuperación automática tras apagar el PC ≈ 9 h (2026-11-18)**: los cinco servicios volvieron solos, se guardaron los 62 terremotos de USGS y los 116 de EMSC ocurridos durante la parada, sin hueco registrado (< 18 h) y con reconciliación 0 — `f8/recuperacion-tras-apagado.md`.
 
-**Pruebas automatizadas** (evidencia de fases anteriores, **no re-ejecutadas** en F8.2): backend 964 y frontend 130 en la regresión final de F6 (`f6/6.9-regresion-final.txt`); frontend **476** al cierre de F7, **494** el 2026-11-11 y **521** el 2026-11-15 tras las mejoras de interfaz (`f8/8.6-mejoras-interfaz.md`) (`node --test tests/*.test.ts`, 18 de ellas de la función de Netlify; más de lectura de código y lógica pura que de renderizado). El backend (**964**, 2026-11-09) **no se repitió**: `backend/`, `sql/`, `compose.yaml` y `scripts/` no cambiaron desde esa regresión (`f8/resultados.md`). **PENDIENTE**: comprobación adicional de ACE-08 (con autorización y sobre recursos temporales). `[ACTUALIZAR EN CIERRE]`
+**Pruebas automatizadas** (evidencia de F6 y repetición del 2026-11-16): backend 964 y frontend 130 en la regresión final de F6 (`f6/6.9-regresion-final.txt`); frontend **476** al cierre de F7, **494** el 2026-11-11, **521** el 2026-11-15 tras las mejoras de interfaz (`f8/8.6-mejoras-interfaz.md`) y **528** el 2026-11-16 tras añadir EMSC (`node --test tests/*.test.ts`, 18 de ellas de la función de Netlify; más de lectura de código y lógica pura que de renderizado). El backend pasó de **964** (2026-11-09) a **1 046** pruebas el 2026-11-16 tras añadir EMSC (`f8/emsc-segunda-fuente.md` §6). **No realizada**: comprobación adicional de ACE-08 (un *kill* en mitad de una transacción; reserva R1). **EMSC en el sistema real (2026-11-16)**: Kafka cortado ≈ 7,5 min, EMSC bloqueado ≈ 4 min y productor matado ≈ 4 min 46 s, sin pérdidas ni duplicados y sin afectar a USGS (`f8/emsc-segunda-fuente.md`).
 
 ---
 
@@ -695,7 +697,7 @@ Velocidad = diferencia de tiempo original entre mensajes / `REPLAY_INTERVALO_S`:
 Topic `terremotos.replay` y grupo `consumidor-replay` propios (el código impide que coincidan con los de vivo); el consumidor de `live` solo lee `terremotos.live`; esquema `replay` aparte, **sin claves foráneas** hacia `live` ni `historico`, con `CHECK` de modo y fuente en la base; en la API, `mode=live|replay` (otro valor → 422) y `mode=replay` devuelve solo `replay`. `f6/aislamiento.txt` comprueba 0 ids cruzados y que `live`, `historico` y `sintetico` conservan sus huellas. Se conserva el tiempo original (`time`, `updated`: 30 de 30 idénticos a `historico`) y se añade el instante de reproducción (`ingested_at`).
 
 ### 9.4 Cómo se identifica «REPRODUCCIÓN» en el panel
-Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REPRODUCCIÓN · ejecución r-… · ×31,9 · terminada» con el texto «Reproducción histórica (no es actividad actual)» en el mapa o globo, la tabla, la ficha, las gráficas y el estado, con tratamiento violeta; la comparación con 2025 «no aplica». Como las fechas son de 2025, el periodo por defecto de la vista es el de la ejecución: un filtro de «últimas 24 h» de 2026 no mostraría esos eventos (`f6/reproduccion-historica.md`). *(Capturas C-09 y C-10: pendientes, Anexo D.)*
+Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REPRODUCCIÓN · ejecución r-… · ×31,9 · terminada» con el texto «Reproducción histórica (no es actividad actual)» en el mapa o globo, la tabla, la ficha, las gráficas y el estado, con tratamiento violeta; la comparación con 2025 «no aplica». Como las fechas son de 2025, el periodo por defecto de la vista es el de la ejecución: un filtro de «últimas 24 h» de 2026 no mostraría esos eventos (`f6/reproduccion-historica.md`). *(Capturas C-09 y C-10 en `docs/evidencias/f8/capturas/`.)*
 
 ### 9.5 Esperado y observado
 | Qué | Esperado | Observado |
@@ -708,7 +710,7 @@ Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REP
 
 ---
 
-## 10. Decisiones técnicas, limitaciones y trabajo pendiente
+## 10. Decisiones técnicas, limitaciones y trabajo futuro
 
 ### 10.1 Decisiones técnicas principales
 | Decisión | Motivo | Evidencia |
@@ -728,46 +730,47 @@ Selector **En vivo / REPRODUCCIÓN**. En reproducción aparece la etiqueta «REP
 | **Acceso público sin clave del visitante (T042–T043, publicado el 2026-11-11 y verificado en un navegador del propio equipo)**: **Netlify Function** de solo lectura (tres rutas, solo `GET`, parámetros validados, destino fijo `API_UPSTREAM_URL`, clave solo desde la variable privada `API_CLAVE_ACCESO`, límite por visitante); FastAPI sigue exigiendo la clave | La clave no aparece en JavaScript, HTML, respuestas, cabeceras ni registros; **compromiso asumido**: los datos de lectura son públicos a través de la función y los planes gratuitos no ofrecen un tope global de uso | `frontend/netlify/functions/api.mjs`; `frontend/tests/funcion-api.test.ts` (17 pruebas); `scripts/f8/probar_publico_local.mjs`; `f8/estrategia-publicacion-f7.md` §8 quater; `f8/verificacion-funcion-netlify.md` |
 
 ### 10.2 Limitaciones conocidas
-- **Observación de más de 24 h (SC-010 de F3)**: **pendiente**; no se declara cumplida (`f3/resultados.md`). Exige autorización expresa (PA-10).
+- **Observación de más de 24 h (SC-010 de F3)**: **observada el 2026-11-17** en solo lectura (`f3/sc-010-observacion-24h.txt`): 1 905 eventos y 2 695 versiones con más de 24 h conservados (el más antiguo, del 2026-11-05) y reconciliación 0. **Reservas**: el sistema no estuvo activo sin parar desde la activación (4 huecos de ingesta, todos recuperados y anotados); la tanda continua de 24 h es la del 2026-11-16/17 (`f8/emsc-segunda-fuente.md` §9); no prueba la disponibilidad durante la ventana de evaluación.
 - **EMSC**: la no duplicación es una heurística (§4.8); la comparación con 2025 es solo de USGS; EMSC acumula datos desde su activación y deja más eventos «sin país» (muchos están en el mar).
 - **Cobertura del feed**: el feed reciente no cubre M 4,0–4,5 fuera de EE. UU. como el histórico (conclusión 3); lo reciente es preliminar y la cobertura en vivo es corta.
 - **Catálogo geográfico**: escala 1:110 M; islas pequeñas ausentes y costas simplificadas; 78,4 % del histórico queda «sin país» (84,2 % de ellos a más de 50 km de cualquier polígono).
 - **Eventos eliminados o fusionados por USGS fuera del feed** no se detectan (ampliación fuera del alcance mínimo, `ENUNCIADO.md` §5).
 - **Riesgo residual (Architect, F3)**: `version_publicada` es una promesa; si Kafka perdiera mensajes publicados no consumidos, el productor no los reenvía aunque el feed aún los tenga; se detecta con la consulta de reconciliación y se recupera con el procedimiento de huecos.
 - **Mediciones** de una sola máquina; 10⁸ filas es una proyección.
-- **Pruebas**: el reinicio del consumidor no se capturó en mitad de una transacción (ACE-08); `T063` (`down`/`up`) no se ejecutó por decisión de la persona estudiante; lector de pantalla real solo con Narrador y Edge; sin Firefox, Safari/iOS ni dispositivo táctil real con la versión F7.
+- **Pruebas**: el reinicio del consumidor no se capturó en mitad de una transacción (ACE-08); `T063` (`down`/`up`) no se ejecutó por decisión del autor; lector de pantalla real solo con Narrador y Edge; sin Firefox, Safari/iOS ni dispositivo táctil real con la versión F7.
 - **Retención de la base** (3 y 30 días): **provisional**, sin evidencia de aplicación definitiva (§3.4).
 - **Interrupciones sin hueco registrado**: las de ≈ 19 h 51 min (5→6 de noviembre) y 16 h 37 min (8→9) no tienen hueco anotado y no se ha investigado el motivo (§3.5).
 - **Discrepancia 197/198** del 2026-11-06 sin causa demostrada (§4.4).
 - **Disponibilidad**: no se exige 24/7; sin equipo ni túnel el panel publicado carga pero no hay datos y lo indica.
 
-### 10.3 Estado del despliegue (a 2026-11-11) `[ACTUALIZAR EN CIERRE]`
-La versión **F7** (Mission Control) está en el repositorio (`9008772`). La aplicación publicada en Netlify es **F7 con las mejoras visuales del 2026-11-15** desde ese día (despliegue `6afa2ccf37d6b9bb717c44f4`, commit `2616aec`; `f8/8.6-mejoras-interfaz.md`; `[ACTUALIZAR EN CIERRE]`); la versión F7 anterior (despliegue `6af4b81fa1d0a00d0cb33c59`, 2026-11-11, publicada con con una Netlify Function que añade la clave en el servidor, **sin formulario de clave para el visitante** y refresco de 60 s; se conservan como respaldo `6af4a52d…` y F6). Se verificó con la API real por el túnel **en el navegador integrado del propio equipo** (autenticación, las tres vistas, globo 3D, mapa 2D, EN VIVO, REPRODUCCIÓN, aviso y recuperación al cerrar y reabrir el túnel; `docs/evidencias/f8/verificacion-publicacion-f7.md`), con incidencias menores (insignia de Netlify, teselas de OpenStreetMap con error 400, estado transitorio al cambiar a REPRODUCCIÓN). **Pendiente**: otro navegador distinto de Chrome, el cierre del túnel desde el móvil, los contadores reales de ngrok y de Netlify y la comprobación real de la disponibilidad durante la ventana (evaluación prevista el 21–22 de noviembre, entrega prevista el 19 o 20, sin confirmar). Esta memoria **no afirma** que se haya verificado la disponibilidad durante la ventana ni dispone de evidencia archivada de la prueba en el Google Pixel con datos móviles: la persona estudiante confirmó que funcionó (2026-11-11), sin capturas. *(Captura C-14: pendiente, Anexo D.)*
+### 10.3 Estado del despliegue (a 2026-11-17)
+La versión **F7** (Mission Control) está en el repositorio (`9008772`). La aplicación publicada en Netlify es **F7 con las mejoras visuales y la segunda fuente EMSC** desde el 2026-11-16 (despliegue `6afb5599ce45e13699c428b8`, commit `bd6877b`; verificado el mismo día con la API real por el túnel en el navegador integrado (373 eventos; filtro EMSC 176; sin errores de consola), comprobada por el autor en un móvil real el 2026-11-17 (se ve correcta, **sin captura**); el despliegue anterior `6afa2ccf37d6b9bb717c44f4`, de las mejoras visuales del 2026-11-15, commit `2616aec`, queda como respaldo inmediato; `f8/8.6-mejoras-interfaz.md`); la versión F7 anterior (despliegue `6af4b81fa1d0a00d0cb33c59`, 2026-11-11, publicada con una Netlify Function que añade la clave en el servidor, **sin formulario de clave para el visitante** y refresco de 60 s; se conservan como respaldo `6af4a52d…` y F6). Se verificó con la API real por el túnel **en el navegador integrado del propio equipo** (autenticación, las tres vistas, globo 3D, mapa 2D, EN VIVO, REPRODUCCIÓN, aviso y recuperación al cerrar y reabrir el túnel; `docs/evidencias/f8/verificacion-publicacion-f7.md`), con incidencias menores (insignia de Netlify, teselas de OpenStreetMap con error 400, estado transitorio al cambiar a REPRODUCCIÓN). **No verificado**: otro navegador distinto de Chrome, el cierre del túnel desde el móvil, el contador de invocaciones de Netlify (el de ngrok se leyó el 2026-11-16 y el 2026-11-17) y la disponibilidad real durante la ventana de evaluación (prevista el 21–22 de noviembre; entrega el 19 o 20). Las pruebas en un móvil real (2026-11-11 y 2026-11-17) las hizo el autor y no tienen captura. *(Captura C-14 en `docs/evidencias/f8/capturas/`: navegador con perfil nuevo del mismo equipo, no otro dispositivo.)*
 
 ---
 
 ## Anexo A — Mapa de evidencias reutilizadas
 
-Rutas relativas a `docs/evidencias/` salvo indicación; `sql/` = [`sql/001_esquema_live.sql`](../../sql/001_esquema_live.sql), [`002_esquema_f3.sql`](../../sql/002_esquema_f3.sql), [`003_esquema_f4.sql`](../../sql/003_esquema_f4.sql), [`004_esquema_f6.sql`](../../sql/004_esquema_f6.sql). Modelos de datos: [`specs/002-ingesta-real-calidad/data-model.md`](../../specs/002-ingesta-real-calidad/data-model.md), [`specs/003-geografia-historico/data-model.md`](../../specs/003-geografia-historico/data-model.md), [`specs/004-api-dashboard/data-model.md`](../../specs/004-api-dashboard/data-model.md), [`specs/005-replay-despliegue-final/data-model.md`](../../specs/005-replay-despliegue-final/data-model.md).
+Rutas relativas a `docs/evidencias/` salvo indicación; `sql/` = [`sql/001_esquema_live.sql`](../../sql/001_esquema_live.sql), [`002_esquema_f3.sql`](../../sql/002_esquema_f3.sql), [`003_esquema_f4.sql`](../../sql/003_esquema_f4.sql), [`004_esquema_f6.sql`](../../sql/004_esquema_f6.sql), [`005_fuente_emsc.sql`](../../sql/005_fuente_emsc.sql). Modelos de datos: [`specs/002-ingesta-real-calidad/data-model.md`](../../specs/002-ingesta-real-calidad/data-model.md), [`specs/003-geografia-historico/data-model.md`](../../specs/003-geografia-historico/data-model.md), [`specs/004-api-dashboard/data-model.md`](../../specs/004-api-dashboard/data-model.md), [`specs/005-replay-despliegue-final/data-model.md`](../../specs/005-replay-despliegue-final/data-model.md).
 
 | Tema (sección) | Evidencias principales |
 |---|---|
 | Arquitectura, flujo y modos (§1) | `compose.yaml`; los cuatro `data-model.md`; `f6/aislamiento.txt`; [`specs/006-mejoras-evolucion/estado-tecnico-f7.md`](../../specs/006-mejoras-evolucion/estado-tecnico-f7.md) |
 | Diccionario y procedencia (§2, §3) | los cuatro scripts `sql/`; `docs/referencias/CONTRATO-API.md`; `docs/referencias/FUENTES-Y-LICENCIAS.md`; `f4/4.4-carga-real.txt`, `f4/4.4-recuentos-usgs.txt`, `f4/4.4-repeticion.txt`, `f4/4.4-persistencia.txt`; `f4/4.1-catalogo.txt`; `f3/3.5-activacion.txt` |
-| Retención y huecos (§3.4, §3.5) | `compose.yaml`, `.env.example`; `f3/3.6-indices-y-retencion.txt`; `f6/6.1-replay-real.txt`; `f4/procedimiento-hueco.md`; `f4/recuperacion-hueco-475.md`; `f4/4.5-recuperacion.txt`; `f3/hueco-24h.md` |
+| Retención y huecos (§3.4, §3.5) | `compose.yaml`, `.env.example`; `f3/3.6-indices-y-retencion.txt`; `f6/6.1-replay-real.txt`; `f4/procedimiento-hueco.md`; `f4/recuperacion-hueco-475.md`; `f4/4.5-recuperacion.txt`; `f3/hueco-24h.md`; `f3/sc-010-observacion-24h.txt` |
 | Calidad (§4) | `f3/3.5-calidad-datos-reales.txt`, `f3/3.5-calidad.txt`, `f3/3.5-activacion.txt`; `f4/4.6-calidad.txt`, `f4/4.6-sin-pais-historico.txt`, `f4/4.3-sin-pais-analisis.txt`; `f3/3.7-despliegue-correccion.txt`; `scripts/f4/calidad_historico.py` |
 | Modelo e índices (§5) | los cuatro scripts `sql/` y los cuatro `data-model.md`; `f4/regla-geografica.md`, `f4/4.2-validez-geometrias.txt`, `f4/4.3-bateria.txt`; `f3/3.6-indices-y-retencion.txt`; `f4/4.6-rendimiento.txt`; `f5/5.7-explain.txt` |
 | Análisis y conclusiones (§6) | `f5/conclusiones.md`; `scripts/f5/conclusiones_57.py`, `scripts/f5/ventanas_2025.sql`; `f5/5.2-estadisticas-real.txt`, `f5/5.3-comparacion-real.txt`; `f4/4.6-comparaciones.txt`; `sql/consultas/comparacion.sql` |
 | Complejidad, mediciones y costes (§7) | `f6/complejidad-costes.md`; `f6/6.4-mediciones.txt`, `f6/6.5-comparaciones.txt`; `scripts/f6/modelo_costes.py`, `scripts/f6/bench_ejecutar.sh` |
 | Pruebas de aceptación (§8) | `f6/6.3-aceptacion.md`, `f6/6.3-rastro.txt`, `f6/6.8-consumidor.txt`, `f6/6.6-tunel.md`, `f3/3.4-atomicidad.txt`, `f3/3.4-atomicidad-real.txt`, `f3/3.4-idempotencia.txt`, `f4/recuperacion-hueco-475.md`, `f6/6.9-regresion-final.txt` |
 | Reproducción histórica (§9) | `f6/reproduccion-historica.md`, `f6/6.1-replay-ensayos.txt`, `f6/6.1-replay-real.txt`, `f6/6.2-panel.txt`, `f6/6.2-velocidad-identidad.txt`, `f6/aislamiento.txt` |
+| Segunda fuente EMSC (§4.8, §10.1) | `f8/emsc-segunda-fuente.md`; `sql/005_fuente_emsc.sql`; `backend/tests/` (`test_emsc*.py`, `test_ingesta_emsc.py`, `test_filtros_fuente.py`) |
 | Decisiones y limitaciones (§10) | `f3/resultados.md`, `f4/resultados.md`, `f5/resultados.md`, `f6/resultados.md`; [`docs/entrega/matriz-trazabilidad.md`](matriz-trazabilidad.md) |
 
 ## Anexo B — Cobertura frente al enunciado y la Guía
 
 | Exigencia | Fuente | Dónde se cubre | Estado en la memoria |
 |---|---|---|---|
-| Objetivo, funcionamiento y decisiones de alcance | Guía 2.1; ENUNCIADO §12 | §1 | Cubierto (capturas C-01…C-04, C-08 y C-13 pendientes) |
+| Objetivo, funcionamiento y decisiones de alcance | Guía 2.1; ENUNCIADO §12 | §1 | Cubierto (capturas en `docs/evidencias/f8/capturas/`) |
 | Diccionario de datos | Guía 2.2; ENUNCIADO §12 | §2 | Cubierto, con la matriz de columnas por tabla |
 | Procedencia y registro de consultas | Guía 2.3; ENUNCIADO §12 | §3.1–§3.3 | Cubierto; incluye muestra de latencia y errores; el registro completo está en la base |
 | Retención de Kafka y de la base | ENUNCIADO §9 («retención limitada de Kafka»); §5 | §3.4 | Cubierto; retención de 3 y 30 días declarada **provisional** |
@@ -775,65 +778,61 @@ Rutas relativas a `docs/evidencias/` salvo indicación; `sql/` = [`sql/001_esque
 | Calidad: código/consultas, antes/después, decisiones, registros de ejemplo, limitaciones | Guía 2.4; ENUNCIADO §6, §12 | §4 | Cubierto; **reserva**: el texto literal de las consultas de `live` no se archivó (§4.6) |
 | Transformaciones y número de registros afectados | ENUNCIADO §6 | §4.2 | Cubierto; recuentos no archivados marcados **[NO DISPONIBLE]** |
 | Modelo conceptual, lógico y físico; SQL; índices justificados | Guía 2.5; ENUNCIADO §7, §12 | §5 | Cubierto; diagramas contrastados con el SQL |
-| Análisis y ≥ 3 conclusiones con filtros y denominador | Guía 2.6; ENUNCIADO §8, §12 | §6 | Conclusiones cubiertas; **capturas C-05, C-06 y C-07 pendientes** |
+| Análisis y ≥ 3 conclusiones con filtros y denominador | Guía 2.6; ENUNCIADO §8, §12 | §6 | Conclusiones cubiertas; capturas C-05, C-06 y C-07 en `docs/evidencias/f8/capturas/` (cifras actuales del periodo fijo, ver §6.3) |
 | Complejidad (≥ 3 operaciones), mediciones (≥ 3 tamaños), costes y mejoras | Guía 2.7; ENUNCIADO §10, §12 | §7 | Cubierto con etiquetas; costes con **supuestos** (datos reales no aportados) |
 | Pruebas de aceptación con esperado/observado/evidencia | Guía 2.8; ENUNCIADO §11, §12 | §8 | Cubierto con reservas (ACE-08/09/10) |
-| Reproducción histórica | Guía 2.9; ENUNCIADO §11, §12 | §9 | Cubierto; capturas C-09, C-10 y C-11 pendientes |
+| Reproducción histórica | Guía 2.9; ENUNCIADO §11, §12 | §9 | Cubierto; capturas C-09, C-10 y C-11 en `docs/evidencias/f8/capturas/` |
 | Explicación del flujo y de una decisión técnica propia | ENUNCIADO §12 (→ vídeo) | §1.3 y §10.1 como base | Material de apoyo; la explicación irá en el vídeo |
 
-## Anexo C — Reservas y pendientes de esta memoria
+## Anexo C — Reservas de esta memoria
 
-**Reservas que se mantienen** (no se resuelven con más redacción):
+**Reservas y su estado a 2026-11-17** (no se resuelven con más redacción):
 
-| Nº | Reserva | Se resuelve en | Depende de |
-|---|---|---|---|
-| R1 | **ACE-08**: comprobación adicional (interrupción en mitad de una transacción, sobre recursos temporales o replay) | 8.3 | Autorización |
-| R2 | **ACE-09/10** con F7 publicada: **verificado en el navegador integrado del propio equipo (2026-11-11)**; Pixel con datos móviles **confirmado por la persona estudiante** (sin evidencia archivada); el profesor ya no necesita clave (función de Netlify, T043) y ventana de evaluación (**no verificada**; el PC se suspende tras 1 h inactivo con los ajustes actuales) | 8.3 | Prueba del móvil, ajustes de Windows y entrega de credenciales por la persona estudiante |
-| R3 | **SC-010** (> 24 h de conservación) | 8.3 | **PA-10 (no concedida)** |
-| R4 | Re-verificación selectiva de las pruebas automatizadas: frontend **494** (2026-11-11) y **521** (2026-11-15) pasan; backend **964** (2026-11-09) **no repetido** (el código no cambió); README en entorno limpio **no repetido en F8** (PA-11); seguridad e historial de Git **comprobados** (F8.3, F8.5) | 8.3/8.5 | PA-11 para el entorno limpio |
-| R5 | **Resuelta en F8.5**: SQL literal de calidad de `live` archivado (`scripts/f8/calidad_live.sql`) y muestra nueva del 2026-11-11 (`f8/8.5-calidad-live.txt`); las cifras de §4.4 siguen siendo las de 2026-11-06 | 8.5 | — |
-| R6 | Discrepancia **197 frente a 198** (§4.4): **explicación probable por la ventana móvil de 24 h, con respaldo aritmético, no demostrada** | — | Sin resolución prevista |
-| R7 | Costes: sustituir los **[SUPUESTO]** por datos reales (precio, potencia medida, tarifa, horas) si la persona estudiante los aporta | 8.2/8.3 | Persona estudiante |
-| R8 | Cuotas de ngrok y Netlify (ngrok consultada el 2026-11-08 y el 2026-11-11). Decisión tomada: **60 s** públicos (enunciado §9). Medido: 3 peticiones por ciclo en ngrok con la función (6 con la llamada directa). **Pendiente**: contador real de ngrok y fecha de reinicio de su ciclo | 8.3 | Lectura del panel de ngrok por la persona estudiante |
-| R9 | **Mermaid**: los **5 diagramas** (2 del README y 3 de la memoria) se analizan y renderizan con Mermaid 11.4.1 en un navegador (2026-11-11, F8.5); el render **en GitHub** no se ha comprobado. Enlaces internos: 160 comprobados, 0 rotos | 8.5 | Mirar el README en GitHub tras el push |
-| R10 | Interrupciones del 5→6 y 8→9 de noviembre sin hueco registrado (§3.5) | — | Sin investigación prevista |
-| R11 | **Función de Netlify (T042–T043)**: **publicada y verificada** en un navegador del propio equipo (sin formulario de clave; 3 peticiones por ciclo y 0 OPTIONS en ngrok); **pendiente**: registros de la función, comprobar en Netlify que el secreto aparece oculto, cuota de invocaciones (125 000/mes) y de ngrok (contador sin leer); el límite por IP no es un tope global | 8.3 | Prueba del móvil y lectura de los contadores por la persona estudiante |
+| Nº | Reserva | Estado |
+|---|---|---|
+| R1 | **ACE-08**: comprobación adicional del reinicio en mitad de una transacción | No realizada; la atomicidad guardar + offset se acredita con pruebas transaccionales |
+| R2 | **ACE-09/10** con F7 publicada | Verificado en el navegador integrado del propio equipo (2026-11-11) y con capturas del túnel cerrado y reabierto (2026-11-17); web comprobada por el autor en un móvil real, sin cerrar el túnel desde el móvil; el profesor no necesita clave (función de Netlify, T043); ventana de evaluación no medida (ajustes de suspensión comprobados el 2026-11-16: nunca, con corriente; una actualización de Windows con reinicio la interrumpiría) |
+| R3 | **SC-010** (> 24 h de conservación) | **Observada el 2026-11-17** (`f3/sc-010-observacion-24h.txt`) |
+| R4 | Pruebas automatizadas, README en entorno limpio, seguridad e historial de Git | Frontend **528** y backend **1 046** pasan (2026-11-16, repetidas el 2026-11-17; antes 521 y 964); README **verificado en un entorno limpio** el 2026-11-17 (`f8/entorno-limpio-readme-final.txt`); escaneo de secretos del árbol y del historial sin hallazgos |
+| R5 | Calidad de `live` | **Resuelta**: SQL literal archivado (`scripts/f8/calidad_live.sql`) y muestra nueva del 2026-11-11 (`f8/8.5-calidad-live.txt`); las cifras de §4.4 siguen siendo las de 2026-11-06 |
+| R6 | Discrepancia **197 frente a 198** (§4.4) | Sin resolución: **explicación probable por la ventana móvil de 24 h, con respaldo aritmético, no demostrada** |
+| R7 | Costes | Todos los importes son **[SUPUESTO]**: no hay datos reales de precio, potencia medida, tarifa ni horas |
+| R8 | Cuotas de ngrok y Netlify | Decisión: **60 s** públicos (enunciado §9). Medido: 3 peticiones por ciclo en ngrok con la función (6 con la llamada directa). Contador de ngrok leído en su panel (ciclo hasta el 1 de diciembre): 867 peticiones y 4,12 MB el 2026-11-16 y 5,18 MB de 1 GB el 2026-11-17 |
+| R9 | **Mermaid** | Los 5 diagramas (2 del README y 3 de la memoria) se analizan y renderizan con Mermaid 11.4.1 en un navegador (2026-11-11); GitHub renderiza Mermaid de forma nativa. Enlaces internos: 160 comprobados el 2026-11-11 y 117 relativos el 2026-11-17, 0 rotos |
+| R10 | Interrupciones del 5→6 y 8→9 de noviembre sin hueco registrado (§3.5) | Sin investigar |
+| R11 | **Función de Netlify (T042–T043)** | Publicada y verificada en un navegador del propio equipo (sin formulario de clave; 3 peticiones por ciclo y 0 OPTIONS en ngrok). Sin comprobar: registros de la función, que el secreto aparece oculto en el panel de Netlify y la cuota de invocaciones (125 000/mes). El límite por IP no es un tope global |
 
-## Anexo D — Capturas pendientes (lista; no se ha tomado ninguna)
+## Anexo D — Capturas (estado a 2026-11-17)
 
-Clase: **[E]** estable (datos fijos: REPRODUCCIÓN o periodo fijo del 5 al 7 de noviembre) y **[D]** dinámica (EN VIVO o web publicada). «Herramienta» = navegador integrado sobre la aplicación local, **solo con autorización**. Las capturas no deben mostrar claves, la URL del túnel ni datos personales. **Todas están pendientes.** **La lista ampliada, con rutas de guardado y clases, está en `docs/entrega/capturas-y-evidencias.md`** (añade C-03b, C-12b, C-15 a C-17).
+Tomadas el **2026-11-17** sobre la **web publicada** (versión con EMSC) con Chrome en modo *headless*; ninguna muestra claves, la URL del túnel ni datos personales. Cómo se hicieron y sus reservas: [`docs/evidencias/f8/capturas/LEEME.md`](../evidencias/f8/capturas/LEEME.md). La lista con el estado de cada evidencia está en `docs/entrega/capturas-y-evidencias.md`.
 
-| Id | Qué mostrar | Sección | Clase | Quién |
+| Id | Qué muestra | Sección | Clase | Archivo (en `docs/evidencias/f8/capturas/`) |
 |---|---|---|---|---|
-| C-01 | Panel con globo 3D, EN VIVO, filtros por defecto | §1.4 | [D] | Herramienta |
-| C-02 | Panel con un evento seleccionado (detalle y leyenda visibles) | §1.4 | [D] | Herramienta |
-| C-03 | Alternativa Leaflet 2D con leyenda | §1.4 | [D] | Herramienta |
-| C-04 | Vista Análisis completa (cuatro gráficas y comparación) | §6.1 | [D] | Herramienta |
-| C-05 | Filtros de la conclusión 1: `min_mag = 4,5`, 5–7 nov 2026, global y «Sin país asignado» | §6.2–§6.3 | [E] | Herramienta; la persona estudiante valida |
-| C-06 | Filtros de la conclusión 2: comparación a M ≥ 4,5, mismo periodo | §6.2–§6.3 | [E] | Herramienta; la persona estudiante valida |
-| C-07 | Filtros de la conclusión 3: `min_mag = 4` y `min_mag = 4,5` | §6.2–§6.3 | [E] | Herramienta; la persona estudiante valida |
-| C-08 | Vista Eventos: tabla con selección y vista previa 3D | §1.4 | [D] | Herramienta |
-| C-09 | REPRODUCCIÓN en Panel (etiqueta violeta y ejecución) | §9.4 | [E] | Herramienta |
-| C-10 | REPRODUCCIÓN en Análisis («no aplica») y en Eventos | §9.4 | [E] | Herramienta |
-| C-11 | Evento con magnitud «ND» (caso controlado de replay) | §8 | [E] | Herramienta |
-| C-12 | Aviso «Sin conexión con la API» con el túnel cerrado (T036/T043 lo comprobaron **sin captura**) | §8 | [D] | **Persona estudiante** (túnel real) |
-| C-13 | Panel y Análisis en el móvil (Pixel) | §1.4 | [D] | **Persona estudiante** |
-| C-14 | La web publicada con F7 desde otro dispositivo | §10.3 | [D] | **Persona estudiante**, tras la publicación |
+| C-01 | Panel con globo 3D, EN VIVO, filtros por defecto | §1.4 | [D] | `C-01-panel-globo-en-vivo.png` |
+| C-02 | Panel con un evento seleccionado | §1.4 | [D] | `C-02-panel-evento-seleccionado.png` |
+| C-03 / C-03b | Alternativa Leaflet 2D; fallback sin WebGL | §1.4 | [D]/[E] | `C-03-panel-mapa-2d.png`, `C-03b-sin-webgl-mapa-2d.png` |
+| C-04 | Vista Análisis completa | §6.1 | [D] | `C-04-analisis-completo.png` |
+| C-05 | Conclusión 1: M ≥ 4,5, 5–7 nov 2026, global y «Sin país asignado» | §6.2–§6.3 | [E] | `C-05a-…`, `C-05b-…` |
+| C-06 | Conclusión 2: comparación a M ≥ 4,5 | §6.2–§6.3 | [E] | `C-06-conclusion2-comparacion-m45.png` |
+| C-07 | Conclusión 3: comparación a M ≥ 4 | §6.2–§6.3 | [E] | `C-07a-conclusion3-comparacion-m4.png` |
+| C-08 | Vista Eventos: tabla con selección y vista previa 3D | §1.4 | [D] | `C-08-eventos-tabla-vista-previa.png` |
+| C-09 / C-10 | REPRODUCCIÓN en Panel, Análisis y Eventos | §9.4 | [E] | `C-09-…`, `C-10a-…`, `C-10b-…` |
+| C-11 | Evento con magnitud «ND» (caso controlado) | §8 | [E] | `C-11-reproduccion-evento-magnitud-nd.png` |
+| C-12 / C-12b | Túnel cerrado («Sin conexión con la API») y reabierto | §8 | [D] | `C-12-…`, `C-12b-…` |
+| C-13 | Panel y Análisis en móvil — **emulación de 412 px, no un Pixel real** | §1.4 | [D] | `C-13a-…`, `C-13b-…` |
+| C-14 | Web publicada sin formulario de clave (perfil nuevo, mismo equipo) | §10.3 | [D] | `C-14-web-publicada-sin-clave-perfil-nuevo.png` |
 
-Las capturas [E] pueden tomarse ya (mostrarán elementos dinámicos como el estado de ingesta: llevarán su fecha de captura). Las [D] se toman cerca de la entrega (tarea T040).
+Además, C-15 y C-16 (texto de terminal) y C-18 y C-20 (EMSC). **Reservas**: la prueba en un móvil real no tiene captura; C-05 a C-07 muestran cifras actuales del periodo fijo (§6.3).
 
-## Anexo E — Checklist de actualización final de la memoria (cerca del 19–20 de noviembre)
+## Anexo E — Verificaciones finales de la memoria
 
-Solo lo que depende de la fecha de entrega o de las comprobaciones de 8.3; el resto de la memoria no se modifica.
+Revisión a 2026-11-17; el resto de la memoria no se modificó.
 
-- [ ] **§1.4**: insertar las capturas C-01…C-04, C-08 y C-13 tomadas sobre la versión publicada y congelada, con fecha de captura.
-- [ ] **§6.3**: insertar C-05, C-06 y C-07 (conclusiones con periodo fijo; **no se recalculan** las cifras).
-- [ ] **§8**: insertar C-11 y C-12; actualizar la fila de ACE-09/10 con la versión F7 publicada si se ejecuta (T036), y añadir el resultado de ACE-08 adicional y de la re-verificación selectiva de pruebas, **cada uno con su fecha y alcance**.
-- [ ] **§9.4**: insertar C-09 y C-10.
-- [ ] **§1.3 y §7.4**: el `refreshMs` público de F7 es **60 s** (decisión cerrada); revalidar las cuotas de ngrok y Netlify (fecha de consulta) y anotar el contador real de ngrok y la fecha de reinicio de su ciclo; incorporar los datos de costes si la persona estudiante los aporta.
-- [ ] **§10.3**: actualizar el estado del despliegue (publicación de F7, URL, credenciales, ventana de evaluación) **solo con lo realmente verificado**; insertar C-14.
-- [ ] **§10.2**: resultado de SC-010 si se autoriza PA-10 (si no, se mantiene «pendiente»).
-- [ ] **§4.4**: si se archiva el script de `live` (R5), añadir una subsección nueva con fecha; **no sustituir** la muestra del 2026-11-06.
-- [ ] **Cabecera**: commit de la versión descrita y fecha de la última revisión.
-- [ ] **Anexo B y C**: estado final; retirar los marcadores `[ACTUALIZAR EN CIERRE]` resueltos.
-- [ ] **Verificación final** (8.5): render de Mermaid, enlaces internos y rutas de evidencia.
+- **§1.3 y §7.4**: `refreshMs` público de 60 s (decisión cerrada); consumo de ngrok leído en su panel (4,12 MB el 2026-11-16 y 5,18 MB de 1 GB el 2026-11-17; 867 peticiones el 2026-11-16). Las cuotas de Netlify no se han leído en su panel (R11). Los datos de costes siguen siendo **[SUPUESTO]** (R7).
+- **§8**: re-verificación de pruebas con fecha (2026-11-16: 1 046 y 528) y pruebas de fallo de EMSC.
+- **§10.2**: resultado de SC-010 registrado (2026-11-17).
+- **§10.3**: estado del despliegue a 2026-11-17, solo con lo verificado.
+- **§4.4**: el SQL de `live` está archivado (R5) y la muestra nueva consta en `f8/8.5-calidad-live.txt`; no se sustituye la muestra del 2026-11-06.
+- **Cabecera, Anexo B y Anexo C**: revisados el 2026-11-17.
+- **Enlaces y tablas**: 117 enlaces relativos de los documentos de entrega, 22 tablas y 40 anclas del README comprobados el 2026-11-17, sin errores.
+- **Capturas** (§1.4, §6.3, §8, §9.4 y §10.3): tomadas el 2026-11-17 (Anexo D); se enlazan, no se insertan; las cifras de las conclusiones no se recalculan. Sin captura: la prueba en un móvil real.

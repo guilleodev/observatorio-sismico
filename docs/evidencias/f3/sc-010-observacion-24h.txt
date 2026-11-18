@@ -1,0 +1,55 @@
+# SC-010 de F3 — conservación de eventos tras más de 24 h (T044 · F8 T016/T017)
+
+Observación del 2026-11-17 a las 20:09 UTC, **solo lectura** (únicamente SELECT), con la autorización de la persona estudiante (PA-10).
+Comando: docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 < scripts/f8/sc010_f3.sql   (salida sin editar, exit 0)
+Activación de la ingesta real (T026): 2026-11-06 16:54 UTC (docs/evidencias/f3/3.5-activacion.txt). Han pasado 11 días y 3 h.
+
+## Salida del script
+
+## 0. Instante de la observación y cobertura
+      observacion_utc       |     activacion_utc     |    desde_activacion
+----------------------------+------------------------+-------------------------
+ 2026-11-17 20:09:30.417563 | 2026-11-06 16:54:00+00 | 11 days 03:15:30.417563
+
+## 1. Eventos del feed en vivo con event_time anterior a 24 h desde AHORA (esperado: > 0 si se conservan)
+ eventos_actual_anteriores_a_24h
+---------------------------------
+                            1905
+
+ versiones_anteriores_a_24h
+----------------------------
+                       2695
+
+## 2. Evento más antiguo conservado del feed en vivo
+ evento_mas_antiguo_utc  | evento_mas_reciente_utc | total_eventos_feed
+-------------------------+-------------------------+--------------------
+ 2026-11-05 16:56:25.875 | 2026-11-17 19:50:44.55  |               2123
+
+## 3. Eventos guardados con antigüedad > 24 h (stored_at - event_time)
+ guardados_con_antiguedad_mayor_24h
+------------------------------------
+                                  4
+
+## 4. Reconciliación (esperado: 0 filas)
+ event_id | updated_ms
+----------+------------
+(0 rows)
+
+## 5. Interrupciones registradas (huecos de ingesta)
+ id  |       inicio_utc        |         fin_utc         |   estado   | eventos_publicados
+-----+-------------------------+-------------------------+------------+--------------------
+ 475 | 2026-11-09 16:10:31.516 | 2026-11-09 23:49:21.966 | recuperado |                  9
+ 476 | 2026-11-11 16:07:29.623 | 2026-11-14 00:43:38.555 | recuperado |                 19
+ 477 | 2026-11-14 14:02:40.659 | 2026-11-14 22:18:46.105 | recuperado |                  2
+ 478 | 2026-11-15 16:12:21.75  | 2026-11-15 23:31:56.551 | recuperado |                  3
+
+## 6. Cobertura de consultas
+         primera         |         ultima          | consultas
+-------------------------+-------------------------+-----------
+ 2026-11-05 20:25:32.482 | 2026-11-17 20:08:40.453 |      5206
+
+## Lectura del resultado
+- Criterio de T044 **cumplido**: hay eventos del feed en vivo con `event_time` anterior a 24 h conservados en `evento_actual` (1 905) y `evento_version` (2 695); el más antiguo es del 2026-11-05 16:56 UTC, **más de 12 días**; la reconciliación devuelve 0 filas (ninguna versión publicada desapareció al salir de la ventana de 24 h del feed). El filtro `source = 'usgs-all-day'` excluye las filas recuperadas de huecos y la segunda fuente EMSC, que no falsean la prueba.
+- Comprobación cruzada del mismo día con `scripts/f6/invariantes.sh prueba24h`: reconciliación 0, offsets duplicados 0, lag 0, 0 huecos pendientes, 5 servicios `healthy`.
+- **Interrupciones a tener en cuenta (no se ocultan)**: el sistema NO estuvo activo sin parar desde la activación. Hay 4 huecos de ingesta registrados (parada del PC, reinicios), todos **recuperados** con el catálogo FDSN, y un reinicio del 2026-11-08. La prueba de conservación no exige continuidad ininterrumpida; sí la observación de «más de 24 horas seguidas», y esa tanda continua más reciente sí existe: del 2026-11-16 19:45 UTC al 2026-11-17 19:45 UTC (24 h) con 0 reinicios, 0 errores en logs, versiones guardadas en las 25 franjas horarias y 0 huecos nuevos (`docs/evidencias/f8/emsc-segunda-fuente.md` §9).
+- **Reserva**: 4 eventos (punto 3) se guardaron con más de 24 h de antigüedad; **no se ha investigado su causa** y no se interpreta. Esta evidencia demuestra la conservación en este sistema real y esta máquina, no la disponibilidad durante la ventana de evaluación.

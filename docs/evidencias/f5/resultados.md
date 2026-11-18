@@ -1,5 +1,7 @@
 # Resultados de la fase F5 — API y dashboard (T054)
 
+> **Nota del 2026-11-17**: este documento recoge el estado de la fase en su fecha. Lo que figura aquí como pendiente o abierto se resolvió después o consta como reserva en el [Anexo C de la memoria](../../entrega/memoria.md#anexo-c--reservas-de-esta-memoria) y en la [matriz de trazabilidad](../../entrega/matriz-trazabilidad.md).
+
 Resultado **observado** de cada criterio de `specs/004-api-dashboard/spec.md`. Solo se marca «cumplido» lo comprobado con evidencia guardada en esta carpeta
 (`docs/evidencias/f5/`); las reservas figuran junto a cada criterio. Estado al cerrar (2026-11-08): cinco servicios `healthy` con los mismos contenedores que en 5.6,
 lag 0, reconciliación 0 (`aislamiento.txt`, 2026-11-08), **661 pruebas de backend** (`5.7-regresion.txt`, 2026-11-07; el código no ha cambiado desde entonces) y **88 de frontend** (`5.7-pruebas-frontend.txt`, 2026-11-08) pasan. No hay commit ni push: el commit `[F5]` lo hace la persona estudiante.

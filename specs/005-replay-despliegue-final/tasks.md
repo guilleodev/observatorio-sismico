@@ -4,6 +4,8 @@
 **Requisitos previos**: `plan.md`, `spec.md`. Fase **F6** de `docs/HOJA-DE-RUTA.md` (pasos 6.1 a 6.10, ampliada por DG9). Commit previsto: **`[F6]`**.
 **Pruebas**: se escriben antes de implementar (deben fallar) y se ejecutan con resultado real guardado en `docs/evidencias/f6/`.
 
+> **Nota del 2026-11-18.** T075–T077 (SC-010 de F3) se ejecutaron en F8: `docs/evidencias/f3/sc-010-observacion-24h.txt`. **T063** (`down`/`up`, opcional) no se ejecutó por decisión del autor.
+
 ## Formato: `[ID] [P?] [Historia] [Decisión] [Autorización] Descripción (requisitos y criterios)`
 
 - **[P]**: se puede hacer en paralelo (archivos distintos, sin dependencias)
@@ -289,11 +291,11 @@
 
 **No se ejecuta ni se inicia ninguna medición sin PA-10.** Mientras tanto, SC-010 de F3 sigue «pendiente de observación».
 
-- [ ] T075 [US11] Preparar (sin ejecutar sobre la base real) `scripts/f6/sc010_f3.sql` (solo lectura): eventos con `event_time` anterior a 24 h de la activación (2026-11-06 16:54 UTC) en `evento_actual` y `evento_version`
+- [x] T075 [US11] Preparar (sin ejecutar sobre la base real) `scripts/f6/sc010_f3.sql` (solo lectura): eventos con `event_time` anterior a 24 h de la activación (2026-11-06 16:54 UTC) en `evento_actual` y `evento_version`
   (> 0) y consulta de reconciliación vacía, con la sintaxis comprobada en una base temporal (FR-037, SC-018)
-- [ ] T076 [US11] [PA-10] Con la autorización expresa y más de 24 h de funcionamiento, ejecutar las consultas y guardar la salida en `docs/evidencias/f3/sc-010-observacion-24h.txt`, anotando interrupciones
+- [x] T076 [US11] [PA-10] Con la autorización expresa y más de 24 h de funcionamiento, ejecutar las consultas y guardar la salida en `docs/evidencias/f3/sc-010-observacion-24h.txt`, anotando interrupciones
   (incluido el reinicio del 2026-11-08); no se declara cumplido si la comprobación no lo respalda (FR-037, SC-018)
-- [ ] T077 [US11] Anexar el resultado a `docs/evidencias/f6/resultados.md` y a `docs/evidencias/f3/resultados.md` (solo la línea de SC-010) y actualizar la hoja; sin commit ni push
+- [x] T077 [US11] Anexar el resultado a `docs/evidencias/f6/resultados.md` y a `docs/evidencias/f3/resultados.md` (solo la línea de SC-010) y actualizar la hoja; sin commit ni push
 
 **Punto de control de 6.10.** Anexo posterior al cierre de F6.
 
